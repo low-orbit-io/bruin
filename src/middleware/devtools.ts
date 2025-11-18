@@ -479,7 +479,7 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
     connection.init(initialState);
   }
 
-  if (connection && !(connection as any).__messageHandler) {
+  if (connection) {
     (connection as any).__messageHandler = messageHandler;
   }
 
