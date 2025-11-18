@@ -95,33 +95,12 @@ type CreateStoreOptions = {
 };
 
 export function createStore<
-  TCreator extends StateCreator<any, [], any>,
->(
-  initializer: TCreator,
-  options?: CreateStoreOptions,
-): Mutate<
-  StoreApi<ReturnType<TCreator>>,
-  ExtractStateCreatorMutators<TCreator>
->;
-export function createStore<
   T,
-  TCreator extends StateCreator<T, [], any> = StateCreator<T, [], any>,
+  Mos extends [StoreMutatorIdentifier, unknown][] = [],
 >(
-  initializer: TCreator,
+  initializer: StateCreator<T, [], Mos>,
   options?: CreateStoreOptions,
-): Mutate<StoreApi<T>, ExtractStateCreatorMutators<TCreator>>;
-export function createStore<
-  TCreator extends StateCreator<any, [], any>,
->(
-  initializer: TCreator,
-  options?: CreateStoreOptions,
-): Mutate<
-  StoreApi<ReturnType<TCreator>>,
-  ExtractStateCreatorMutators<TCreator>
-> {
-  type T = ReturnType<TCreator>;
-  type Mos = ExtractStateCreatorMutators<TCreator>;
-  const initializerTyped = initializer as StateCreator<T, [], Mos>;
+): Mutate<StoreApi<T>, Mos> {
   let state: T;
   let originalInitialResult: T | null = null;
   let history: HistoryEntry<T>[] = [];
@@ -679,7 +658,7 @@ export function createStore<
   }) as SetStateWithTransaction<T>;
 
   const tempState = {} as T;
-  const initialResult = initializerTyped(
+  const initialResult = initializer(
     setStateWithTransaction as StateCreatorSet<T, []>,
     api.getState as Get<Mutate<StoreApi<T>, []>, 'getState', never>,
     api as Mutate<StoreApi<T>, []>,
