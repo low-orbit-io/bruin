@@ -27,11 +27,17 @@ export type StoreApi<T> = {
   clearHistory?: () => void;
 };
 
-export type StateCreator<T> = (
+export type StateCreator<
+  T,
+  _Mps extends [StoreMutatorIdentifier, unknown][] = [],
+  _Mcs extends [StoreMutatorIdentifier, unknown][] = [],
+> = (
   set: StoreApi<T>['setState'],
   get: StoreApi<T>['getState'],
   api: StoreApi<T>,
 ) => T;
+
+type StoreMutatorIdentifier = string;
 
 export type ExtractState<S> = S extends { getState: () => infer T } ? T : never;
 

@@ -1,30 +1,33 @@
-import type { StateCreator, StoreApi } from '../vanilla.ts'
+import type { StateCreator } from '../vanilla';
 
-type Write<T, U> = Omit<T, keyof U> & U
+type Write<T, U> = Omit<T, keyof U> & U;
 
 type WithSelectorSubscribe<S> = S extends { getState: () => infer T }
   ? Write<S, StoreSubscribeWithSelector<T>>
-  : never
+  : never;
 
 type StoreSubscribeWithSelector<T> = {
   subscribe: {
-    (listener: (selectedState: T, previousSelectedState: T) => void): () => void
+    (
+      listener: (selectedState: T, previousSelectedState: T) => void,
+    ): () => void;
     <U>(
       selector: (state: T) => U,
       listener: (selectedState: U, previousSelectedState: U) => void,
       options?: {
-        equalityFn?: (a: U, b: U) => boolean
-        fireImmediately?: boolean
+        equalityFn?: (a: U, b: U) => boolean;
+        fireImmediately?: boolean;
       },
-    ): () => void
-  }
-}
+    ): () => void;
+  };
+};
 
-type StoreMutatorIdentifier = string
+type StoreMutatorIdentifier = string;
 
 declare module '../vanilla' {
   interface StoreMutators<S, A> {
-    'bruin/subscribeWithSelector': WithSelectorSubscribe<S>
+    'bruin/subscribeWithSelector': WithSelectorSubscribe<S> &
+      Record<keyof A, never>;
   }
 }
 
@@ -38,65 +41,60 @@ type SubscribeWithSelector = <
     [...Mps, ['bruin/subscribeWithSelector', never]],
     Mcs
   >,
-) => StateCreator<T, Mps, [['bruin/subscribeWithSelector', never], ...Mcs]>
+) => StateCreator<T, Mps, [['bruin/subscribeWithSelector', never], ...Mcs]>;
 
 type SubscribeWithSelectorImpl = <T>(
   storeInitializer: StateCreator<T, [], []>,
-) => StateCreator<T, [], []>
+) => StateCreator<T, [], []>;
 
 const subscribeWithSelectorImpl: SubscribeWithSelectorImpl =
   (fn) => (set, get, api) => {
-    type S = ReturnType<typeof fn>
-    type Listener = (state: S, previousState: S) => void
+    type S = ReturnType<typeof fn>;
+    type Listener = (state: S, previousState: S) => void;
 
-    // Save the original subscribe function
-    const origSubscribe = api.subscribe as (listener: Listener) => () => void
+    const origSubscribe = api.subscribe;
 
-    // Replace api.subscribe with enhanced version
-    api.subscribe = ((
-      listenerOrSelector: Listener | ((state: S) => any),
+    (api as any).subscribe = ((
+      listenerOrPath: Listener | ((state: S) => any) | (string | number)[],
       maybeListener?: (selectedState: any, previousSelectedState: any) => void,
       options?: {
-        equalityFn?: (a: any, b: any) => boolean
-        fireImmediately?: boolean
+        equalityFn?: (a: any, b: any) => boolean;
+        fireImmediately?: boolean;
       },
     ) => {
-      // Case 1: Basic subscription without selector (first overload)
+      if (Array.isArray(listenerOrPath)) {
+        return origSubscribe(listenerOrPath, maybeListener);
+      }
+
       if (maybeListener === undefined) {
-        return origSubscribe(listenerOrSelector as Listener)
+        return origSubscribe(listenerOrPath as Listener);
       }
 
-      // Case 2: Subscription with selector (second overload)
-      const selector = listenerOrSelector as (state: S) => any
-      const listener = maybeListener
-      const equalityFn = options?.equalityFn || Object.is
+      const selector = listenerOrPath as (state: S) => any;
+      const listener = maybeListener;
+      const equalityFn = options?.equalityFn || Object.is;
 
-      // Get initial selected state
-      let currentSlice = selector(get())
+      let currentSlice = selector(get());
 
-      // Fire immediately if requested
       if (options?.fireImmediately) {
-        listener(currentSlice, currentSlice)
+        listener(currentSlice, currentSlice);
       }
 
-      // Create wrapper listener that only fires when selected state changes
-      const listenerWrapper: Listener = (state, previousState) => {
-        const nextSlice = selector(state)
+      const listenerWrapper: Listener = (state, _previousState) => {
+        const nextSlice = selector(state);
 
-        // Only notify if the selected slice has changed according to equalityFn
         if (!equalityFn(currentSlice, nextSlice)) {
-          const previousSlice = currentSlice
-          currentSlice = nextSlice
-          listener(nextSlice, previousSlice)
+          const previousSlice = currentSlice;
+          currentSlice = nextSlice;
+          listener(nextSlice, previousSlice);
         }
-      }
+      };
 
-      // Subscribe with the wrapper
-      return origSubscribe(listenerWrapper)
-    }) as StoreSubscribeWithSelector<S>['subscribe']
+      return origSubscribe(listenerWrapper);
+    }) as StoreSubscribeWithSelector<S>['subscribe'];
 
-    return fn(set, get, api)
-  }
+    return fn(set, get, api);
+  };
 
 export const subscribeWithSelector =
-  subscribeWithSelectorImpl as unknown as SubscribeWithSelector
+  subscribeWithSelectorImpl as unknown as SubscribeWithSelector;
