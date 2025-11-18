@@ -17,7 +17,7 @@
     "baseUrl": ".",
     "paths": {
       "bruin": ["./src/index.ts"],
-      "bruin/*": ["./src/*.ts"]
+      "bruin/*": ["./src/*"]
     }
   },
   "include": ["src/**/*", "tests/**/*"],

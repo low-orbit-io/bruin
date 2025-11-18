@@ -1,12 +1,12 @@
-import eslint from '@eslint/js'
-import vitest from '@vitest/eslint-plugin'
-import { defineConfig } from 'eslint/config'
-import importPlugin from 'eslint-plugin-import'
-import jestDom from 'eslint-plugin-jest-dom'
-import react from 'eslint-plugin-react'
-import reactHooks from 'eslint-plugin-react-hooks'
-import testingLibrary from 'eslint-plugin-testing-library'
-import tseslint from 'typescript-eslint'
+import eslint from '@eslint/js';
+import vitest from '@vitest/eslint-plugin';
+import { defineConfig } from 'eslint/config';
+import importPlugin from 'eslint-plugin-import';
+import jestDom from 'eslint-plugin-jest-dom';
+import react from 'eslint-plugin-react';
+import reactHooks from 'eslint-plugin-react-hooks';
+import testingLibrary from 'eslint-plugin-testing-library';
+import tseslint from 'typescript-eslint';
 
 export default defineConfig(
   {
@@ -25,6 +25,9 @@ export default defineConfig(
       },
       'import/resolver': {
         typescript: true,
+        node: {
+          extensions: ['.js', '.jsx', '.ts', '.tsx', '.d.ts', '.mjs', '.cjs'],
+        },
       },
     },
     rules: {
@@ -66,6 +69,12 @@ export default defineConfig(
           pathGroupsExcludedImportTypes: ['builtin'],
         },
       ],
+      'no-multiple-empty-lines': [
+        'error',
+        { max: 1, maxEOF: 0, maxBOF: 0 },
+      ],
+      'padded-blocks': ['error', 'never'],
+      semi: ['error', 'always'],
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unused-vars': [
         'error',
@@ -86,4 +95,4 @@ export default defineConfig(
       ],
     },
   },
-)
+);

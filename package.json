@@ -89,7 +89,7 @@
     "node": ">=12.20.0"
   },
   "prettier": {
-    "semi": false,
+    "semi": true,
     "singleQuote": true
   },
   "repository": {

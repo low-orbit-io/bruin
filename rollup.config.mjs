@@ -1,22 +1,22 @@
 /* global process*/
-import path from 'path'
-import alias from '@rollup/plugin-alias'
-import resolve from '@rollup/plugin-node-resolve'
-import replace from '@rollup/plugin-replace'
-import typescript from '@rollup/plugin-typescript'
-import esbuild from 'rollup-plugin-esbuild'
+import path from 'path';
+import alias from '@rollup/plugin-alias';
+import resolve from '@rollup/plugin-node-resolve';
+import replace from '@rollup/plugin-replace';
+import typescript from '@rollup/plugin-typescript';
+import esbuild from 'rollup-plugin-esbuild';
 
-const extensions = ['.js', '.ts', '.tsx']
-const { root } = path.parse(process.cwd())
+const extensions = ['.js', '.ts', '.tsx'];
+const { root } = path.parse(process.cwd());
 export const entries = [
   { find: /.*\/vanilla\/shallow\.ts$/, replacement: 'bruin/vanilla/shallow' },
   { find: /.*\/react\/shallow\.ts$/, replacement: 'bruin/react/shallow' },
   { find: /.*\/vanilla\.ts$/, replacement: 'bruin/vanilla' },
   { find: /.*\/react\.ts$/, replacement: 'bruin/react' },
-]
+];
 
 function external(id) {
-  return !id.startsWith('.') && !id.startsWith(root)
+  return !id.startsWith('.') && !id.startsWith(root);
 }
 
 function getEsbuild() {
@@ -24,7 +24,7 @@ function getEsbuild() {
     target: 'es2018',
     supported: { 'import-meta': true },
     tsconfig: path.resolve('./tsconfig.json'),
-  })
+  });
 }
 
 function createDeclarationConfig(input, output) {
@@ -41,7 +41,7 @@ function createDeclarationConfig(input, output) {
         outDir: output,
       }),
     ],
-  }
+  };
 }
 
 function createESMConfig(input, output) {
@@ -69,7 +69,7 @@ function createESMConfig(input, output) {
       }),
       getEsbuild(),
     ],
-  }
+  };
 }
 
 function createCommonJSConfig(input, output) {
@@ -87,19 +87,19 @@ function createCommonJSConfig(input, output) {
       }),
       getEsbuild(),
     ],
-  }
+  };
 }
 
 export default function (args) {
-  let c = Object.keys(args).find((key) => key.startsWith('config-'))
+  let c = Object.keys(args).find((key) => key.startsWith('config-'));
   if (c) {
-    c = c.slice('config-'.length).replace(/_/g, '/')
+    c = c.slice('config-'.length).replace(/_/g, '/');
   } else {
-    c = 'index'
+    c = 'index';
   }
   return [
     ...(c === 'index' ? [createDeclarationConfig(`src/${c}.ts`, 'dist')] : []),
     createCommonJSConfig(`src/${c}.ts`, `dist/${c}.js`),
     createESMConfig(`src/${c}.ts`, `dist/esm/${c}.mjs`),
-  ]
+  ];
 }

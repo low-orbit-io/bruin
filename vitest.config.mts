@@ -1,5 +1,5 @@
-import { resolve } from 'path'
-import { defineConfig } from 'vitest/config'
+import { resolve } from 'path';
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   resolve: {
@@ -25,5 +25,34 @@ export default defineConfig({
       reportsDirectory: './coverage/',
       provider: 'v8',
     },
+    projects: [
+      {
+        resolve: {
+          alias: [
+            { find: /^bruin$/, replacement: resolve('./src/index.ts') },
+            { find: /^bruin(.*)$/, replacement: resolve('./src/$1.ts') },
+          ],
+        },
+        test: {
+          name: 'vanilla',
+          include: ['tests/vanilla/**'],
+          environment: 'node',
+        },
+      },
+      {
+        resolve: {
+          alias: [
+            { find: /^bruin$/, replacement: resolve('./src/index.ts') },
+            { find: /^bruin(.*)$/, replacement: resolve('./src/$1.ts') },
+          ],
+        },
+        test: {
+          name: 'react',
+          include: ['tests/**'],
+          exclude: ['tests/vanilla/**'],
+          environment: 'jsdom',
+        },
+      },
+    ],
   },
-})
+});
