@@ -254,10 +254,9 @@ describe('history configuration', () => {
 
     it('should flush debounced history on undo', async () => {
       vi.useFakeTimers();
-      const store = createStore<{ count: number }>(
-        () => ({ count: 0 }),
-        { debounce: 100 },
-      );
+      const store = createStore<{ count: number }>(() => ({ count: 0 }), {
+        debounce: 100,
+      });
 
       store.setState({ count: 1 });
       store.setState({ count: 2 });

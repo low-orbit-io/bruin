@@ -1,4 +1,4 @@
-import type { StateCreator } from '../vanilla';
+import type { StateCreator, StoreApi } from '../vanilla';
 
 type Action = string | { type: string; [key: string]: any };
 
@@ -48,6 +48,8 @@ type StoreDevtools = {
     (...args: any[]): any;
   };
 };
+
+export type NamedSet<T> = WithDevtools<StoreApi<T>>['setState'];
 
 type StoreMutatorIdentifier = string;
 

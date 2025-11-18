@@ -9,8 +9,6 @@ export function useShallow<S, U>(selector: (state: S) => U): (state: S) => U {
     if (prev.current === undefined) {
       return (prev.current = next);
     }
-    return shallow(prev.current, next)
-      ? prev.current
-      : (prev.current = next);
+    return shallow(prev.current, next) ? prev.current : (prev.current = next);
   };
 }

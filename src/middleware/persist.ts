@@ -92,6 +92,45 @@ type PersistImpl = <T>(
   options: PersistOptions<T, T>,
 ) => StateCreator<T>;
 
+type Thenable<Value> = {
+  then<V>(
+    onFulfilled: (value: Value) => V | Promise<V> | Thenable<V>,
+  ): Thenable<V>;
+  catch<V>(
+    onRejected: (reason: Error) => V | Promise<V> | Thenable<V>,
+  ): Thenable<V>;
+};
+
+const toThenable =
+  <Result, Input>(
+    fn: (input: Input) => Result | Promise<Result> | Thenable<Result>,
+  ) =>
+  (input: Input): Thenable<Result> => {
+    try {
+      const result = fn(input);
+      if (result instanceof Promise) {
+        return result as Thenable<Result>;
+      }
+      return {
+        then(onFulfilled) {
+          return toThenable(onFulfilled)(result as Result);
+        },
+        catch(_onRejected) {
+          return this as Thenable<any>;
+        },
+      };
+    } catch (e: any) {
+      return {
+        then(_onFulfilled) {
+          return this as Thenable<any>;
+        },
+        catch(onRejected) {
+          return toThenable(onRejected)(e);
+        },
+      };
+    }
+  };
+
 export function createJSONStorage<S, R = unknown>(
   getStorage: () => StateStorage<R>,
   options?: JsonStorageOptions,
@@ -218,113 +257,6 @@ const persistImpl: PersistImpl =
 
     let stateFromStorage: S | undefined;
 
-    const processStorageValue = (
-      value: StorageValue<S> | null,
-      postRehydrationCallback?: (state?: S, error?: unknown) => void,
-    ) => {
-      const deserializedStorageValue: StorageValue<S> | null = value;
-
-      if (deserializedStorageValue) {
-        if (
-          typeof deserializedStorageValue.version === 'number' &&
-          deserializedStorageValue.version !== options.version
-        ) {
-          if (options.migrate) {
-            const migration = options.migrate(
-              deserializedStorageValue.state,
-              deserializedStorageValue.version,
-            );
-
-            if (migration instanceof Promise) {
-              return migration.then((result) => {
-                stateFromStorage = options.merge(
-                  result as S,
-                  get() ?? configResult,
-                );
-
-                applyHydratedState(
-                  deserializedStorageValue,
-                  postRehydrationCallback,
-                );
-
-                return setItem();
-              });
-            }
-
-            stateFromStorage = options.merge(
-              migration as S,
-              get() ?? configResult,
-            );
-
-            applyHydratedState(
-              deserializedStorageValue,
-              postRehydrationCallback,
-            );
-
-            return setItem();
-          }
-
-          console.error(
-            `State loaded from storage couldn't be migrated since no migrate function was provided`,
-          );
-
-          return;
-        } else {
-          stateFromStorage = options.merge(
-            deserializedStorageValue.state as S,
-            get() ?? configResult,
-          );
-        }
-      } else {
-        postRehydrationCallback?.(get() ?? configResult, undefined);
-        hasHydrated = true;
-
-        finishHydrationListeners.forEach((cb) => cb(configResult));
-
-        return;
-      }
-
-      applyHydratedState(deserializedStorageValue, postRehydrationCallback);
-    };
-
-    const applyHydratedState = (
-      deserializedStorageValue: StorageValue<S> | null,
-      postRehydrationCallback?: (state?: S, error?: unknown) => void,
-    ) => {
-      if (!deserializedStorageValue || !stateFromStorage) {
-        return;
-      }
-
-      const shouldRestoreHistory =
-        options.persistHistory &&
-        deserializedStorageValue.persistHistory &&
-        deserializedStorageValue.history &&
-        typeof deserializedStorageValue.historyIndex === 'number' &&
-        api.restoreHistory;
-
-      if (shouldRestoreHistory) {
-        const mergedHistory = deserializedStorageValue.history!.map(
-          (historyState: any) => {
-            return options.merge(historyState, configResult);
-          },
-        );
-
-        api.restoreHistory!(
-          mergedHistory,
-          deserializedStorageValue.historyIndex!,
-        );
-      } else {
-        set(stateFromStorage as S, true);
-      }
-
-      postRehydrationCallback?.(stateFromStorage, undefined);
-
-      stateFromStorage = get();
-      hasHydrated = true;
-
-      finishHydrationListeners.forEach((cb) => cb(stateFromStorage as S));
-    };
-
     const hydrate = () => {
       if (!storage) return;
 
@@ -334,23 +266,97 @@ const persistImpl: PersistImpl =
       const postRehydrationCallback =
         options.onRehydrateStorage?.(get() ?? configResult) || undefined;
 
-      try {
-        const storageValue = storage.getItem(options.name);
+      return toThenable(storage.getItem.bind(storage))(options.name)
+        .then((deserializedStorageValue: StorageValue<S> | null) => {
+          if (deserializedStorageValue) {
+            if (
+              typeof deserializedStorageValue.version === 'number' &&
+              deserializedStorageValue.version !== options.version
+            ) {
+              if (options.migrate) {
+                const migration = options.migrate(
+                  deserializedStorageValue.state,
+                  deserializedStorageValue.version,
+                );
+                if (migration instanceof Promise) {
+                  return migration.then(
+                    (result) =>
+                      [true, result, deserializedStorageValue] as const,
+                  );
+                }
+                return [true, migration, deserializedStorageValue] as const;
+              }
+              console.error(
+                `State loaded from storage couldn't be migrated since no migrate function was provided`,
+              );
+            } else {
+              return [
+                false,
+                deserializedStorageValue.state,
+                deserializedStorageValue,
+              ] as const;
+            }
+          }
+          return [false, undefined, null] as const;
+        })
+        .then(
+          (
+            migrationResult: readonly [
+              boolean,
+              S | undefined,
+              StorageValue<S> | null,
+            ],
+          ) => {
+            const [migrated, migratedState, originalStorageValue] =
+              migrationResult;
 
-        if (storageValue instanceof Promise) {
-          return storageValue
-            .then((value) => {
-              processStorageValue(value, postRehydrationCallback);
-            })
-            .catch((e: Error) => {
-              postRehydrationCallback?.(undefined, e);
-            });
-        } else {
-          processStorageValue(storageValue, postRehydrationCallback);
-        }
-      } catch (e) {
-        postRehydrationCallback?.(undefined, e);
-      }
+            if (migratedState !== undefined) {
+              stateFromStorage = options.merge(
+                migratedState as S,
+                get() ?? configResult,
+              );
+            }
+
+            if (originalStorageValue && stateFromStorage) {
+              const storageValue = originalStorageValue as StorageValue<S>;
+              const shouldRestoreHistory =
+                options.persistHistory &&
+                storageValue.persistHistory &&
+                storageValue.history &&
+                typeof storageValue.historyIndex === 'number' &&
+                api.restoreHistory;
+
+              if (shouldRestoreHistory) {
+                const mergedHistory = storageValue.history!.map(
+                  (historyState: any) => {
+                    return options.merge(historyState, configResult);
+                  },
+                );
+
+                api.restoreHistory!(mergedHistory, storageValue.historyIndex!);
+              } else {
+                set(stateFromStorage as S, true);
+              }
+
+              if (migrated) {
+                return setItem();
+              }
+            }
+          },
+        )
+        .then(() => {
+          postRehydrationCallback?.(
+            stateFromStorage ?? get() ?? configResult,
+            undefined,
+          );
+
+          stateFromStorage = get();
+          hasHydrated = true;
+          finishHydrationListeners.forEach((cb) => cb(stateFromStorage as S));
+        })
+        .catch((e: Error) => {
+          postRehydrationCallback?.(undefined, e);
+        });
     };
 
     (api as any).persist = {

@@ -82,7 +82,9 @@ describe('subscribe()', () => {
 
   it('should notify on redo', () => {
     const spy = vi.fn();
-    const { setState, subscribe, undo, redo } = createStore(() => ({ value: 0 }));
+    const { setState, subscribe, undo, redo } = createStore(() => ({
+      value: 0,
+    }));
 
     subscribe(spy);
     setState({ value: 1 });
@@ -97,7 +99,10 @@ describe('subscribe()', () => {
 
   it('should notify once for transaction', () => {
     const spy = vi.fn();
-    const { setState, subscribe, transaction } = createStore(() => ({ a: 0, b: 0 }));
+    const { setState, subscribe, transaction } = createStore(() => ({
+      a: 0,
+      b: 0,
+    }));
 
     subscribe(spy);
 

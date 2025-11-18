@@ -10,10 +10,10 @@ afterEach(() => {
 
 describe('History Management', () => {
   type CounterState = {
-    count: number
-    inc: () => void
-    dec: () => void
-  }
+    count: number;
+    inc: () => void;
+    dec: () => void;
+  };
 
   it('maintains history of state changes', () => {
     const store = createStore<CounterState>((set) => ({
@@ -189,10 +189,13 @@ describe('Transaction API', () => {
   it('can name transactions', () => {
     const store = createStore<{ value: number }>(() => ({ value: 0 }));
 
-    store.transaction(() => {
-      store.setState({ value: 10 });
-      store.setState({ value: 20 });
-    }, { name: 'Double update' });
+    store.transaction(
+      () => {
+        store.setState({ value: 10 });
+        store.setState({ value: 20 });
+      },
+      { name: 'Double update' },
+    );
 
     const history = store.getHistory();
 
@@ -238,12 +241,12 @@ describe('Transaction API', () => {
 describe('Computed Fields', () => {
   it('excludes computed fields from history', () => {
     type State = {
-      firstName: string
-      lastName: string
-      fullName: string
-      setFirstName: (name: string) => void
-      setLastName: (name: string) => void
-    }
+      firstName: string;
+      lastName: string;
+      fullName: string;
+      setFirstName: (name: string) => void;
+      setLastName: (name: string) => void;
+    };
 
     const store = createStore<State>(
       (set, get) => ({
@@ -274,11 +277,11 @@ describe('Computed Fields', () => {
 
   it('handles multiple computed fields', () => {
     type State = {
-      count: number
-      double: number
-      triple: number
-      inc: () => void
-    }
+      count: number;
+      double: number;
+      triple: number;
+      inc: () => void;
+    };
 
     const store = createStore<State>(
       (set, get) => ({
@@ -316,9 +319,9 @@ describe('Computed Fields', () => {
 describe('Structural Sharing', () => {
   it('preserves unchanged nested objects', () => {
     type State = {
-      user: { name: string; age: number }
-      settings: { theme: string; lang: string }
-    }
+      user: { name: string; age: number };
+      settings: { theme: string; lang: string };
+    };
 
     const store = createStore<State>(() => ({
       user: { name: 'John', age: 30 },
@@ -334,8 +337,8 @@ describe('Structural Sharing', () => {
 
   it('works with arrays', () => {
     type State = {
-      items: Array<{ id: number; value: string }>
-    }
+      items: Array<{ id: number; value: string }>;
+    };
 
     const store = createStore<State>(() => ({
       items: [

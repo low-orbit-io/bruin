@@ -1,10 +1,31 @@
 import type { StateCreator } from '../vanilla';
 
+type StoreMutatorIdentifier = string;
+
+type SubscribeWithSelector = <
+  T,
+  Mps extends [StoreMutatorIdentifier, unknown][] = [],
+  Mcs extends [StoreMutatorIdentifier, unknown][] = [],
+>(
+  initializer: StateCreator<
+    T,
+    [...Mps, ['bruin/subscribeWithSelector', never]],
+    Mcs
+  >,
+) => StateCreator<T, Mps, [['bruin/subscribeWithSelector', never], ...Mcs]>;
+
 type Write<T, U> = Omit<T, keyof U> & U;
 
 type WithSelectorSubscribe<S> = S extends { getState: () => infer T }
   ? Write<S, StoreSubscribeWithSelector<T>>
   : never;
+
+declare module '../vanilla' {
+  interface StoreMutators<S, A> {
+    'bruin/subscribeWithSelector': WithSelectorSubscribe<S> &
+      Record<keyof A, never>;
+  }
+}
 
 type StoreSubscribeWithSelector<T> = {
   subscribe: {
@@ -22,28 +43,7 @@ type StoreSubscribeWithSelector<T> = {
   };
 };
 
-type StoreMutatorIdentifier = string;
-
-declare module '../vanilla' {
-  interface StoreMutators<S, A> {
-    'bruin/subscribeWithSelector': WithSelectorSubscribe<S> &
-      Record<keyof A, never>;
-  }
-}
-
-type SubscribeWithSelector = <
-  T,
-  Mps extends [StoreMutatorIdentifier, unknown][] = [],
-  Mcs extends [StoreMutatorIdentifier, unknown][] = [],
->(
-  initializer: StateCreator<
-    T,
-    [...Mps, ['bruin/subscribeWithSelector', never]],
-    Mcs
-  >,
-) => StateCreator<T, Mps, [['bruin/subscribeWithSelector', never], ...Mcs]>;
-
-type SubscribeWithSelectorImpl = <T>(
+type SubscribeWithSelectorImpl = <T extends object>(
   storeInitializer: StateCreator<T, [], []>,
 ) => StateCreator<T, [], []>;
 
@@ -52,48 +52,44 @@ const subscribeWithSelectorImpl: SubscribeWithSelectorImpl =
     type S = ReturnType<typeof fn>;
     type Listener = (state: S, previousState: S) => void;
 
-    const origSubscribe = api.subscribe;
+    const origSubscribe = api.subscribe as (
+      listenerOrPath: Listener | (string | number)[],
+      listenerArg?: (selectedState: any, previousSelectedState: any) => void,
+    ) => () => void;
 
-    (api as any).subscribe = ((
-      listenerOrPath: Listener | ((state: S) => any) | (string | number)[],
-      maybeListener?: (selectedState: any, previousSelectedState: any) => void,
-      options?: {
-        equalityFn?: (a: any, b: any) => boolean;
-        fireImmediately?: boolean;
-      },
-    ) => {
-      if (Array.isArray(listenerOrPath)) {
-        return origSubscribe(listenerOrPath, maybeListener);
+    api.subscribe = ((selector: any, optListener: any, options: any) => {
+      if (Array.isArray(selector)) {
+        return origSubscribe(selector, optListener);
       }
 
-      if (maybeListener === undefined) {
-        return origSubscribe(listenerOrPath as Listener);
-      }
+      let listener: Listener = selector;
 
-      const selector = listenerOrPath as (state: S) => any;
-      const listener = maybeListener;
-      const equalityFn = options?.equalityFn || Object.is;
+      if (optListener) {
+        const equalityFn = options?.equalityFn || Object.is;
 
-      let currentSlice = selector(get());
+        let currentSlice = selector(api.getState());
 
-      if (options?.fireImmediately) {
-        listener(currentSlice, currentSlice);
-      }
+        listener = (state) => {
+          const nextSlice = selector(state);
 
-      const listenerWrapper: Listener = (state, _previousState) => {
-        const nextSlice = selector(state);
+          if (!equalityFn(currentSlice, nextSlice)) {
+            const previousSlice = currentSlice;
 
-        if (!equalityFn(currentSlice, nextSlice)) {
-          const previousSlice = currentSlice;
-          currentSlice = nextSlice;
-          listener(nextSlice, previousSlice);
+            optListener((currentSlice = nextSlice), previousSlice);
+          }
+        };
+
+        if (options?.fireImmediately) {
+          optListener(currentSlice, currentSlice);
         }
-      };
+      }
 
-      return origSubscribe(listenerWrapper);
-    }) as StoreSubscribeWithSelector<S>['subscribe'];
+      return origSubscribe(listener);
+    }) as any;
 
-    return fn(set, get, api);
+    const initialState = fn(set, get, api);
+
+    return initialState;
   };
 
 export const subscribeWithSelector =

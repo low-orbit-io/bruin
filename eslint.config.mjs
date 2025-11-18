@@ -83,10 +83,7 @@ export default defineConfig(
           pathGroupsExcludedImportTypes: ['builtin'],
         },
       ],
-      'no-multiple-empty-lines': [
-        'error',
-        { max: 1, maxEOF: 0, maxBOF: 0 },
-      ],
+      'no-multiple-empty-lines': ['error', { max: 1, maxEOF: 0, maxBOF: 0 }],
       'padded-blocks': ['error', 'never'],
       semi: ['error', 'always'],
       '@typescript-eslint/no-explicit-any': 'off',
