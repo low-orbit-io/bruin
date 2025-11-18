@@ -1,2 +1,2 @@
-export * from './react/shallow';
+export { useShallow } from './react/shallow';
 
