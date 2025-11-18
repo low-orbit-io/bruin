@@ -2,12 +2,56 @@ import { enableMapSet, produce } from 'immer';
 
 enableMapSet();
 
+type StoreTransaction<T> = (
+  fn: () => void,
+  options?: { name?: string; skipHistory?: boolean },
+) => void;
+
+type StoreSetState<T> = (
+  partial: T | Partial<T> | ((state: T) => T | Partial<T>),
+  replace?: boolean,
+  options?: { skipHistory?: boolean },
+) => void;
+
+type Get<T, K, F> = K extends keyof T ? T[K] : F;
+
+export interface StoreMutators<S, A> {}
+
+export type StoreMutatorIdentifier = keyof StoreMutators<unknown, unknown>;
+
+export type Mutate<
+  S,
+  Ms extends [StoreMutatorIdentifier, unknown][],
+> = number extends Ms['length']
+  ? S
+  : Ms extends []
+    ? S
+    : Ms extends [[infer Mi, infer Mp], ...infer Rest]
+      ? Mutate<
+          StoreMutators<S, Mp>[Mi & StoreMutatorIdentifier],
+          Rest extends [StoreMutatorIdentifier, unknown][] ? Rest : []
+        >
+      : S;
+
+type StateCreatorSet<
+  T,
+  Mps extends [StoreMutatorIdentifier, unknown][],
+> = Get<Mutate<StoreApi<T>, Mps>, 'setState', never> &
+  SetStateWithTransaction<T>;
+
+export type StateCreator<
+  T,
+  Mps extends [StoreMutatorIdentifier, unknown][] = [],
+  Mcs extends [StoreMutatorIdentifier, unknown][] = [],
+  U = T,
+> = ((set: StateCreatorSet<T, Mps>, get: Get<
+  Mutate<StoreApi<T>, Mps>,
+  'getState',
+  never
+>, api: Mutate<StoreApi<T>, Mps>) => U) & { $$storeMutators?: Mcs };
+
 export type StoreApi<T> = {
-  setState: (
-    partial: T | Partial<T> | ((state: T) => T | Partial<T>),
-    replace?: boolean,
-    options?: { skipHistory?: boolean },
-  ) => void;
+  setState: StoreSetState<T>;
   getState: () => T;
   getInitialState: () => T;
   subscribe: (
@@ -18,32 +62,25 @@ export type StoreApi<T> = {
   redo: () => void;
   canUndo: () => boolean;
   canRedo: () => boolean;
-  transaction: (
-    fn: () => void,
-    options?: { name?: string; skipHistory?: boolean },
-  ) => void;
+  transaction: StoreTransaction<T>;
   getHistory: () => any[];
   restoreHistory?: (states: T[], index: number) => void;
   clearHistory?: () => void;
 };
 
-export type SetStateWithTransaction<T> = StoreApi<T>['setState'] & {
-  transaction: StoreApi<T>['transaction'];
+export type SetStateWithTransaction<T> = StoreSetState<T> & {
+  transaction: StoreTransaction<T>;
 };
 
-export type StateCreator<
-  T,
-  _Mps extends [StoreMutatorIdentifier, unknown][] = [],
-  _Mcs extends [StoreMutatorIdentifier, unknown][] = [],
-> = (
-  set: SetStateWithTransaction<T>,
-  get: StoreApi<T>['getState'],
-  api: StoreApi<T>,
-) => T;
-
-type StoreMutatorIdentifier = string;
-
 export type ExtractState<S> = S extends { getState: () => infer T } ? T : never;
+
+type ExtractStateCreatorMutators<
+  SC,
+> = SC extends { $$storeMutators?: infer Mutators }
+  ? Mutators extends [StoreMutatorIdentifier, unknown][]
+    ? Mutators
+    : []
+  : [];
 
 type HistoryEntry<T> = {
   state: T;
@@ -57,16 +94,34 @@ type CreateStoreOptions = {
   debounce?: number;
 };
 
-export const createStore = <T>(
-  initializer:
-    | ((
-        set: StoreApi<T>['setState'],
-        get: StoreApi<T>['getState'],
-        api: StoreApi<T>,
-      ) => T)
-    | StateCreator<T>,
+export function createStore<
+  TCreator extends StateCreator<any, [], any>,
+>(
+  initializer: TCreator,
   options?: CreateStoreOptions,
-): StoreApi<T> => {
+): Mutate<
+  StoreApi<ReturnType<TCreator>>,
+  ExtractStateCreatorMutators<TCreator>
+>;
+export function createStore<
+  T,
+  TCreator extends StateCreator<T, [], any> = StateCreator<T, [], any>,
+>(
+  initializer: TCreator,
+  options?: CreateStoreOptions,
+): Mutate<StoreApi<T>, ExtractStateCreatorMutators<TCreator>>;
+export function createStore<
+  TCreator extends StateCreator<any, [], any>,
+>(
+  initializer: TCreator,
+  options?: CreateStoreOptions,
+): Mutate<
+  StoreApi<ReturnType<TCreator>>,
+  ExtractStateCreatorMutators<TCreator>
+> {
+  type T = ReturnType<TCreator>;
+  type Mos = ExtractStateCreatorMutators<TCreator>;
+  const initializerTyped = initializer as StateCreator<T, [], Mos>;
   let state: T;
   let originalInitialResult: T | null = null;
   let history: HistoryEntry<T>[] = [];
@@ -269,7 +324,10 @@ export const createStore = <T>(
 
   const api: StoreApi<T> = {
     setState: (
-      partial,
+      partial:
+        | T
+        | Partial<T>
+        | ((state: T) => T | Partial<T>),
       replace = false,
       setOptions?: { skipHistory?: boolean },
     ) => {
@@ -292,8 +350,8 @@ export const createStore = <T>(
           state = partial as T;
         }
       } else if (typeof partial === 'function') {
-        state = produce(state, (draft) => {
-          const updates = (partial as (state: T) => T | Partial<T>)(draft as T);
+        state = produce(state, (draft: T) => {
+          const updates = (partial as (state: T) => T | Partial<T>)(draft);
 
           if (updates && updates !== draft) {
             if (replace || !isImmerable(updates)) {
@@ -302,7 +360,7 @@ export const createStore = <T>(
               Object.assign(draft as any, updates);
             }
           }
-        });
+        }) as T;
         state = applyGetters(state);
       } else if (!isImmerable(partial)) {
         state = partial as T;
@@ -341,7 +399,7 @@ export const createStore = <T>(
         if (isSpread) {
           state = applyGetters({ ...partial } as T);
         } else {
-          const newState = produce(state, (draft) => {
+          const newState = produce(state, (draft: T) => {
             if (isImmerable(partial)) {
               for (const key in partial as object) {
                 if (
@@ -352,7 +410,7 @@ export const createStore = <T>(
                 }
               }
             }
-          });
+          }) as T;
 
           if (
             contentMatches &&
@@ -621,7 +679,11 @@ export const createStore = <T>(
   }) as SetStateWithTransaction<T>;
 
   const tempState = {} as T;
-  const initialResult = initializer(setStateWithTransaction, api.getState, api);
+  const initialResult = initializerTyped(
+    setStateWithTransaction as StateCreatorSet<T, []>,
+    api.getState as Get<Mutate<StoreApi<T>, []>, 'getState', never>,
+    api as Mutate<StoreApi<T>, []>,
+  );
 
   originalInitialResult = initialResult;
 
@@ -660,5 +722,5 @@ export const createStore = <T>(
     historyIndex = 0;
   }
 
-  return api;
-};
+  return api as Mutate<StoreApi<T>, Mos>;
+}

@@ -1,11 +1,18 @@
 import React from 'react';
 import { createStore as createVanillaStore } from './vanilla';
-import type { ExtractState, StateCreator, StoreApi } from './vanilla';
+import type {
+  ExtractState,
+  Mutate,
+  StateCreator,
+  StoreApi,
+  StoreMutatorIdentifier,
+} from './vanilla';
 
-type ReadonlyStoreApi<T> = Pick<
-  StoreApi<T>,
-  'getState' | 'getInitialState' | 'subscribe'
->;
+type ReadonlyStoreApi<T> = {
+  getState: StoreApi<T>['getState'];
+  getInitialState: StoreApi<T>['getInitialState'];
+  subscribe: (...args: any[]) => () => void;
+};
 
 export type UseBoundStore<S extends ReadonlyStoreApi<unknown>> = {
   (): ExtractState<S>;
@@ -36,21 +43,31 @@ export function useStore<TState, StateSlice>(
   return slice;
 }
 
-const createImpl = <T>(createState: StateCreator<T>) => {
+const createImpl = <
+  T,
+  Mcs extends [StoreMutatorIdentifier, unknown][] = [],
+>(
+  createState: StateCreator<T, [], Mcs>,
+) => {
   const api = createVanillaStore(createState);
 
   const useBoundStore: any = (selector?: any) => useStore(api, selector);
 
   Object.assign(useBoundStore, api);
 
-  return useBoundStore;
+  return useBoundStore as UseBoundStore<Mutate<StoreApi<T>, Mcs>>;
 };
 
-export const create = <T>(
-  createState: StateCreator<T>,
-): UseBoundStore<StoreApi<T>> => {
-  return createImpl(createState);
-};
+export function create<
+  T,
+  Mcs extends [StoreMutatorIdentifier, unknown][] = [],
+>(createState: StateCreator<T, [], Mcs>): UseBoundStore<Mutate<StoreApi<T>, Mcs>>;
+export function create<
+  T,
+  Mcs extends [StoreMutatorIdentifier, unknown][] = [],
+>(createState: StateCreator<T, [], Mcs>) {
+  return createImpl<T, Mcs>(createState);
+}
 
 export { createStore } from './vanilla';
 export type { StoreApi } from './vanilla';

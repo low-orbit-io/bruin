@@ -2,6 +2,7 @@ import type {
   SetStateWithTransaction,
   StateCreator,
   StoreApi,
+  StoreMutatorIdentifier,
 } from '../vanilla';
 
 type Action = string | { type: string; [key: string]: any };
@@ -57,23 +58,9 @@ type StoreDevtools = {
   };
 };
 
-export type NamedSet<T> = {
-  (
-    partial: T | Partial<T> | ((state: T) => T | Partial<T>),
-    replace?: boolean,
-    options?: { skipHistory?: boolean },
-  ): void;
-  (
-    partial: T | Partial<T> | ((state: T) => T | Partial<T>),
-    replace: boolean,
-    actionName: string | Action,
-  ): void;
-  transaction: StoreApi<T>['transaction'];
-};
+export type NamedSet<T> = WithDevtools<StoreApi<T>>['setState'];
 
 export const NamedSet = null as any;
-
-type StoreMutatorIdentifier = string;
 
 declare module '../vanilla' {
   interface StoreMutators<S, A> {
@@ -86,7 +73,11 @@ type Devtools = <
   Mps extends [StoreMutatorIdentifier, unknown][] = [],
   Mcs extends [StoreMutatorIdentifier, unknown][] = [],
 >(
-  initializer: (set: NamedSet<T>, get: () => T, api: any) => T,
+  initializer: StateCreator<
+    T,
+    [...Mps, ['bruin/devtools', never]],
+    Mcs
+  >,
   devtoolsOptions?: DevtoolsOptions,
 ) => StateCreator<T, Mps, [['bruin/devtools', never], ...Mcs]>;
 
@@ -142,16 +133,15 @@ registerCleanupHook();
 
 let lastExtensionRef: any;
 
-type DevtoolsImpl = <
+const devtoolsImpl = <
   T,
   Mps extends [StoreMutatorIdentifier, unknown][] = [],
   Mcs extends [StoreMutatorIdentifier, unknown][] = [],
 >(
-  initializer: (set: NamedSet<T>, get: () => T, api: any) => T,
+  fn: StateCreator<T, [...Mps, ['bruin/devtools', never]], Mcs>,
   devtoolsOptions?: DevtoolsOptions,
-) => StateCreator<T, Mps, [['bruin/devtools', never], ...Mcs]>;
-
-const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
+): StateCreator<T, Mps, [['bruin/devtools', never], ...Mcs]> =>
+(set, get, api) => {
   const {
     enabled = true,
     anonymousActionType,
@@ -160,9 +150,18 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
   } = devtoolsOptions ?? {};
 
   type S = ReturnType<typeof fn>;
+  const runInitializer = fn as unknown as (
+    set: NamedSet<S>,
+    get: () => S,
+    api: any,
+  ) => S;
 
   if (!enabled) {
-    return fn(set as any, get, api);
+    return runInitializer(
+      set as unknown as NamedSet<S>,
+      get as any,
+      api,
+    );
   }
 
   const extension =
@@ -186,7 +185,11 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
       );
     }
 
-    return fn(set as any, get, api);
+    return runInitializer(
+      set as unknown as NamedSet<S>,
+      get as any,
+      api,
+    );
   }
 
   const connectionName = options.name || 'Store';
@@ -205,7 +208,11 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
         e,
       );
 
-      return fn(set as any, get, api);
+      return runInitializer(
+        set as unknown as NamedSet<S>,
+        get as any,
+        api,
+      );
     }
 
     if (storeId && connection) {
@@ -356,7 +363,11 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
   };
 
   if (!connection) {
-    return fn(set as any, get, api);
+    return runInitializer(
+      set as unknown as NamedSet<S>,
+      get as any,
+      api,
+    );
   }
 
   const extractStoreState = (state: any): any => {
@@ -487,7 +498,11 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
     }
   };
 
-  const initialState = fn(setStateWithDevtools, get, api);
+  const initialState = runInitializer(
+    setStateWithDevtools,
+    get as any,
+    api,
+  );
 
   let unsubscribe: (() => void) | undefined;
 

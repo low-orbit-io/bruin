@@ -1,12 +1,27 @@
 import { useSyncExternalStoreWithSelector } from 'use-sync-external-store/with-selector';
 import type { UseBoundStore } from '../react';
-import type { ExtractState, StateCreator, StoreApi } from '../vanilla';
+import type {
+  ExtractState,
+  Mutate,
+  StateCreator,
+  StoreApi,
+  StoreMutatorIdentifier,
+} from '../vanilla';
 import { createStore as createVanillaStore } from '../vanilla';
 
-type ReadonlyStoreApi<T> = Pick<
-  StoreApi<T>,
-  'getState' | 'getInitialState' | 'subscribe'
->;
+type ReadonlyStoreApi<T> = {
+  getState: StoreApi<T>['getState'];
+  getInitialState: StoreApi<T>['getInitialState'];
+  subscribe: (...args: any[]) => () => void;
+};
+
+type UseBoundStoreWithEqualityFn<S extends ReadonlyStoreApi<unknown>> = {
+  (): ExtractState<S>;
+  <U>(
+    selector: (state: ExtractState<S>) => U,
+    equalityFn?: (a: U, b: U) => boolean,
+  ): U;
+} & S;
 
 const identity = <T>(arg: T): T => arg;
 
@@ -40,7 +55,12 @@ export function useStoreWithEqualityFn<TState, StateSlice>(
   return slice;
 }
 
-const createWithEqualityFnImpl = <T>(createState: StateCreator<T>) => {
+const createWithEqualityFnImpl = <
+  T,
+  Mcs extends [StoreMutatorIdentifier, unknown][] = [],
+>(
+  createState: StateCreator<T, [], Mcs>,
+) => {
   const api = createVanillaStore(createState);
 
   const useBoundStore: any = (selector?: any, equalityFn?: any) =>
@@ -48,11 +68,20 @@ const createWithEqualityFnImpl = <T>(createState: StateCreator<T>) => {
 
   Object.assign(useBoundStore, api);
 
-  return useBoundStore;
+  return useBoundStore as UseBoundStoreWithEqualityFn<
+    Mutate<StoreApi<T>, Mcs>
+  >;
 };
 
-export const createWithEqualityFn = <T>(
-  createState: StateCreator<T>,
-): UseBoundStore<StoreApi<T>> => {
-  return createWithEqualityFnImpl(createState);
-};
+export function createWithEqualityFn<
+  T,
+  Mcs extends [StoreMutatorIdentifier, unknown][] = [],
+>(
+  createState: StateCreator<T, [], Mcs>,
+): UseBoundStoreWithEqualityFn<Mutate<StoreApi<T>, Mcs>>;
+export function createWithEqualityFn<
+  T,
+  Mcs extends [StoreMutatorIdentifier, unknown][] = [],
+>(createState: StateCreator<T, [], Mcs>) {
+  return createWithEqualityFnImpl<T, Mcs>(createState);
+}

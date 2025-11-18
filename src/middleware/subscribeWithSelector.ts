@@ -1,6 +1,7 @@
-import type { StateCreator } from '../vanilla';
-
-type StoreMutatorIdentifier = string;
+import type {
+  StateCreator,
+  StoreMutatorIdentifier,
+} from '../vanilla';
 
 type SubscribeWithSelector = <
   T,

@@ -2,6 +2,7 @@ import type {
   SetStateWithTransaction,
   StateCreator,
   StoreApi,
+  StoreMutatorIdentifier,
 } from '../vanilla';
 
 export interface StateStorage<R = unknown> {
@@ -86,15 +87,20 @@ declare module '../vanilla' {
   }
 }
 
-type Persist = <T, U = T>(
-  initializer: StateCreator<T>,
-  options: PersistOptions<T, U>,
-) => StateCreator<T>;
+type Persist = <
+  T,
+  PersistedState = T,
+  Mps extends [StoreMutatorIdentifier, unknown][] = [],
+  Mcs extends [StoreMutatorIdentifier, unknown][] = [],
+>(
+  initializer: StateCreator<T, Mps, Mcs>,
+  options: PersistOptions<T, PersistedState>,
+) => StateCreator<T, Mps, [['bruin/persist', PersistedState], ...Mcs]>;
 
 type PersistImpl = <T>(
-  storeInitializer: StateCreator<T>,
+  storeInitializer: StateCreator<T, [], []>,
   options: PersistOptions<T, T>,
-) => StateCreator<T>;
+) => StateCreator<T, [], []>;
 
 type Thenable<Value> = {
   then<V>(
@@ -242,11 +248,14 @@ const persistImpl: PersistImpl =
 
     const savedSetState = api.setState;
 
-    api.setState = (state, replace) => {
-      savedSetState(state, replace as any);
+    api.setState = Object.assign(
+      (state: Parameters<typeof savedSetState>[0], replace?: boolean) => {
+        savedSetState(state, replace as any);
 
-      return setItem();
-    };
+        return setItem();
+      },
+      savedSetState,
+    ) as SetStateWithTransaction<S>;
 
     const wrappedSet = Object.assign((...args: Parameters<typeof set>) => {
       set(...args);
