@@ -1,21 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
+import React, { useEffect, useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { create } from '../../src/react';
-import type { StoreApi } from '../../src/vanilla';
-
-/**
- * React Integration Tests
- *
- * These tests verify that Bruin works correctly in React applications:
- * - create() hook factory creates a usable React hook
- * - Selectors work and optimize re-renders
- * - Store API methods are accessible
- * - Error boundaries work correctly
- * - Multiple subscribers work independently
- * - Non-object state is supported
- * - Custom equality functions work
- */
 
 describe('React Integration - Basic', () => {
   afterEach(() => {

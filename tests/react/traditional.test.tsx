@@ -1,18 +1,6 @@
-import { StrictMode } from 'react';
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
+import { StrictMode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-
-/**
- * Traditional React Integration Tests (React <18)
- *
- * These tests verify that Bruin works with React versions prior to 18
- * using the use-sync-external-store package shim.
- *
- * Features tested:
- * - createWithEqualityFn() for custom equality
- * - useStoreWithEqualityFn() for vanilla stores with custom equality
- * - Backward compatibility with older React versions
- */
 
 describe('Traditional React Integration', () => {
   afterEach(() => {

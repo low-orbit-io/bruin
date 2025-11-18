@@ -1,19 +1,6 @@
+import { act, cleanup, render } from '@testing-library/react';
 import { StrictMode } from 'react';
-import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-
-/**
- * React useShallow Hook Tests
- *
- * The useShallow hook combines shallow equality comparison with React hooks
- * to prevent unnecessary re-renders when selector results are shallow-equal.
- *
- * Key features tested:
- * - Prevents re-renders when shallow-equal
- * - Works with objects, arrays, Sets, Maps
- * - Memoizes selector results
- * - Integrates with Bruin stores
- */
 
 describe('React useShallow Hook', () => {
   afterEach(() => {

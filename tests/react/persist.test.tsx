@@ -1,22 +1,6 @@
-import { StrictMode } from 'react';
 import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
+import { StrictMode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-
-/**
- * Persist Middleware Tests
- *
- * Tests the persist middleware which synchronizes store state with storage.
- *
- * Key features tested:
- * - Standard Zustand persist behavior (1:1 match)
- * - State persistence and rehydration (sync and async)
- * - Version migration
- * - Custom merge strategies
- * - Partial state persistence (partialize)
- * - Skip hydration option
- * - Persist API methods (clearStorage, rehydrate, hasHydrated, etc.)
- * - NEW: persistHistory option for undo/redo persistence
- */
 
 const createPersistentStore = (initialValue: string | null) => {
   let state = initialValue;
