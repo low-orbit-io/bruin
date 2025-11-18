@@ -335,7 +335,7 @@ describe('Vanilla devtools Middleware', () => {
       devtools(
         (set) => ({
           count: 0,
-          inc: () => set((s) => ({ count: s.count + 1 })),
+          inc: () => set((s: { count: number }) => ({ count: s.count + 1 })),
         }),
         {
           name: 'Store',

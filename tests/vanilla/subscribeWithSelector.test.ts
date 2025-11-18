@@ -349,20 +349,25 @@ describe('Vanilla subscribeWithSelector Middleware', () => {
     const store = createStore(
       subscribeWithSelector((set) => ({
         count: 0,
-        inc: () => set((s) => ({ count: s.count + 1 })),
+        inc: () => set((s: { count: number }) => ({ count: s.count + 1 })),
       })),
     );
 
     const listener = vi.fn();
-    store.subscribe(
-      (s: { count: number; inc: () => void }) => s.count,
+    type StoreState = { count: number; inc: () => void };
+    (store.subscribe as <U>(
+      selector: (state: StoreState) => U,
+      listener: (selectedState: U, previousSelectedState: U) => void,
+      options?: { equalityFn?: (a: U, b: U) => boolean; fireImmediately?: boolean },
+    ) => () => void)(
+      (s: StoreState) => s.count,
       listener,
     );
 
-    store.getState().inc();
+    (store.getState() as StoreState).inc();
     expect(listener).toHaveBeenCalledWith(1, 0);
 
-    store.getState().inc();
+    (store.getState() as StoreState).inc();
     expect(listener).toHaveBeenCalledWith(2, 1);
   });
 
