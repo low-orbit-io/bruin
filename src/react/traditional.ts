@@ -67,7 +67,10 @@ type CreateWithEqualityFn = {
   <TCreator extends StateCreator<any, [], any>>(
     createState: TCreator,
   ): UseBoundStoreWithEqualityFn<
-    Mutate<StoreApi<ReturnType<TCreator>>, ExtractStateCreatorMutators<TCreator>>
+    Mutate<
+      StoreApi<ReturnType<TCreator>>,
+      ExtractStateCreatorMutators<TCreator>
+    >
   >;
   <T, TCreator extends StateCreator<T, [], any> = StateCreator<T, [], any>>(
     createState: TCreator,
@@ -79,6 +82,8 @@ type CreateWithEqualityFn = {
 export const createWithEqualityFn = (<
   T,
   Mcs extends [StoreMutatorIdentifier, unknown][] = [],
->(createState: StateCreator<T, [], Mcs>) => {
+>(
+  createState: StateCreator<T, [], Mcs>,
+) => {
   return createWithEqualityFnImpl<T, Mcs>(createState);
 }) as CreateWithEqualityFn;
