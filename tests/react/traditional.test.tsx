@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
-import { act, fireEvent, render } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { act, cleanup, fireEvent, render } from '@testing-library/react'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 /**
  * Traditional React Integration Tests (React <18)
@@ -15,6 +15,11 @@ import { describe, expect, it, vi } from 'vitest'
  */
 
 describe('Traditional React Integration', () => {
+  afterEach(() => {
+    cleanup()
+    vi.restoreAllMocks()
+  })
+
   it('creates a store with createWithEqualityFn', async () => {
     const { createWithEqualityFn } = await import('../../src/react/traditional')
 

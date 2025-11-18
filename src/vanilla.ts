@@ -25,6 +25,14 @@ export type StoreApi<T> = {
   getHistory: () => any[];
 };
 
+export type StateCreator<T> = (
+  set: StoreApi<T>['setState'],
+  get: StoreApi<T>['getState'],
+  api: StoreApi<T>,
+) => T;
+
+export type ExtractState<S> = S extends { getState: () => infer T } ? T : never;
+
 type HistoryEntry<T> = {
   state: T;
   timestamp: number;
@@ -69,7 +77,6 @@ export const createStore = <T>(
   let debouncePendingPrevState: T | null = null;
   let debouncePendingSkipHistory: boolean | null = null;
 
-  // Store getters from initial state
   const stateGetters: PropertyDescriptorMap = {};
 
   const isImmerable = (value: any): boolean => {
@@ -99,25 +106,22 @@ export const createStore = <T>(
     return clone;
   };
 
-  // Helper to reapply getters to state after updates
   const applyGetters = (newState: T): T => {
     if (!isImmerable(newState) || Object.keys(stateGetters).length === 0) {
       return newState;
     }
 
-    // Create new object with getters applied
     const stateWithGetters = Object.create(Object.getPrototypeOf(newState));
 
-    // Copy all non-getter properties
     for (const key in newState) {
       if (!stateGetters[key]) {
         stateWithGetters[key] = newState[key];
       }
     }
 
-    // Apply getters
     for (const key in stateGetters) {
       const descriptor = stateGetters[key];
+
       if (descriptor) {
         Object.defineProperty(stateWithGetters, key, descriptor);
       }
@@ -147,6 +151,7 @@ export const createStore = <T>(
                 Object.keys(prevObj[key]).length))
         ) {
           changedPaths.add(pathStr);
+
           if (isImmerable(obj[key]) && isImmerable(prevObj[key])) {
             checkPaths(obj[key], prevObj[key], newPath);
           }
@@ -155,6 +160,7 @@ export const createStore = <T>(
     };
 
     checkPaths(newState, prevState);
+
     return changedPaths;
   };
 
@@ -255,7 +261,6 @@ export const createStore = <T>(
     ) => {
       const prevState = state;
 
-      // Early return if setting the exact same object
       if (partial === prevState) {
         return;
       }
@@ -291,7 +296,9 @@ export const createStore = <T>(
         if (partial === prevState) {
           return;
         }
+
         let contentMatches = true;
+
         if (isImmerable(partial)) {
           for (const key in partial as object) {
             if (
@@ -303,6 +310,7 @@ export const createStore = <T>(
             }
           }
         }
+
         const hasSamePrototype =
           Object.getPrototypeOf(partial) === Object.getPrototypeOf(prevState);
         const isOriginalObject = partial === originalInitialResult;
@@ -331,6 +339,7 @@ export const createStore = <T>(
               }
             }
           });
+
           if (
             contentMatches &&
             (hasSamePrototype || isOriginalObject) &&
@@ -338,6 +347,7 @@ export const createStore = <T>(
           ) {
             return;
           }
+
           if (newState !== state) {
             state = applyGetters(newState);
           } else {
@@ -392,10 +402,9 @@ export const createStore = <T>(
               flushDebouncedHistory();
             }, debounceMs);
           } else {
-            // skipHistory: update all history entries with the changes so they persist through undo/redo
             if (setOptions?.skipHistory) {
-              // Get the keys that changed
               const changedKeys = new Set<string>();
+
               if (isImmerable(state) && isImmerable(prevState)) {
                 for (const key in state) {
                   if ((state as any)[key] !== (prevState as any)[key]) {
@@ -404,23 +413,28 @@ export const createStore = <T>(
                 }
               }
 
-              // Update all history entries with the changed values
               for (let i = 0; i < history.length; i++) {
                 const historyEntry = history[i];
+
                 if (historyEntry) {
                   const historyState = historyEntry.state;
+
                   if (isImmerable(historyState)) {
                     const updatedState = { ...historyState };
+
                     for (const key of changedKeys) {
                       (updatedState as any)[key] = (state as any)[key];
                     }
+
                     const updatedEntry: HistoryEntry<T> = {
                       state: updatedState as T,
                       timestamp: historyEntry.timestamp,
                     };
+
                     if (historyEntry.name !== undefined) {
                       updatedEntry.name = historyEntry.name;
                     }
+
                     history[i] = updatedEntry;
                   }
                 }
@@ -464,9 +478,11 @@ export const createStore = <T>(
 
       if (historyIndex > 0) {
         const prevState = state;
+
         historyIndex--;
 
         const historyEntry = history[historyIndex];
+
         if (historyEntry) {
           state = restoreHistoryState(historyEntry.state, state);
           notifyListeners(state, prevState);
@@ -480,9 +496,11 @@ export const createStore = <T>(
 
       if (historyIndex < history.length - 1) {
         const prevState = state;
+
         historyIndex++;
 
         const historyEntry = history[historyIndex];
+
         if (historyEntry) {
           state = restoreHistoryState(historyEntry.state, state);
           notifyListeners(state, prevState);
@@ -521,12 +539,13 @@ export const createStore = <T>(
               state: cloneStateForHistory(state),
               timestamp: Date.now(),
             };
+
             if (txOptions?.name !== undefined) {
               entry.name = txOptions.name;
             }
+
             history.push(entry);
 
-            // Keep maxHistorySize + 1 entries to allow maxHistorySize undo operations
             if (history.length > maxHistorySize + 1) {
               history = history.slice(-(maxHistorySize + 1));
             }
@@ -549,17 +568,17 @@ export const createStore = <T>(
       }
     },
     getHistory: () => {
-      // Return only the most recent maxHistorySize entries for external consumption
-      // (internally we keep one extra for undo operations)
       if (history.length > maxHistorySize) {
         return history.slice(-maxHistorySize);
       }
+
       return history;
     },
   };
 
   const tempState = {} as T;
   const initialResult = initializer(api.setState, api.getState, api);
+
   originalInitialResult = initialResult;
 
   if (isImmerable(initialResult)) {
@@ -571,7 +590,6 @@ export const createStore = <T>(
       const descriptor = descriptors[key];
 
       if (descriptor && (descriptor.get || descriptor.set)) {
-        // Store getters for later re-application
         stateGetters[key] = descriptor;
 
         Object.defineProperty(state, key, descriptor);

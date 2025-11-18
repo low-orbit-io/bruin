@@ -44,7 +44,21 @@ export default defineConfig(
       'import/namespace': 'off',
       'import/no-named-as-default-member': 'off',
       'import/no-duplicates': 'error',
-      'import/extensions': ['error', 'always', { ignorePackages: true }],
+      'import/extensions': [
+        'error',
+        'always',
+        {
+          ignorePackages: true,
+          pattern: {
+            js: 'never',
+            jsx: 'never',
+            ts: 'never',
+            tsx: 'never',
+            cjs: 'never',
+            mjs: 'never',
+          },
+        },
+      ],
       'import/order': [
         'error',
         {

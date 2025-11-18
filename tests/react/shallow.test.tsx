@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
-import { act, fireEvent, render } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { act, cleanup, fireEvent, render } from '@testing-library/react'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 /**
  * React useShallow Hook Tests
@@ -16,6 +16,11 @@ import { describe, expect, it, vi } from 'vitest'
  */
 
 describe('React useShallow Hook', () => {
+  afterEach(() => {
+    cleanup()
+    vi.restoreAllMocks()
+  })
+
   it('should be defined', async () => {
     const { useShallow } = await import('../../src/react/shallow')
     expect(useShallow).toBeDefined()

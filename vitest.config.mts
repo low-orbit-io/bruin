@@ -13,7 +13,7 @@ export default defineConfig({
     // Keeping globals to true triggers React Testing Library's auto cleanup
     // https://vitest.dev/guide/migration.html
     globals: true,
-    environment: 'jsdom',
+    environment: 'happy-dom',
     dir: 'tests',
     reporters: process.env.GITHUB_ACTIONS
       ? ['default', 'github-actions']
@@ -48,9 +48,8 @@ export default defineConfig({
         },
         test: {
           name: 'react',
-          include: ['tests/**'],
-          exclude: ['tests/vanilla/**', 'tests/setup.ts'],
-          environment: 'jsdom',
+          include: ['tests/react/**'],
+          environment: 'happy-dom',
         },
       },
     ],
