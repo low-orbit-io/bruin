@@ -1,7 +1,5 @@
 {
   "packages": ["dist"],
-  "sandboxes": [
-    "new"
-  ],
+  "sandboxes": ["new"],
   "node": "18"
 }
