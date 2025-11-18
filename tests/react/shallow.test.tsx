@@ -412,7 +412,7 @@ describe('React useShallow Hook', () => {
     const { create } = await import('../../src/react');
     const { useShallow } = await import('../../src/react/shallow');
 
-    const useStore = create(() => ({
+    const useStore = create<{ count: number; text: string }>()(() => ({
       count: 0,
       text: 'hello',
     }));
@@ -454,7 +454,12 @@ describe('React useShallow Hook', () => {
     const { create } = await import('../../src/react');
     const { useShallow } = await import('../../src/react/shallow');
 
-    const useStore = create(() => ({
+    const useStore = create<{
+      data: {
+        users: Array<{ id: number; name: string }>;
+        settings: { theme: string };
+      };
+    }>()(() => ({
       data: {
         users: [
           { id: 1, name: 'John' },
@@ -520,7 +525,7 @@ describe('React useShallow Hook', () => {
     const { create } = await import('../../src/react');
     const { useShallow } = await import('../../src/react/shallow');
 
-    const useStore = create(() => ({
+    const useStore = create<{ items: number[]; config: Record<string, any> }>()(() => ({
       items: [] as number[],
       config: {} as Record<string, any>,
     }));

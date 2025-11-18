@@ -152,7 +152,7 @@ describe('Vanilla devtools Middleware', () => {
     const store = createStore<{ count: number; inc: () => void }>(
       devtools((set) => ({
         count: 0,
-        inc: () => set((s) => ({ count: s.count + 1 })),
+        inc: () => set((s: { count: number }) => ({ count: s.count + 1 })),
       })),
     );
 
@@ -178,7 +178,7 @@ describe('Vanilla devtools Middleware', () => {
     const store = createStore<{ count: number; inc: () => void }>(
       devtools((set) => ({
         count: 0,
-        inc: () => set((s) => ({ count: s.count + 1 })),
+        inc: () => set((s: { count: number }) => ({ count: s.count + 1 })),
       })),
     );
 
@@ -228,7 +228,7 @@ describe('Vanilla devtools Middleware', () => {
     const store = createStore<{ count: number; inc: () => void }>(
       devtools((set) => ({
         count: 0,
-        inc: () => set((s) => ({ count: s.count + 1 })),
+        inc: () => set((s: { count: number }) => ({ count: s.count + 1 })),
       })),
     );
 
@@ -251,7 +251,7 @@ describe('Vanilla devtools Middleware', () => {
     const { create } = await import('../../src/react');
     const { devtools } = await import('../../src/middleware/devtools');
 
-    const useStore = create<{ count: number; inc: () => void }>(
+    const useStore = create<{ count: number; inc: () => void }>()(
       devtools((set) => ({ count: 0, inc: () => set({ count: 1 }) }), {
         name: 'ReactStore',
       }),
@@ -378,7 +378,7 @@ describe('Vanilla devtools Middleware', () => {
     const store = createStore<{ count: number; inc: () => void }>(
       devtools((set) => ({
         count: 0,
-        inc: () => set((s) => ({ count: s.count + 1 })),
+        inc: () => set((s: { count: number }) => ({ count: s.count + 1 })),
       })),
     );
 
@@ -405,7 +405,7 @@ describe('Vanilla devtools Middleware', () => {
     const store = createStore<{ count: number; inc: () => void }>(
       devtools((set) => ({
         count: 0,
-        inc: () => set((s) => ({ count: s.count + 1 })),
+        inc: () => set((s: { count: number }) => ({ count: s.count + 1 })),
       })),
     );
 
