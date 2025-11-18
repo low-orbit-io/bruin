@@ -31,7 +31,7 @@ You can see what it will look like when you're finished here:
 
 ```jsx
 import { create } from 'bruin'
-import { combine } from 'zustand/middleware'
+import { combine } from 'bruin/middleware'
 
 const useGameStore = create(
   combine(
@@ -312,7 +312,7 @@ variable named squares that defaults to an array of 9 nulls corresponding to the
 
 ```jsx
 import { create } from 'bruin'
-import { combine } from 'zustand/middleware'
+import { combine } from 'bruin/middleware'
 
 const useGameStore = create(
   combine({ squares: Array(9).fill(null) }, (set) => {
@@ -617,7 +617,7 @@ React and Bruin too. So you are the real winner here. Here is what the code shou
 
 ```jsx
 import { create } from 'bruin'
-import { combine } from 'zustand/middleware'
+import { combine } from 'bruin/middleware'
 
 const useGameStore = create(
   combine({ squares: Array(9).fill(null), xIsNext: true }, (set) => {
@@ -1011,7 +1011,7 @@ working, just as it was before the refactor. Here is what the code should look l
 
 ```jsx
 import { create } from 'bruin'
-import { combine } from 'zustand/middleware'
+import { combine } from 'bruin/middleware'
 
 const useGameStore = create(
   combine({ history: [Array(9).fill(null)], xIsNext: true }, (set) => {

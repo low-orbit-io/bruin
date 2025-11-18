@@ -9,7 +9,7 @@ nav: 29
 granular control over when components re-render, improving performance and responsiveness.
 
 > [!IMPORTANT]
-> In order to use `useStoreWithEqualityFn` from `zustand/traditional` you need to install
+> In order to use `useStoreWithEqualityFn` from `bruin/traditional` you need to install
 > `use-sync-external-store` library due to `zustand/traditional` relies on `useSyncExternalStoreWithSelector`.
 
 ```js
@@ -131,8 +131,8 @@ Here is what the code should look like:
 
 ```tsx
 import { createStore } from 'bruin'
-import { useStoreWithEqualityFn } from 'zustand/traditional'
-import { shallow } from 'zustand/shallow'
+import { useStoreWithEqualityFn } from 'bruin/traditional'
+import { shallow } from 'bruin/shallow'
 
 type PositionStoreState = { position: { x: number; y: number } }
 
@@ -324,8 +324,8 @@ Here is what the code should look like:
 ```tsx
 import { useState } from 'react'
 import { createStore } from 'bruin'
-import { useStoreWithEqualityFn } from 'zustand/traditional'
-import { shallow } from 'zustand/shallow'
+import { useStoreWithEqualityFn } from 'bruin/traditional'
+import { shallow } from 'bruin/shallow'
 
 type CounterState = {
   count: number
@@ -550,8 +550,8 @@ Here is what the code should look like:
 ```tsx
 import { type ReactNode, useState, createContext, useContext } from 'react'
 import { createStore } from 'bruin'
-import { useStoreWithEqualityFn } from 'zustand/traditional'
-import { shallow } from 'zustand/shallow'
+import { useStoreWithEqualityFn } from 'bruin/traditional'
+import { shallow } from 'bruin/shallow'
 
 type PositionStoreState = { position: { x: number; y: number } }
 

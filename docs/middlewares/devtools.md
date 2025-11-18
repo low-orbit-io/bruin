@@ -10,7 +10,7 @@ nav: 205
 without Redux. Read more about the benefits of using [Redux DevTools for debugging](https://redux.js.org/style-guide/#use-the-redux-devtools-extension-for-debugging).
 
 > [!IMPORTANT]
-> In order to use `devtools` from `zustand/middleware` you need to install
+> In order to use `devtools` from `bruin/middleware` you need to install
 > `@redux-devtools/extension` library.
 
 ```js
@@ -35,14 +35,14 @@ const nextStateCreatorFn = devtools(stateCreatorFn, devtoolsOptions)
 ### Signature
 
 ```ts
-devtools<T>(stateCreatorFn: StateCreator<T, [], []>, devtoolsOptions?: DevtoolsOptions): StateCreator<T, [['zustand/devtools', never]], []>
+devtools<T>(stateCreatorFn: StateCreator<T, [], []>, devtoolsOptions?: DevtoolsOptions): StateCreator<T, [['bruin/devtools', never]], []>
 ```
 
 ### Mutator
 
 <!-- prettier-ignore-start -->
 ```ts
-['zustand/devtools', never]
+['bruin/devtools', never]
 ```
 <!-- prettier-ignore-end -->
 
@@ -78,7 +78,7 @@ This example shows you how you can use `Redux Devtools` to debug a store
 
 ```ts
 import { create, StateCreator } from 'bruin'
-import { devtools } from 'zustand/middleware'
+import { devtools } from 'bruin/middleware'
 
 type JungleStore = {
   bears: number
@@ -109,7 +109,7 @@ This example shows you how you can use `Redux Devtools` to debug a Slices patter
 
 ```ts
 import { create, StateCreator } from 'bruin'
-import { devtools } from 'zustand/middleware'
+import { devtools } from 'bruin/middleware'
 
 type BearSlice = {
   bears: number
@@ -125,7 +125,7 @@ type JungleStore = BearSlice & FishSlice
 
 const createBearSlice: StateCreator<
   JungleStore,
-  [['zustand/devtools', never]],
+  [['bruin/devtools', never]],
   [],
   BearSlice
 > = (set) => ({
@@ -140,7 +140,7 @@ const createBearSlice: StateCreator<
 
 const createFishSlice: StateCreator<
   JungleStore,
-  [['zustand/devtools', never]],
+  [['bruin/devtools', never]],
   [],
   FishSlice
 > = (set) => ({
@@ -167,7 +167,7 @@ You can filter out specific actions from Redux DevTools using the `actionsDenyli
 
 ```ts
 import { create } from 'bruin'
-import { devtools } from 'zustand/middleware'
+import { devtools } from 'bruin/middleware'
 
 type Store = {
   user: string | null
@@ -222,7 +222,7 @@ When a store is no longer needed, you can clean up the Redux DevTools connection
 
 ```ts
 import { create } from 'bruin'
-import { devtools } from 'zustand/middleware'
+import { devtools } from 'bruin/middleware'
 
 const useStore = create(
   devtools((set) => ({
@@ -253,7 +253,7 @@ For instance the next example doesn't have action type name:
 
 ```ts
 import { create, StateCreator } from 'bruin'
-import { devtools } from 'zustand/middleware'
+import { devtools } from 'bruin/middleware'
 
 type BearSlice = {
   bears: number
@@ -269,7 +269,7 @@ type JungleStore = BearSlice & FishSlice
 
 const createBearSlice: StateCreator<
   JungleStore,
-  [['zustand/devtools', never]],
+  [['bruin/devtools', never]],
   [],
   BearSlice
 > = (set) => ({
@@ -280,7 +280,7 @@ const createBearSlice: StateCreator<
 
 const createFishSlice: StateCreator<
   JungleStore,
-  [['zustand/devtools', never]],
+  [['bruin/devtools', never]],
   [],
   FishSlice
 > = (set) => ({
@@ -319,7 +319,7 @@ type JungleStore = BearSlice & FishSlice
 
 const createBearSlice: StateCreator<
   JungleStore,
-  [['zustand/devtools', never]],
+  [['bruin/devtools', never]],
   [],
   BearSlice
 > = (set) => ({
@@ -330,7 +330,7 @@ const createBearSlice: StateCreator<
 
 const createFishSlice: StateCreator<
   JungleStore,
-  [['zustand/devtools', never]],
+  [['bruin/devtools', never]],
   [],
   FishSlice
 > = (set) => ({

@@ -25,14 +25,14 @@ const nextStateCreatorFn = redux(reducerFn, initialState)
 ### Signature
 
 ```ts
-redux<T, A>(reducerFn: (state: T, action: A) => T, initialState: T): StateCreator<T & { dispatch: (action: A) => A }, [['zustand/redux', A]], []>
+redux<T, A>(reducerFn: (state: T, action: A) => T, initialState: T): StateCreator<T & { dispatch: (action: A) => A }, [['bruin/redux', A]], []>
 ```
 
 ### Mutator
 
 <!-- prettier-ignore-start -->
 ```ts
-['zustand/redux', A]
+['bruin/redux', A]
 ```
 <!-- prettier-ignore-end -->
 
@@ -56,8 +56,8 @@ redux<T, A>(reducerFn: (state: T, action: A) => T, initialState: T): StateCreato
 ### Updating state through actions and reducers
 
 ```ts
-import { createStore } from 'zustand/vanilla'
-import { redux } from 'zustand/middleware'
+import { createStore } from 'bruin/vanilla'
+import { redux } from 'bruin/middleware'
 
 type PersonStoreState = {
   firstName: string

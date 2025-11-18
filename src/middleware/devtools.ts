@@ -99,14 +99,13 @@ type MultiStoreConnection = {
 
 const connectionMap = new Map<string, MultiStoreConnection>();
 
-if (typeof global !== 'undefined' && (global as any).afterEach) {
-  (global as any).afterEach(() => {
-    connectionMap.clear();
-  });
-} else if (typeof globalThis !== 'undefined' && (globalThis as any).afterEach) {
-  (globalThis as any).afterEach(() => {
-    connectionMap.clear();
-  });
+if (typeof globalThis !== 'undefined') {
+  const afterEachFn = (globalThis as any).afterEach;
+  if (afterEachFn && typeof afterEachFn === 'function') {
+    afterEachFn(() => {
+      connectionMap.clear();
+    });
+  }
 }
 
 type DevtoolsImpl = <
@@ -176,6 +175,7 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
       connectionMap.set(connectionName, multiStore);
     }
   }
+
 
   let isRecording = true;
 
@@ -251,7 +251,8 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
       action = actionName;
     } else {
       const anonymousType = anonymousActionType || 'anonymous';
-      action = { type: `${prefix}${anonymousType} #${++actionCounter}` };
+      const actionType = `${prefix}${anonymousType} #${++actionCounter}`;
+      action = { type: actionType };
     }
 
     connection.send(action, getAllStoresState());
@@ -441,8 +442,10 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
       multiStore.messageHandler = messageHandler;
       multiStore.unsubscribe = connection.subscribe(messageHandler);
       (connection as any).__messageHandler = messageHandler;
+      (connection as any).__unsubscribe = multiStore.unsubscribe;
     } else {
-      (connection as any).__messageHandler = multiStore.messageHandler || messageHandler;
+      multiStore.messageHandler = messageHandler;
+      (connection as any).__messageHandler = messageHandler;
     }
 
     unsubscribe = multiStore.unsubscribe;
@@ -477,10 +480,6 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
     unsubscribe = connection.subscribe(messageHandler);
     (connection as any).__messageHandler = messageHandler;
     connection.init(initialState);
-  }
-
-  if (connection) {
-    (connection as any).__messageHandler = messageHandler;
   }
 
   const cleanup = () => {

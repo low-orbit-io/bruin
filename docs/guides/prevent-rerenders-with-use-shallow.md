@@ -45,7 +45,7 @@ We can fix that using `useShallow`!
 
 ```js
 import { create } from 'bruin'
-import { useShallow } from 'zustand/react/shallow'
+import { useShallow } from 'bruin/react/shallow'
 
 const useMeals = create(() => ({
   papaBear: 'large porridge-pot',

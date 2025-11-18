@@ -145,11 +145,11 @@ Sometimes you need more than one property. Returning an object from the selector
 However, directly destructuring properties from that object can cause unnecessary re-renders.
 To avoid this, it’s recommended to wrap the selector with `useShallow`, which prevents re-renders when the selected values remain shallowly equal.
 This is more efficient than subscribing to the whole store. TypeScript ensures you can’t accidentally misspell `bears` or `food`.
-See the [API documentation](https://zustand.docs.pmnd.rs/hooks/use-shallow) for more details on `useShallow`.
+See the [API documentation](../../hooks/use-shallow.md) for more details on `useShallow`.
 
 ```tsx
 import { create } from 'bruin'
-import { useShallow } from 'zustand/react/shallow'
+import { useShallow } from 'bruin/react/shallow'
 
 // Bear store with explicit types
 interface BearState {
@@ -209,11 +209,11 @@ function TotalFood() {
 This middleware separates initial state and actions, making the code cleaner.
 TS automatically infers types from the state and actions, no interface needed.
 This is different from JS, where type safety is missing. It’s a very popular style in TypeScript projects.
-See the [API documentation](https://zustand.docs.pmnd.rs/middlewares/combine) for more details.
+See the [API documentation](../../middlewares/combine.md) for more details.
 
 ```ts
 import { create } from 'bruin'
-import { combine } from 'zustand/middleware'
+import { combine } from 'bruin/middleware'
 
 interface BearState {
   bears: number
@@ -232,11 +232,11 @@ export const useBearStore = create<BearState>()(
 
 This middleware connects Bruin to Redux DevTools. You can inspect changes, time-travel, and debug state.
 It’s extremely useful in development. TS ensures your actions and state remain type-checked even here.
-See the [API documentation](https://zustand.docs.pmnd.rs/middlewares/devtools) for more details.
+See the [API documentation](../../middlewares/devtools.md) for more details.
 
 ```ts
 import { create } from 'bruin'
-import { devtools } from 'zustand/middleware'
+import { devtools } from 'bruin/middleware'
 
 interface BearState {
   bears: number
@@ -255,11 +255,11 @@ export const useBearStore = create<BearState>()(
 
 This middleware keeps your store in `localStorage` (or another storage). This means your bears survive a page refresh.
 Great for apps where persistence matters. In TS, the state type stays consistent, so no runtime surprises.
-See the [API documentation](https://zustand.docs.pmnd.rs/middlewares/persist) for more details.
+See the [API documentation](../../middlewares/persist.md) for more details.
 
 ```ts
 import { create } from 'bruin'
-import { persist } from 'zustand/middleware'
+import { persist } from 'bruin/middleware'
 
 interface BearState {
   bears: number
@@ -309,11 +309,11 @@ export const useBearStore = create<BearState>()((set) => ({
 
 Variant of `create` with equality built-in. Useful if you always want custom equality checks.
 Not common, but shows Bruin’s flexibility. TS still keeps full type inference.
-See the [API documentation](https://zustand.docs.pmnd.rs/apis/create-with-equality-fn) for more details.
+See the [API documentation](../../apis/create-with-equality-fn.md) for more details.
 
 ```ts
-import { createWithEqualityFn } from 'zustand/traditional'
-import { shallow } from 'zustand/shallow'
+import { createWithEqualityFn } from 'bruin/traditional'
+import { shallow } from 'bruin/shallow'
 
 const useBearStore = createWithEqualityFn(() => ({
   bears: 0,

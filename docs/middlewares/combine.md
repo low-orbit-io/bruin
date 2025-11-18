@@ -56,8 +56,8 @@ This example shows you how you can create a store and get types automatically in
 don’t need to define them explicitly.
 
 ```ts
-import { createStore } from 'zustand/vanilla'
-import { combine } from 'zustand/middleware'
+import { createStore } from 'bruin/vanilla'
+import { combine } from 'bruin/middleware'
 
 const positionStore = createStore(
   combine({ position: { x: 0, y: 0 } }, (set) => ({

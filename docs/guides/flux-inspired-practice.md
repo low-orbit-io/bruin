@@ -69,7 +69,7 @@ dispatch({ type: types.increase, by: 2 })
 You could also use our redux-middleware. It wires up your main reducer, sets initial state, and adds a dispatch function to the state itself and the vanilla api.
 
 ```typescript
-import { redux } from 'zustand/middleware'
+import { redux } from 'bruin/middleware'
 
 const useReduxStore = create(redux(reducer, initialState))
 ```

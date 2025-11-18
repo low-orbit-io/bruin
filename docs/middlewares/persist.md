@@ -31,14 +31,14 @@ const nextStateCreatorFn = persist(stateCreatorFn, persistOptions)
 ### Signature
 
 ```ts
-persist<T, U>(stateCreatorFn: StateCreator<T, [], []>, persistOptions?: PersistOptions<T, U>): StateCreator<T, [['zustand/persist', U]], []>
+persist<T, U>(stateCreatorFn: StateCreator<T, [], []>, persistOptions?: PersistOptions<T, U>): StateCreator<T, [['bruin/persist', U]], []>
 ```
 
 ### Mutator
 
 <!-- prettier-ignore-start -->
 ```ts
-['zustand/persist', U]
+['bruin/persist', U]
 ```
 <!-- prettier-ignore-end -->
 
@@ -82,8 +82,8 @@ coordinates) and an action to update it. We'll also use the `persist` middleware
 position in `localStorage`.
 
 ```ts
-import { createStore } from 'zustand/vanilla'
-import { persist } from 'zustand/middleware'
+import { createStore } from 'bruin/vanilla'
+import { persist } from 'bruin/middleware'
 
 type PositionStoreState = { position: { x: number; y: number } }
 
@@ -134,8 +134,8 @@ positionStore.subscribe(render)
 Here’s the complete code.
 
 ```ts
-import { createStore } from 'zustand/vanilla'
-import { persist } from 'zustand/middleware'
+import { createStore } from 'bruin/vanilla'
+import { persist } from 'bruin/middleware'
 
 type PositionStoreState = { position: { x: number; y: number } }
 
@@ -200,8 +200,8 @@ use the `persist` middleware to persist only the relevant part of the state (in 
 context containing the position).
 
 ```ts
-import { createStore } from 'zustand/vanilla'
-import { persist } from 'zustand/middleware'
+import { createStore } from 'bruin/vanilla'
+import { persist } from 'bruin/middleware'
 
 type PositionStoreState = {
   context: {
@@ -268,8 +268,8 @@ Here’s the full code to create a dot that follows your mouse movement inside a
 persists the `context` in `localStorage`.
 
 ```ts
-import { createStore } from 'zustand/vanilla'
-import { persist } from 'zustand/middleware'
+import { createStore } from 'bruin/vanilla'
+import { persist } from 'bruin/middleware'
 
 type PositionStoreState = {
   context: {
@@ -397,8 +397,8 @@ our custom storage. Instead of the default `localStorage` or `sessionStorage`, w
 position data in the URL search parameters.
 
 ```ts
-import { createStore } from 'zustand/vanilla'
-import { persist, createJSONStorage } from 'zustand/middleware'
+import { createStore } from 'bruin/vanilla'
+import { persist, createJSONStorage } from 'bruin/middleware'
 
 type PositionStoreState = { position: { x: number; y: number } }
 
@@ -453,8 +453,8 @@ Here’s the full code to create a dot that follows your mouse movement inside a
 persists the position in URL's search parameters.
 
 ```ts
-import { createStore } from 'zustand/vanilla'
-import { persist, createJSONStorage } from 'zustand/middleware'
+import { createStore } from 'bruin/vanilla'
+import { persist, createJSONStorage } from 'bruin/middleware'
 
 type PositionStoreState = { position: { x: number; y: number } }
 
@@ -616,8 +616,8 @@ positionStore.subscribe(render)
 Here’s the complete code.
 
 ```ts
-import { createStore } from 'zustand/vanilla'
-import { persist } from 'zustand/middleware'
+import { createStore } from 'bruin/vanilla'
+import { persist } from 'bruin/middleware'
 
 // For tutorial purposes only
 if (!localStorage.getItem('position-storage')) {
@@ -717,8 +717,8 @@ if (!localStorage.getItem('position-storage')) {
 Now, we will create the store and configure it to use persistence and deep merging.
 
 ```ts
-import { createStore } from 'zustand/vanilla'
-import { persist } from 'zustand/middleware'
+import { createStore } from 'bruin/vanilla'
+import { persist } from 'bruin/middleware'
 import createDeepMerge from '@fastify/deepmerge'
 
 const deepMerge = createDeepMerge({ all: true })
@@ -775,8 +775,8 @@ positionStore.subscribe(render)
 Here’s the complete code.
 
 ```ts
-import { createStore } from 'zustand/vanilla'
-import { persist } from 'zustand/middleware'
+import { createStore } from 'bruin/vanilla'
+import { persist } from 'bruin/middleware'
 import createDeepMerge from '@fastify/deepmerge'
 
 const deepMerge = createDeepMerge({ all: true })
@@ -858,8 +858,8 @@ coordinates) and an action to update it. Furthermore, we'll also use the `persis
 store the position in `localStorage` but skipping hydration.
 
 ```ts
-import { createStore } from 'zustand/vanilla'
-import { persist } from 'zustand/middleware'
+import { createStore } from 'bruin/vanilla'
+import { persist } from 'bruin/middleware'
 
 type PositionStoreState = { position: { x: number; y: number } }
 
@@ -922,8 +922,8 @@ positionStore.subscribe(render)
 Here’s the complete code.
 
 ```ts
-import { createStore } from 'zustand/vanilla'
-import { persist } from 'zustand/middleware'
+import { createStore } from 'bruin/vanilla'
+import { persist } from 'bruin/middleware'
 
 type PositionStoreState = { position: { x: number; y: number } }
 

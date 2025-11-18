@@ -9,7 +9,7 @@ nav: 206
 `immer` middleware lets you perform immutable updates.
 
 > [!IMPORTANT]
-> In order to use `immer` from `zustand/middleware/immer` you need to install
+> In order to use `immer` from `bruin/middleware/immer` you need to install
 > `immer` library.
 
 ```js
@@ -28,14 +28,14 @@ const nextStateCreatorFn = immer(stateCreatorFn)
 ### Signature
 
 ```ts
-immer<T>(stateCreatorFn: StateCreator<T, [], []>): StateCreator<T, [['zustand/immer', never]], []>
+immer<T>(stateCreatorFn: StateCreator<T, [], []>): StateCreator<T, [['bruin/immer', never]], []>
 ```
 
 ### Mutator
 
 <!-- prettier-ignore-start -->
 ```ts
-['zustand/immer', never]
+['bruin/immer', never]
 ```
 <!-- prettier-ignore-end -->
 
@@ -60,7 +60,7 @@ In the next example, we're going to update the `person` object. Since it's a nes
 to create a copy of the entire object before making the update.
 
 ```ts
-import { createStore } from 'zustand/vanilla'
+import { createStore } from 'bruin/vanilla'
 
 type PersonStoreState = {
   person: { firstName: string; lastName: string; email: string }
@@ -158,8 +158,8 @@ To avoid manually copying the entire object before making updates, we'll use the
 middleware.
 
 ```ts
-import { createStore } from 'zustand/vanilla'
-import { immer } from 'zustand/middleware/immer'
+import { createStore } from 'bruin/vanilla'
+import { immer } from 'bruin/middleware/immer'
 
 type PersonStoreState = {
   person: { firstName: string; lastName: string; email: string }

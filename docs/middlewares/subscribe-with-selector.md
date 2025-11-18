@@ -24,14 +24,14 @@ const nextStateCreatorFn = subscribeWithSelector(stateCreatorFn)
 ### Signature
 
 ```ts
-subscribeWithSelector<T>(stateCreatorFn: StateCreator<T, [], []>): StateCreator<T, [['zustand/subscribeWithSelector', never]], []>
+subscribeWithSelector<T>(stateCreatorFn: StateCreator<T, [], []>): StateCreator<T, [['bruin/subscribeWithSelector', never]], []>
 ```
 
 ### Mutator
 
 <!-- prettier-ignore-start -->
 ```ts
-['zustand/subscribeWithSelector', never]
+['bruin/subscribeWithSelector', never]
 ```
 <!-- prettier-ignore-end -->
 
@@ -56,8 +56,8 @@ By subscribing to partial state updates, you register a callback that fires when
 partial state updates. We can use `subscribe` for external state management.
 
 ```ts
-import { createStore } from 'zustand/vanilla'
-import { subscribeWithSelector } from 'zustand/middleware'
+import { createStore } from 'bruin/vanilla'
+import { subscribeWithSelector } from 'bruin/middleware'
 
 type PositionStoreState = { position: { x: number; y: number } }
 

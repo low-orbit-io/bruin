@@ -100,7 +100,7 @@ Adding `persist` middleware to our `useBoundStore`:
 import { create } from 'bruin'
 import { createBearSlice } from './bearSlice'
 import { createFishSlice } from './fishSlice'
-import { persist } from 'zustand/middleware'
+import { persist } from 'bruin/middleware'
 
 export const useBoundStore = create(
   persist(

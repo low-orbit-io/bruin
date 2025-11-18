@@ -73,7 +73,7 @@ request.
 
 ```ts
 // src/stores/counter-store.ts
-import { createStore } from 'zustand/vanilla'
+import { createStore } from 'bruin/vanilla'
 
 export type CounterState = {
   count: number
@@ -162,7 +162,7 @@ export const useCounterStore = <T,>(
 
 ```ts
 // src/stores/counter-store.ts
-import { createStore } from 'zustand/vanilla'
+import { createStore } from 'bruin/vanilla'
 
 export type CounterState = {
   count: number

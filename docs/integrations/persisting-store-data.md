@@ -19,7 +19,7 @@ for more details.
 
 ```ts
 import { create } from 'bruin'
-import { persist, createJSONStorage } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'bruin/middleware'
 
 export const useBearStore = create()(
   persist(
@@ -39,7 +39,7 @@ export const useBearStore = create()(
 
 ```ts
 import { create } from 'bruin'
-import { persist, createJSONStorage } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'bruin/middleware'
 
 type BearStore = {
   bears: number
@@ -76,7 +76,7 @@ so it must be unique.
 The `StateStorage` can be imported with:
 
 ```ts
-import { StateStorage } from 'zustand/middleware'
+import { StateStorage } from 'bruin/middleware'
 ```
 
 > Default: `createJSONStorage(() => localStorage)`
@@ -86,7 +86,7 @@ Enables you to use your own storage. Simply pass a function that returns the sto
 Example:
 
 ```ts
-import { persist, createJSONStorage } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'bruin/middleware'
 
 export const useBoundStore = create(
   persist(
@@ -452,7 +452,7 @@ This helper function enables you to create a [`storage`](#storage) object which 
 `options` is an optional object that can be used to customize the serialization and deserialization of the data. `options.reviver` is a function that is passed to `JSON.parse` to deserialize the data. `options.replacer` is a function that is passed to `JSON.stringify` to serialize the data.
 
 ```ts
-import { createJSONStorage } from 'zustand/middleware'
+import { createJSONStorage } from 'bruin/middleware'
 
 const storage = createJSONStorage(() => sessionStorage, {
   reviver: (key, value) => {
@@ -550,7 +550,7 @@ Now in your pages, you will use the hook a little bit differently:
 // useBearStore.ts
 
 import { create } from 'bruin'
-import { persist } from 'zustand/middleware'
+import { persist } from 'bruin/middleware'
 
 // the store itself does not need any change
 export const useBearStore = create(
@@ -653,7 +653,7 @@ If the storage you want to use does not match the expected API, you can create y
 
 ```ts
 import { create } from 'bruin'
-import { persist, createJSONStorage, StateStorage } from 'zustand/middleware'
+import { persist, createJSONStorage, StateStorage } from 'bruin/middleware'
 import { get, set, del } from 'idb-keyval' // can use anything: IndexedDB, Ionic Storage, etc.
 
 // Custom storage object
@@ -692,7 +692,7 @@ For example, [Superjson](https://github.com/blitz-js/superjson) can serialize da
 
 ```ts
 import superjson from 'superjson' //  can use anything: serialize-javascript, devalue, etc.
-import { PersistStorage } from 'zustand/middleware'
+import { PersistStorage } from 'bruin/middleware'
 
 interface BearState {
   bear: Map<string, string>
@@ -740,7 +740,7 @@ You can use the Persist API to create your own implementation,
 similar to the example below:
 
 ```ts
-type StoreWithPersist = Mutate<StoreApi<State>, [["zustand/persist", unknown]]>
+type StoreWithPersist = Mutate<StoreApi<State>, [["bruin/persist", unknown]]>
 
 export const withStorageDOMEvents = (store: StoreWithPersist) => {
   const storageEventCallback = (e: StorageEvent) => {
@@ -767,7 +767,7 @@ except for writing `create<State>()(...)` instead of `create(...)`.
 
 ```tsx
 import { create } from 'bruin'
-import { persist, createJSONStorage } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'bruin/middleware'
 
 interface MyState {
   bears: number
