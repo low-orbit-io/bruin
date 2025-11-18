@@ -176,7 +176,6 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
     }
   }
 
-
   let isRecording = true;
 
   const prefix = storeId
@@ -433,47 +432,55 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
 
   let unsubscribe: (() => void) | undefined;
 
-  if (multiStore && storeId && connection) {
-    const storeEntry = { getState: () => api.getState(), setState: set };
-
-    multiStore.stores.set(storeId, storeEntry);
-
-    if (!multiStore.unsubscribe) {
-      multiStore.messageHandler = messageHandler;
-      multiStore.unsubscribe = connection.subscribe(messageHandler);
-      (connection as any).__messageHandler = messageHandler;
-      (connection as any).__unsubscribe = multiStore.unsubscribe;
-    } else {
-      multiStore.messageHandler = messageHandler;
-      (connection as any).__messageHandler = messageHandler;
+  if (storeId && connection) {
+    if (!multiStore) {
+      multiStore = connectionMap.get(connectionName);
     }
 
-    unsubscribe = multiStore.unsubscribe;
+    if (multiStore) {
+      const storeEntry = { getState: () => api.getState(), setState: set };
 
-    const allStoresState = getAllStoresState();
+      multiStore.stores.set(storeId, storeEntry);
 
-    if (
-      typeof allStoresState === 'object' &&
-      allStoresState !== null &&
-      Object.keys(allStoresState).length > 0 &&
-      Object.values(allStoresState).every((v) => v !== undefined)
-    ) {
-      connection.init(allStoresState);
-    } else {
-      const fallbackState: Record<string, any> = {};
+      if (!multiStore.unsubscribe) {
+        multiStore.messageHandler = messageHandler;
+        multiStore.unsubscribe = connection.subscribe(messageHandler);
 
-      multiStore.stores.forEach((store, id) => {
-        const state = store.getState();
+        (connection as any).__messageHandler = messageHandler;
+        (connection as any).__unsubscribe = multiStore.unsubscribe;
+      } else {
+        multiStore.messageHandler = messageHandler;
 
-        if (state !== undefined) {
-          fallbackState[id] = state;
-        } else if (id === storeId) {
-          fallbackState[id] = initialState;
+        (connection as any).__messageHandler = messageHandler;
+      }
+
+      unsubscribe = multiStore.unsubscribe;
+
+      const allStoresState = getAllStoresState();
+
+      if (
+        typeof allStoresState === 'object' &&
+        allStoresState !== null &&
+        Object.keys(allStoresState).length > 0 &&
+        Object.values(allStoresState).every((v) => v !== undefined)
+      ) {
+        connection.init(allStoresState);
+      } else {
+        const fallbackState: Record<string, any> = {};
+
+        multiStore.stores.forEach((store, id) => {
+          const state = store.getState();
+
+          if (state !== undefined) {
+            fallbackState[id] = state;
+          } else if (id === storeId) {
+            fallbackState[id] = initialState;
+          }
+        });
+
+        if (Object.keys(fallbackState).length > 0) {
+          connection.init(fallbackState);
         }
-      });
-
-      if (Object.keys(fallbackState).length > 0) {
-        connection.init(fallbackState);
       }
     }
   } else if (connection) {
