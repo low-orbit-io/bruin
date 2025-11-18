@@ -24,20 +24,15 @@ declare module '../types/core' {
   }
 }
 
-const immerImpl: ImmerImpl = (initializer) => (set, get, api) =>
-  initializer(
-    (partial, replace) => {
-      const nextState =
-        typeof partial === 'function'
-          ? (partial as (state: typeof api.getState) => typeof api.getState)(
-              api.getState(),
-            )
-          : partial;
-      return set(nextState, replace);
-    },
-    get,
-    api,
-  );
+const immerImpl: ImmerImpl = (initializer) => (set, get, api) => {
+  const wrappedSet = ((partial: any, replace?: boolean) => {
+    const nextState =
+      typeof partial === 'function'
+        ? (partial as (state: any) => any)((get as any)())
+        : partial;
+    return (set as any)(nextState, replace);
+  }) as any;
+  return initializer(wrappedSet, get, api);
+};
 
 export const immer = immerImpl as unknown as Immer;
-

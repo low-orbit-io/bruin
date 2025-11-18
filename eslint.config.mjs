@@ -116,4 +116,12 @@ export default defineConfig(
       '@typescript-eslint/no-unused-vars': 'off',
     },
   },
+  {
+    files: ['src/middleware/**/*.ts'],
+    rules: {
+      // Type parameter A in StoreMutators interface declarations is required for interface merging.
+      // It cannot be prefixed with _ because TypeScript requires identical parameter names for interface merging.
+      '@typescript-eslint/no-unused-vars': 'off',
+    },
+  },
 );

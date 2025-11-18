@@ -137,6 +137,9 @@ const devtoolsImpl =
     } = devtoolsOptions ?? {};
 
     type S = ReturnType<typeof fn>;
+    type SetType = Parameters<typeof fn>[0];
+    type GetType = Parameters<typeof fn>[1];
+    type ApiType = Parameters<typeof fn>[2];
     const runInitializer = fn as unknown as (
       set: NamedSetType<S>,
       get: () => S,
@@ -226,7 +229,7 @@ const devtoolsImpl =
         return allStates;
       }
 
-      return get();
+      return (get as GetType)();
     };
 
     const setStateWithDevtoolsImpl = (
@@ -267,7 +270,7 @@ const devtoolsImpl =
         }
       }
 
-      set(partialState, replace, options);
+      (set as SetType)(partialState, replace, options);
 
       if (!isRecording || !connection) return;
 
@@ -292,9 +295,9 @@ const devtoolsImpl =
       set,
     ) as NamedSetType<S>;
 
-    const savedSetState = api.setState;
+    const savedSetState = (api as unknown as ApiType).setState;
 
-    api.setState = (
+    (api as unknown as ApiType).setState = (
       partial: any,
       replace?: boolean,
       options?: { skipHistory?: boolean },
@@ -358,7 +361,10 @@ const devtoolsImpl =
       if (message.type === 'DISPATCH' && message.payload) {
         switch (message.payload.type) {
           case 'RESET': {
-            set(api.getInitialState() as S, true);
+            (set as SetType)(
+              (api as unknown as ApiType).getInitialState() as S,
+              true,
+            );
 
             connection?.init(getAllStoresState());
 
@@ -389,7 +395,7 @@ const devtoolsImpl =
               const storeState = extractStoreState(state);
 
               if (storeState) {
-                set(storeState, true);
+                (set as SetType)(storeState, true);
                 connection?.init(getAllStoresState());
               }
             }
@@ -405,7 +411,7 @@ const devtoolsImpl =
               const storeState = extractStoreState(state);
 
               if (storeState) {
-                set(storeState, true);
+                (set as SetType)(storeState, true);
               }
             }
 
@@ -420,7 +426,7 @@ const devtoolsImpl =
               const storeState = extractStoreState(state);
 
               if (storeState) {
-                set(storeState, true);
+                (set as SetType)(storeState, true);
                 connection?.init(getAllStoresState());
               }
             }
@@ -453,10 +459,10 @@ const devtoolsImpl =
               const storeState = payload.state[storeId];
 
               if (storeState !== undefined) {
-                set(storeState, true);
+                (set as SetType)(storeState, true);
               }
             } else if (payload.state) {
-              set(payload.state, true);
+              (set as SetType)(payload.state, true);
             }
           } else if (payload.type) {
             const dispatch = (api as any).dispatch;
@@ -484,7 +490,10 @@ const devtoolsImpl =
       }
 
       if (multiStore) {
-        const storeEntry = { getState: () => api.getState(), setState: set };
+        const storeEntry = {
+          getState: () => (api as unknown as ApiType).getState(),
+          setState: set as SetType,
+        };
 
         multiStore.stores.set(storeId, storeEntry);
 

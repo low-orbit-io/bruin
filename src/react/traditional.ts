@@ -54,31 +54,31 @@ const createWithEqualityFnImpl = <
   const api = createVanillaStore(createState);
 
   const useBoundStore: any = (selector?: any, equalityFn?: any) =>
-    useStoreWithEqualityFn(api, selector, equalityFn);
+    useStoreWithEqualityFn(api as any, selector, equalityFn);
 
   Object.assign(useBoundStore, api);
 
-  return useBoundStore as UseBoundStoreWithEqualityFn<Mutate<StoreApi<T>, Mcs>>;
+  return useBoundStore as any as UseBoundStoreWithEqualityFn<
+    Mutate<StoreApi<T>, Mcs>
+  >;
 };
 
-export function createWithEqualityFn<
-  TCreator extends StateCreator<any, [], any>,
->(
-  createState: TCreator,
-): UseBoundStoreWithEqualityFn<
-  Mutate<StoreApi<ReturnType<TCreator>>, ExtractStateCreatorMutators<TCreator>>
->;
-export function createWithEqualityFn<
-  T,
-  TCreator extends StateCreator<T, [], any> = StateCreator<T, [], any>,
->(
-  createState: TCreator,
-): UseBoundStoreWithEqualityFn<
-  Mutate<StoreApi<T>, ExtractStateCreatorMutators<TCreator>>
->;
-export function createWithEqualityFn<
+type CreateWithEqualityFn = {
+  <TCreator extends StateCreator<any, [], any>>(
+    createState: TCreator,
+  ): UseBoundStoreWithEqualityFn<
+    Mutate<StoreApi<ReturnType<TCreator>>, ExtractStateCreatorMutators<TCreator>>
+  >;
+  <T, TCreator extends StateCreator<T, [], any> = StateCreator<T, [], any>>(
+    createState: TCreator,
+  ): UseBoundStoreWithEqualityFn<
+    Mutate<StoreApi<T>, ExtractStateCreatorMutators<TCreator>>
+  >;
+};
+
+export const createWithEqualityFn = (<
   T,
   Mcs extends [StoreMutatorIdentifier, unknown][] = [],
->(createState: StateCreator<T, [], Mcs>) {
+>(createState: StateCreator<T, [], Mcs>) => {
   return createWithEqualityFnImpl<T, Mcs>(createState);
-}
+}) as CreateWithEqualityFn;

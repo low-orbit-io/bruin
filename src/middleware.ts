@@ -1,5 +1,6 @@
 export { combine } from './middleware/combine';
 export { devtools } from './middleware/devtools';
+export { immer } from './middleware/immer';
 export {
   persist,
   createJSONStorage,
@@ -10,4 +11,3 @@ export {
 } from './middleware/persist';
 export { redux } from './middleware/redux';
 export { subscribeWithSelector } from './middleware/subscribeWithSelector';
-

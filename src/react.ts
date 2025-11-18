@@ -41,11 +41,11 @@ const createImpl = <T, Mcs extends [StoreMutatorIdentifier, unknown][] = []>(
 ) => {
   const api = createVanillaStore(createState);
 
-  const useBoundStore: any = (selector?: any) => useStore(api, selector);
+  const useBoundStore: any = (selector?: any) => useStore(api as any, selector);
 
   Object.assign(useBoundStore, api);
 
-  return useBoundStore as UseBoundStore<Mutate<StoreApi<T>, Mcs>>;
+  return useBoundStore as any as UseBoundStore<Mutate<StoreApi<T>, Mcs>>;
 };
 
 export function create<TCreator extends StateCreator<any, any[], any>>(

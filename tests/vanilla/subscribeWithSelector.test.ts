@@ -358,7 +358,10 @@ describe('Vanilla subscribeWithSelector Middleware', () => {
 
     const listener = vi.fn();
     // Subscribe to computed full name
-    store.subscribe((s) => `${s.firstName} ${s.lastName}`, listener);
+    store.subscribe(
+      (s: StoreState) => `${s.firstName} ${s.lastName}`,
+      listener,
+    );
 
     store.getState().setFirstName('Jane');
     expect(listener).toHaveBeenCalledTimes(1);
@@ -383,7 +386,7 @@ describe('Vanilla subscribeWithSelector Middleware', () => {
       subscribeWithSelector((set) => ({
         items: [1, 2, 3],
         addItem: (item: number) =>
-          set((s) => ({
+          set((s: StoreState) => ({
             items: [...s.items, item],
           })),
       })),
@@ -392,7 +395,7 @@ describe('Vanilla subscribeWithSelector Middleware', () => {
     const listener = vi.fn();
     const equalityFn = (a: number[], b: number[]) => a.length === b.length;
 
-    store.subscribe((s) => s.items, listener, {
+    store.subscribe((s: StoreState) => s.items, listener, {
       equalityFn,
       fireImmediately: true,
     });
