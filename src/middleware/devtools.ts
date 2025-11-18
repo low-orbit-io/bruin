@@ -99,14 +99,48 @@ type MultiStoreConnection = {
 
 const connectionMap = new Map<string, MultiStoreConnection>();
 
-if (typeof globalThis !== 'undefined') {
-  const afterEachFn = (globalThis as any).afterEach;
-  if (afterEachFn && typeof afterEachFn === 'function') {
-    afterEachFn(() => {
-      connectionMap.clear();
-    });
+const clearConnectionMap = () => {
+  connectionMap.forEach((multiStore) => {
+    try {
+      multiStore.unsubscribe?.();
+    } catch {
+      // ignore cleanup errors
+    }
+
+    try {
+      multiStore.connection.unsubscribe?.();
+    } catch {
+      // ignore cleanup errors
+    }
+  });
+
+  connectionMap.clear();
+};
+
+let cleanupHookRegistered = false;
+const registerCleanupHook = () => {
+  if (cleanupHookRegistered) {
+    return;
   }
-}
+
+  if (typeof globalThis === 'undefined') {
+    return;
+  }
+
+  const afterEachFn = (globalThis as any).afterEach;
+
+  if (typeof afterEachFn === 'function') {
+    afterEachFn(() => {
+      clearConnectionMap();
+    });
+
+    cleanupHookRegistered = true;
+  }
+};
+
+registerCleanupHook();
+
+let lastExtensionRef: any;
 
 type DevtoolsImpl = <
   T,
@@ -135,6 +169,13 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
     typeof window !== 'undefined' &&
     (window as any).__REDUX_DEVTOOLS_EXTENSION__;
 
+  registerCleanupHook();
+
+  if (extension !== lastExtensionRef) {
+    clearConnectionMap();
+    lastExtensionRef = extension;
+  }
+
   if (!extension) {
     if (
       typeof process !== 'undefined' &&
@@ -149,6 +190,7 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
   }
 
   const connectionName = options.name || 'Store';
+
   let multiStore = storeId ? connectionMap.get(connectionName) : undefined;
   let connection: DevtoolsConnection | undefined;
 
@@ -172,6 +214,7 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
         stores: new Map(),
         unsubscribe: undefined,
       };
+
       connectionMap.set(connectionName, multiStore);
     }
   }
@@ -251,6 +294,7 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
     } else {
       const anonymousType = anonymousActionType || 'anonymous';
       const actionType = `${prefix}${anonymousType} #${++actionCounter}`;
+
       action = { type: actionType };
     }
 
@@ -263,6 +307,7 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
   ) as NamedSet<S>;
 
   const savedSetState = api.setState;
+
   api.setState = (
     partial: any,
     replace?: boolean,
@@ -298,8 +343,13 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
     ) {
       action = actionName as Action;
     } else {
-      const anonymousType = anonymousActionType || 'anonymous';
-      action = { type: `${prefix}${anonymousType} #${++actionCounter}` };
+      const anonymousType = anonymousActionType || (storeId ? '...' : 'anonymous');
+
+      if (storeId) {
+        action = { type: `${prefix}${anonymousType}` };
+      } else {
+        action = { type: `${prefix}${anonymousType} #${++actionCounter}` };
+      }
     }
 
     connection.send(action, getAllStoresState());
@@ -313,6 +363,7 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
     if (storeId && multiStore && state && typeof state === 'object') {
       return state[storeId] !== undefined ? state[storeId] : state;
     }
+
     return state;
   };
 
@@ -335,6 +386,7 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
 
         case 'ROLLBACK': {
           let state: any;
+
           try {
             state = message.state ? JSON.parse(message.state) : undefined;
           } catch (e) {
@@ -342,11 +394,13 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
               '[bruin devtools middleware] Could not parse state:',
               e,
             );
+
             return;
           }
 
           if (state) {
             const storeState = extractStoreState(state);
+
             if (storeState) {
               set(storeState, true);
               connection?.init(getAllStoresState());
@@ -362,6 +416,7 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
 
           if (state) {
             const storeState = extractStoreState(state);
+
             if (storeState) {
               set(storeState, true);
             }
@@ -376,6 +431,7 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
 
           if (state) {
             const storeState = extractStoreState(state);
+
             if (storeState) {
               set(storeState, true);
               connection?.init(getAllStoresState());
@@ -396,6 +452,7 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
     if (message.type === 'ACTION' && message.payload) {
       try {
         const payload = JSON.parse(message.payload);
+
         if (payload.type === '__setState') {
           if (
             typeof process !== 'undefined' &&
@@ -407,6 +464,7 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
           }
           if (storeId && payload.state && typeof payload.state === 'object') {
             const storeState = payload.state[storeId];
+
             if (storeState !== undefined) {
               set(storeState, true);
             }
@@ -415,6 +473,7 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
           }
         } else if (payload.type) {
           const dispatch = (api as any).dispatch;
+
           if (dispatch && typeof dispatch === 'function') {
             dispatch(payload);
           }
@@ -492,6 +551,7 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
   const cleanup = () => {
     if (multiStore && storeId) {
       multiStore.stores.delete(storeId);
+
       if (multiStore.stores.size === 0 && multiStore.unsubscribe) {
         multiStore.unsubscribe();
         connection?.unsubscribe?.();
@@ -503,6 +563,7 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
       if (unsubscribe) {
         unsubscribe();
       }
+
       if (connection) {
         connection.unsubscribe?.();
       }
