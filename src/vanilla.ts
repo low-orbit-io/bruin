@@ -28,21 +28,7 @@ export type {
   SetStateWithTransaction,
 } from './types/core';
 
-export function createStore<TCreator extends StateCreator<any, [], any>>(
-  initializer: TCreator,
-  options?: CreateStoreOptions,
-): Mutate<
-  StoreApi<ReturnType<TCreator>>,
-  ExtractStateCreatorMutators<TCreator>
->;
-export function createStore<
-  T,
-  TCreator extends StateCreator<T, [], any> = StateCreator<T, [], any>,
->(
-  initializer: TCreator,
-  options?: CreateStoreOptions,
-): Mutate<StoreApi<T>, ExtractStateCreatorMutators<TCreator>>;
-export function createStore<
+function createStoreImpl<
   T,
   Mos extends [StoreMutatorIdentifier, unknown][] = [],
 >(
@@ -658,4 +644,37 @@ export function createStore<
   }
 
   return api as Mutate<StoreApi<T>, Mos>;
+}
+
+export function createStore<T>(): <
+  Mos extends [StoreMutatorIdentifier, unknown][] = [],
+>(
+  initializer: StateCreator<T, [], Mos>,
+  options?: CreateStoreOptions,
+) => Mutate<StoreApi<T>, Mos>;
+export function createStore<TCreator extends StateCreator<any, [], any>>(
+  initializer: TCreator,
+  options?: CreateStoreOptions,
+): Mutate<
+  StoreApi<ReturnType<TCreator>>,
+  ExtractStateCreatorMutators<TCreator>
+>;
+export function createStore<
+  T,
+  TCreator extends StateCreator<T, [], any> = StateCreator<T, [], any>,
+>(
+  initializer: TCreator,
+  options?: CreateStoreOptions,
+): Mutate<StoreApi<T>, ExtractStateCreatorMutators<TCreator>>;
+export function createStore<
+  T,
+  Mos extends [StoreMutatorIdentifier, unknown][] = [],
+>(initializer?: StateCreator<T, [], Mos>, options?: CreateStoreOptions): any {
+  if (!initializer) {
+    return <Mos2 extends [StoreMutatorIdentifier, unknown][] = []>(
+      initializer2: StateCreator<T, [], Mos2>,
+      options2?: CreateStoreOptions,
+    ) => createStoreImpl<T, Mos2>(initializer2, options2);
+  }
+  return createStoreImpl<T, Mos>(initializer, options);
 }
