@@ -10,7 +10,12 @@ export type StoreApi<T> = {
   ) => void;
   getState: () => T;
   getInitialState: () => T;
-  subscribe: (listener: (state: T, prevState: T) => void) => () => void;
+  subscribe: (
+    listenerOrPath:
+      | ((state: T, prevState: T) => void)
+      | (string | number)[],
+    listener?: (state: T, prevState: T) => void,
+  ) => () => void;
   undo: () => void;
   redo: () => void;
   canUndo: () => boolean;
@@ -31,6 +36,7 @@ type HistoryEntry<T> = {
 type CreateStoreOptions = {
   maxHistorySize?: number;
   computedFields?: string[];
+  debounce?: number;
 };
 
 export const createStore = <T>(
@@ -50,7 +56,20 @@ export const createStore = <T>(
   let transactionPrevState: T | null = null;
 
   const maxHistorySize = options?.maxHistorySize ?? 50;
+  const debounceMs = options?.debounce;
   const listeners = new Set<(state: T, prevState: T) => void>();
+
+  type PathListener = {
+    listener: (state: T, prevState: T) => void;
+    path: (string | number)[];
+  };
+
+  const pathListeners = new Set<PathListener>();
+
+  let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  let debouncePendingState: T | null = null;
+  let debouncePendingPrevState: T | null = null;
+  let debouncePendingSkipHistory: boolean | null = null;
 
   // Store getters from initial state
   const stateGetters: PropertyDescriptorMap = {};
@@ -107,6 +126,124 @@ export const createStore = <T>(
     }
 
     return stateWithGetters;
+  };
+
+  const getValueAtPath = (obj: any, path: (string | number)[]): any => {
+    let current = obj;
+    for (const key of path) {
+      if (current === null || current === undefined) {
+        return undefined;
+      }
+      current = current[key];
+    }
+    return current;
+  };
+
+  const hasPathChanged = (
+    prevState: T,
+    newState: T,
+    path: (string | number)[],
+  ): boolean => {
+    const prevValue = getValueAtPath(prevState, path);
+    const newValue = getValueAtPath(newState, path);
+    return !Object.is(prevValue, newValue);
+  };
+
+  const getChangedPaths = (
+    prevState: T,
+    newState: T,
+  ): Set<string> => {
+    const changedPaths = new Set<string>();
+
+    if (!isImmerable(prevState) || !isImmerable(newState)) {
+      return changedPaths;
+    }
+
+    const checkPaths = (obj: any, prevObj: any, currentPath: string[] = []) => {
+      for (const key in obj) {
+        const newPath = [...currentPath, key];
+        const pathStr = newPath.join('.');
+
+        if (
+          !stateGetters[key] &&
+          (obj[key] !== prevObj[key] ||
+            (isImmerable(obj[key]) &&
+              isImmerable(prevObj[key]) &&
+              Object.keys(obj[key]).length !== Object.keys(prevObj[key]).length))
+        ) {
+          changedPaths.add(pathStr);
+          if (isImmerable(obj[key]) && isImmerable(prevObj[key])) {
+            checkPaths(obj[key], prevObj[key], newPath);
+          }
+        }
+      }
+    };
+
+    checkPaths(newState, prevState);
+    return changedPaths;
+  };
+
+  const notifyListeners = (newState: T, prevState: T) => {
+    listeners.forEach((listener) => listener(newState, prevState));
+
+    if (pathListeners.size > 0 && isImmerable(newState) && isImmerable(prevState)) {
+      const changedPaths = getChangedPaths(prevState, newState);
+
+      pathListeners.forEach((pathListener) => {
+        const pathStr = pathListener.path.join('.');
+        const pathMatches =
+          changedPaths.has(pathStr) ||
+          Array.from(changedPaths).some((changedPath) =>
+            changedPath.startsWith(pathStr + '.'),
+          ) ||
+          pathListener.path.some((_, i) => {
+            const partialPath = pathListener.path.slice(0, i + 1).join('.');
+            return changedPaths.has(partialPath);
+          });
+
+        if (pathMatches) {
+          pathListener.listener(newState, prevState);
+        }
+      });
+    }
+  };
+
+  const flushDebouncedHistory = () => {
+    if (debounceTimer) {
+      clearTimeout(debounceTimer);
+      debounceTimer = null;
+    }
+
+    if (debouncePendingState === null || debouncePendingPrevState === null) {
+      return;
+    }
+
+    const pendingState = debouncePendingState;
+    const pendingPrevState = debouncePendingPrevState;
+    const skipHistory = debouncePendingSkipHistory === true;
+
+    debouncePendingState = null;
+    debouncePendingPrevState = null;
+    debouncePendingSkipHistory = null;
+
+    if (!skipHistory) {
+      if (historyIndex < history.length - 1) {
+        history = history.slice(0, historyIndex + 1);
+      }
+
+      history.push({
+        state: cloneStateForHistory(pendingState),
+        timestamp: Date.now(),
+      });
+
+      if (history.length > maxHistorySize + 1) {
+        history = history.slice(-(maxHistorySize + 1));
+      }
+
+      historyIndex = history.length - 1;
+    }
+
+    notifyListeners(pendingState, pendingPrevState);
   };
 
   const api: StoreApi<T> = {
@@ -210,60 +347,86 @@ export const createStore = <T>(
 
       if (!Object.is(state, prevState)) {
         if (!inTransaction && !setOptions?.skipHistory) {
-          if (historyIndex < history.length - 1) {
-            history = history.slice(0, historyIndex + 1);
+          if (debounceMs && debounceMs > 0) {
+            debouncePendingState = state;
+            debouncePendingPrevState = prevState;
+            debouncePendingSkipHistory = false;
+
+            if (debounceTimer) {
+              clearTimeout(debounceTimer);
+            }
+
+            debounceTimer = setTimeout(() => {
+              flushDebouncedHistory();
+            }, debounceMs);
+          } else {
+            if (historyIndex < history.length - 1) {
+              history = history.slice(0, historyIndex + 1);
+            }
+
+            history.push({
+              state: cloneStateForHistory(state),
+              timestamp: Date.now(),
+            });
+
+            if (history.length > maxHistorySize + 1) {
+              history = history.slice(-(maxHistorySize + 1));
+            }
+
+            historyIndex = history.length - 1;
+
+            notifyListeners(state, prevState);
           }
-
-          history.push({
-            state: cloneStateForHistory(state),
-            timestamp: Date.now(),
-          });
-
-          // Keep maxHistorySize + 1 entries to allow maxHistorySize undo operations
-          // (need current state + maxHistorySize previous states)
-          if (history.length > maxHistorySize + 1) {
-            history = history.slice(-(maxHistorySize + 1));
-          }
-
-          historyIndex = history.length - 1;
-
-          listeners.forEach((listener) => listener(state, prevState));
         } else if (!inTransaction) {
-          // skipHistory: update all history entries with the changes so they persist through undo/redo
-          if (setOptions?.skipHistory) {
-            // Get the keys that changed
-            const changedKeys = new Set<string>();
-            if (isImmerable(state) && isImmerable(prevState)) {
-              for (const key in state) {
-                if ((state as any)[key] !== (prevState as any)[key]) {
-                  changedKeys.add(key);
-                }
-              }
+          if (debounceMs && debounceMs > 0 && !setOptions?.skipHistory) {
+            debouncePendingState = state;
+            debouncePendingPrevState = prevState;
+            debouncePendingSkipHistory = false;
+
+            if (debounceTimer) {
+              clearTimeout(debounceTimer);
             }
 
-            // Update all history entries with the changed values
-            for (let i = 0; i < history.length; i++) {
-              const historyEntry = history[i];
-              if (historyEntry) {
-                const historyState = historyEntry.state;
-                if (isImmerable(historyState)) {
-                  const updatedState = { ...historyState };
-                  for (const key of changedKeys) {
-                    (updatedState as any)[key] = (state as any)[key];
+            debounceTimer = setTimeout(() => {
+              flushDebouncedHistory();
+            }, debounceMs);
+          } else {
+            // skipHistory: update all history entries with the changes so they persist through undo/redo
+            if (setOptions?.skipHistory) {
+              // Get the keys that changed
+              const changedKeys = new Set<string>();
+              if (isImmerable(state) && isImmerable(prevState)) {
+                for (const key in state) {
+                  if ((state as any)[key] !== (prevState as any)[key]) {
+                    changedKeys.add(key);
                   }
-                  const updatedEntry: HistoryEntry<T> = {
-                    state: updatedState as T,
-                    timestamp: historyEntry.timestamp,
-                  };
-                  if (historyEntry.name !== undefined) {
-                    updatedEntry.name = historyEntry.name;
+                }
+              }
+
+              // Update all history entries with the changed values
+              for (let i = 0; i < history.length; i++) {
+                const historyEntry = history[i];
+                if (historyEntry) {
+                  const historyState = historyEntry.state;
+                  if (isImmerable(historyState)) {
+                    const updatedState = { ...historyState };
+                    for (const key of changedKeys) {
+                      (updatedState as any)[key] = (state as any)[key];
+                    }
+                    const updatedEntry: HistoryEntry<T> = {
+                      state: updatedState as T,
+                      timestamp: historyEntry.timestamp,
+                    };
+                    if (historyEntry.name !== undefined) {
+                      updatedEntry.name = historyEntry.name;
+                    }
+                    history[i] = updatedEntry;
                   }
-                  history[i] = updatedEntry;
                 }
               }
             }
+            notifyListeners(state, prevState);
           }
-          listeners.forEach((listener) => listener(state, prevState));
         } else {
           if (transactionPrevState === null) {
             transactionPrevState = prevState;
@@ -273,12 +436,28 @@ export const createStore = <T>(
     },
     getState: () => state,
     getInitialState: () => initialState,
-    subscribe: (listener) => {
-      listeners.add(listener);
-
-      return () => listeners.delete(listener);
+    subscribe: (listenerOrPath, listenerArg?) => {
+      if (typeof listenerOrPath === 'function') {
+        listeners.add(listenerOrPath);
+        return () => listeners.delete(listenerOrPath);
+      } else if (Array.isArray(listenerOrPath) && listenerArg) {
+        const pathListener: PathListener = {
+          listener: listenerArg,
+          path: listenerOrPath,
+        };
+        pathListeners.add(pathListener);
+        return () => pathListeners.delete(pathListener);
+      } else {
+        throw new Error(
+          'subscribe requires either a listener function or a path array and listener function',
+        );
+      }
     },
     undo: () => {
+      if (debounceTimer) {
+        flushDebouncedHistory();
+      }
+
       if (historyIndex > 0) {
         const prevState = state;
 
@@ -309,11 +488,15 @@ export const createStore = <T>(
             state = historyState;
           }
 
-          listeners.forEach((listener) => listener(state, prevState));
+          notifyListeners(state, prevState);
         }
       }
     },
     redo: () => {
+      if (debounceTimer) {
+        flushDebouncedHistory();
+      }
+
       if (historyIndex < history.length - 1) {
         const prevState = state;
 
@@ -344,7 +527,7 @@ export const createStore = <T>(
             state = historyState;
           }
 
-          listeners.forEach((listener) => listener(state, prevState));
+          notifyListeners(state, prevState);
         }
       }
     },
@@ -365,6 +548,10 @@ export const createStore = <T>(
 
       try {
         fn();
+
+        if (debounceTimer) {
+          flushDebouncedHistory();
+        }
 
         if (!Object.is(state, startState)) {
           if (!txOptions?.skipHistory) {
@@ -390,9 +577,7 @@ export const createStore = <T>(
           }
 
           if (transactionPrevState !== null) {
-            listeners.forEach((listener) =>
-              listener(state, transactionPrevState as T),
-            );
+            notifyListeners(state, transactionPrevState as T);
           }
         }
       } catch (error) {

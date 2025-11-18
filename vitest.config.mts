@@ -49,7 +49,7 @@ export default defineConfig({
         test: {
           name: 'react',
           include: ['tests/**'],
-          exclude: ['tests/vanilla/**'],
+          exclude: ['tests/vanilla/**', 'tests/setup.ts'],
           environment: 'jsdom',
         },
       },
