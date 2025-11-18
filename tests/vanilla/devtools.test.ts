@@ -421,4 +421,390 @@ describe('Vanilla devtools Middleware', () => {
 
     expect(store.getState().count).toBe(0)
   })
+
+  describe('Zustand-compatible features', () => {
+    it('exports NamedSet type', async () => {
+      const { NamedSet } = await import('../../src/middleware/devtools')
+      expect(NamedSet).toBeDefined()
+    })
+
+    it('provides devtools.cleanup() API', async () => {
+      const { createStore } = await import('../../src/vanilla')
+      const { devtools } = await import('../../src/middleware/devtools')
+
+      const store = createStore(
+        devtools((set) => ({
+          count: 0,
+        })),
+      )
+
+      expect((store as any).devtools).toBeDefined()
+      expect(typeof (store as any).devtools.cleanup).toBe('function')
+
+      const unsubscribeSpy = vi.fn()
+      mockConnection.unsubscribe = unsubscribeSpy
+
+      ;(store as any).devtools.cleanup()
+
+      expect(unsubscribeSpy).toHaveBeenCalled()
+    })
+
+    it('supports store option for multi-store tracking', async () => {
+      const { createStore } = await import('../../src/vanilla')
+      const { devtools } = await import('../../src/middleware/devtools')
+
+      const store1 = createStore(
+        devtools((set) => ({ count: 0 }), {
+          name: 'MultiStore',
+          store: 'store1',
+        }),
+      )
+
+      const store2 = createStore(
+        devtools((set) => ({ count: 0 }), {
+          name: 'MultiStore',
+          store: 'store2',
+        }),
+      )
+
+      expect(mockDevtools.connect).toHaveBeenCalledTimes(1)
+      expect(mockConnection.init).toHaveBeenCalledWith(
+        expect.objectContaining({
+          store1: expect.any(Object),
+          store2: expect.any(Object),
+        }),
+      )
+
+      store1.setState({ count: 5 })
+      expect(mockConnection.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'store1/...',
+        }),
+        expect.objectContaining({
+          store1: expect.any(Object),
+          store2: expect.any(Object),
+        }),
+      )
+    })
+
+    it('automatically detects action names from stack traces', async () => {
+      const { createStore } = await import('../../src/vanilla')
+      const { devtools } = await import('../../src/middleware/devtools')
+
+      const store = createStore(
+        devtools((set) => ({
+          count: 0,
+          increment: () => {
+            set({ count: 1 })
+          },
+        })),
+      )
+
+      store.getState().increment()
+
+      expect(mockConnection.send).toHaveBeenCalled()
+      const lastCall = mockConnection.send.mock.calls[
+        mockConnection.send.mock.calls.length - 1
+      ]
+      expect(lastCall[0].type).toBeTruthy()
+    })
+
+    it('handles ACTION message type from DevTools', async () => {
+      const { createStore } = await import('../../src/vanilla')
+      const { devtools } = await import('../../src/middleware/devtools')
+
+      const store = createStore(
+        devtools((set) => ({
+          count: 0,
+          text: 'hello',
+        })),
+      )
+
+      const subscribeCallback = mockConnection.subscribe.mock.calls[0][0]
+
+      subscribeCallback({
+        type: 'ACTION',
+        payload: JSON.stringify({
+          type: '__setState',
+          state: { count: 42, text: 'updated' },
+        }),
+      })
+
+      expect(store.getState().count).toBe(42)
+      expect(store.getState().text).toBe('updated')
+    })
+
+    it('warns about reserved __setState action type', async () => {
+      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      const { createStore } = await import('../../src/vanilla')
+      const { redux } = await import('../../src/middleware/redux')
+      const { devtools } = await import('../../src/middleware/devtools')
+
+      const reducer = (state: { count: number }, action: any) => {
+        if (action.type === '__setState') {
+          return { ...state, ...action.state }
+        }
+        return state
+      }
+
+      const store = createStore(
+        devtools(redux(reducer, { count: 0 })),
+      )
+
+      store.dispatch({ type: '__setState', state: { count: 1 } })
+
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('__setState'),
+      )
+
+      consoleWarnSpy.mockRestore()
+    })
+
+    it('handles ACTION message with custom action type', async () => {
+      const { createStore } = await import('../../src/vanilla')
+      const { redux } = await import('../../src/middleware/redux')
+      const { devtools } = await import('../../src/middleware/devtools')
+
+      const reducer = (state: { count: number }, action: any) => {
+        switch (action.type) {
+          case 'INCREMENT':
+            return { count: state.count + 1 }
+          default:
+            return state
+        }
+      }
+
+      const store = createStore(
+        devtools(redux(reducer, { count: 0 })),
+      )
+
+      const subscribeCallback = mockConnection.subscribe.mock.calls[0][0]
+
+      subscribeCallback({
+        type: 'ACTION',
+        payload: JSON.stringify({
+          type: 'INCREMENT',
+        }),
+      })
+
+      expect(store.getState().count).toBe(1)
+    })
+
+    it('handles JSON parsing errors gracefully', async () => {
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {})
+
+      const { createStore } = await import('../../src/vanilla')
+      const { devtools } = await import('../../src/middleware/devtools')
+
+      const store = createStore(
+        devtools((set) => ({
+          count: 0,
+        })),
+      )
+
+      const subscribeCallback = mockConnection.subscribe.mock.calls[0][0]
+
+      subscribeCallback({
+        type: 'DISPATCH',
+        payload: { type: 'ROLLBACK' },
+        state: 'invalid json{',
+      })
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Could not parse'),
+        expect.any(Error),
+      )
+
+      consoleErrorSpy.mockRestore()
+    })
+
+    it('supports setState with action parameter (NamedSet)', async () => {
+      const { createStore } = await import('../../src/vanilla')
+      const { devtools } = await import('../../src/middleware/devtools')
+
+      const store = createStore(
+        devtools((set) => ({
+          count: 0,
+        })),
+      )
+
+      const setState = store.setState as any
+
+      setState({ count: 5 }, false, 'customAction')
+
+      expect(mockConnection.send).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'customAction' }),
+        expect.any(Object),
+      )
+    })
+
+    it('tracks multiple stores sharing a connection', async () => {
+      const { createStore } = await import('../../src/vanilla')
+      const { devtools } = await import('../../src/middleware/devtools')
+
+      const store1 = createStore(
+        devtools((set) => ({ count: 0 }), {
+          name: 'SharedConnection',
+          store: 'store1',
+        }),
+      )
+
+      const store2 = createStore(
+        devtools((set) => ({ count: 0 }), {
+          name: 'SharedConnection',
+          store: 'store2',
+        }),
+      )
+
+      store1.setState({ count: 10 })
+      store2.setState({ count: 20 })
+
+      const sendCalls = mockConnection.send.mock.calls
+      expect(sendCalls.length).toBeGreaterThan(0)
+
+      const lastCall = sendCalls[sendCalls.length - 1]
+      expect(lastCall[1]).toEqual(
+        expect.objectContaining({
+          store1: expect.any(Object),
+          store2: expect.any(Object),
+        }),
+      )
+    })
+
+    it('handles store-specific state updates in multi-store mode', async () => {
+      const { createStore } = await import('../../src/vanilla')
+      const { devtools } = await import('../../src/middleware/devtools')
+
+      const store = createStore(
+        devtools((set) => ({ count: 0 }), {
+          name: 'MultiStore',
+          store: 'myStore',
+        }),
+      )
+
+      const subscribeCallback = mockConnection.subscribe.mock.calls[0][0]
+
+      subscribeCallback({
+        type: 'ACTION',
+        payload: JSON.stringify({
+          type: '__setState',
+          state: { myStore: { count: 100 } },
+        }),
+      })
+
+      expect(store.getState().count).toBe(100)
+    })
+
+    it('handles JUMP_TO_STATE in multi-store mode', async () => {
+      const { createStore } = await import('../../src/vanilla')
+      const { devtools } = await import('../../src/middleware/devtools')
+
+      const store = createStore(
+        devtools((set) => ({ count: 0 }), {
+          name: 'MultiStore',
+          store: 'myStore',
+        }),
+      )
+
+      const subscribeCallback = mockConnection.subscribe.mock.calls[0][0]
+
+      subscribeCallback({
+        type: 'DISPATCH',
+        payload: { type: 'JUMP_TO_STATE' },
+        state: JSON.stringify({ myStore: { count: 50 } }),
+      })
+
+      expect(store.getState().count).toBe(50)
+    })
+
+    it('handles RESET in multi-store mode', async () => {
+      const { createStore } = await import('../../src/vanilla')
+      const { devtools } = await import('../../src/middleware/devtools')
+
+      const store = createStore(
+        devtools((set) => ({ count: 0 }), {
+          name: 'MultiStore',
+          store: 'myStore',
+        }),
+      )
+
+      store.setState({ count: 10 })
+
+      const subscribeCallback = mockConnection.subscribe.mock.calls[0][0]
+
+      subscribeCallback({
+        type: 'DISPATCH',
+        payload: { type: 'RESET' },
+      })
+
+      expect(store.getState().count).toBe(0)
+      expect(mockConnection.init).toHaveBeenCalledWith(
+        expect.objectContaining({
+          myStore: expect.any(Object),
+        }),
+      )
+    })
+
+    it('handles IMPORT_STATE in multi-store mode', async () => {
+      const { createStore } = await import('../../src/vanilla')
+      const { devtools } = await import('../../src/middleware/devtools')
+
+      const store = createStore(
+        devtools((set) => ({ count: 0 }), {
+          name: 'MultiStore',
+          store: 'myStore',
+        }),
+      )
+
+      const subscribeCallback = mockConnection.subscribe.mock.calls[0][0]
+
+      subscribeCallback({
+        type: 'DISPATCH',
+        payload: {
+          type: 'IMPORT_STATE',
+          nextLiftedState: {
+            computedStates: [
+              {
+                state: { myStore: { count: 99 } },
+              },
+            ],
+          },
+        },
+      })
+
+      expect(store.getState().count).toBe(99)
+    })
+
+    it('cleans up tracked connections on cleanup', async () => {
+      const { createStore } = await import('../../src/vanilla')
+      const { devtools } = await import('../../src/middleware/devtools')
+
+      const store1 = createStore(
+        devtools((set) => ({ count: 0 }), {
+          name: 'TrackedStore',
+          store: 'store1',
+        }),
+      )
+
+      const store2 = createStore(
+        devtools((set) => ({ count: 0 }), {
+          name: 'TrackedStore',
+          store: 'store2',
+        }),
+      )
+
+      ;(store1 as any).devtools.cleanup()
+
+      store2.setState({ count: 5 })
+
+      const lastCall = mockConnection.send.mock.calls[
+        mockConnection.send.mock.calls.length - 1
+      ]
+      expect(lastCall[1]).not.toHaveProperty('store1')
+      expect(lastCall[1]).toHaveProperty('store2')
+    })
+  })
 })
