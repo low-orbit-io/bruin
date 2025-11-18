@@ -1,0 +1,130 @@
+# Bruin
+
+Bruin is a fast, scalable state management library for React and JavaScript that extends Zustand with built-in history tracking and transactions. It provides a simple API without context providers or boilerplate, while adding powerful features for modern applications.
+
+## Key Features
+
+- **100% Zustand Compatible**: Drop-in replacement with zero breaking changes
+- **Built-in History**: Automatic state tracking with undo/redo support
+- **Transactions**: Batch multiple state updates atomically
+- **Time-Travel Debugging**: Full state history inspection
+- **No Providers**: Use stores anywhere without React context
+- **TypeScript First**: Full type safety out of the box
+
+## Docs
+
+- [Introduction](./getting-started/introduction.md): Learn the basics and create your first store.
+- [Comparison](./getting-started/comparison.md): How Bruin compares to Zustand and other libraries.
+- [History & Time Travel](./guides/history-and-time-travel.md): Built-in undo/redo and state inspection.
+- [Transactions](./guides/transactions.md): Batch state updates atomically.
+
+## Core API
+
+- [create](./apis/create.md): Create a Bruin store with React hooks.
+- [createStore](./apis/create-store.md): Create a standalone vanilla store without React.
+- [shallow](./apis/shallow.md): Utility for shallow comparison of objects.
+
+## Bruin Features
+
+- **History Tracking**: Every state change is automatically recorded
+  - `store.undo()` - Go back one state
+  - `store.redo()` - Go forward one state
+  - `store.getHistory()` - View all state changes
+  - `store.clearHistory()` - Clear history
+  - Action naming for better debugging
+
+- **Transactions**: Batch multiple updates into one atomic change
+  - `set.transaction(() => { ... })` - Batch updates
+  - Single history entry for all changes
+  - Automatic rollback on errors
+  - Named transactions for debugging
+
+## Middlewares
+
+- [persist](./middlewares/persist.md): Persist state to localStorage or other storage engines (can persist history).
+- [devtools](./middlewares/devtools.md): Debug state changes using Redux DevTools (integrates with history).
+- [immer](./middlewares/immer.md): Use Immer for immutable state updates.
+- [redux](./middlewares/redux.md): Use a reducer-style setup similar to Redux.
+- [combine](./middlewares/combine.md): Combine multiple slices into a single store.
+- [subscribeWithSelector](./middlewares/subscribe-with-selector.md): Subscribe to specific slices with selector support.
+
+## React Bindings
+
+- [create](./apis/create.md): Bind a store to React for use with hooks.
+- [createWithEqualityFn](./apis/create-with-equality-fn.md): Like create, but allows custom equality functions.
+
+## React Hooks
+
+- [useStore](./hooks/use-store.md): Access and subscribe to store state.
+- [useStoreWithEqualityFn](./hooks/use-store-with-equality-fn.md): Same as useStore, but with custom equality checks.
+- [useShallow](./hooks/use-shallow.md): Use selectors with shallow equality comparison.
+
+## Guides
+
+- [TypeScript Guide](./guides/beginner-typescript.md): Using Bruin with TypeScript.
+- [Advanced TypeScript](./guides/advanced-typescript.md): Advanced TypeScript patterns.
+- [Testing](./guides/testing.md): Best practices for testing Bruin stores.
+- [Next.js Integration](./guides/nextjs.md): Using Bruin with Next.js.
+- [SSR & Hydration](./guides/ssr-and-hydration.md): Server-side rendering with Bruin.
+- [Slices Pattern](./guides/slices-pattern.md): Organizing state into slices.
+- [Updating State](./guides/updating-state.md): State update patterns and best practices.
+- [Resetting State](./guides/how-to-reset-state.md): How to reset store state.
+- [Immutable State](./guides/immutable-state-and-merging.md): Understanding state merging.
+
+## Tutorials
+
+- [Tic-Tac-Toe Tutorial](./guides/tutorial-tic-tac-toe.md): Build a game using Bruin state management.
+
+## Integrations
+
+- [Third-Party Libraries](./integrations/third-party-libraries.md): Using Bruin with other libraries.
+- [Immer Middleware](./integrations/immer-middleware.md): Deep dive into Immer integration.
+- [Persisting Store Data](./integrations/persisting-store-data.md): Advanced persistence patterns.
+
+## Migration from Zustand
+
+No migration needed! Bruin is 100% backward compatible with Zustand.
+
+Simply change your imports:
+```diff
+- import { create } from 'zustand'
++ import { create } from 'bruin'
+```
+
+All Zustand code works with Bruin. You can then gradually adopt Bruin features like history and transactions.
+
+## Quick Example
+
+```typescript
+import { create } from 'bruin'
+
+const useStore = create((set) => ({
+  count: 0,
+  increment: () => set((state) => ({ count: state.count + 1 }), false, 'increment'),
+  decrement: () => set((state) => ({ count: state.count - 1 }), false, 'decrement'),
+}))
+
+// Use in React
+function Counter() {
+  const count = useStore((state) => state.count)
+  const increment = useStore((state) => state.increment)
+
+  // Access history
+  const undo = useStore((state) => state.undo)
+  const redo = useStore((state) => state.redo)
+
+  return (
+    <>
+      <div>{count}</div>
+      <button onClick={increment}>+</button>
+      <button onClick={undo}>Undo</button>
+      <button onClick={redo}>Redo</button>
+    </>
+  )
+}
+```
+
+## Repository
+
+- GitHub: https://github.com/low-orbit-io/bruin
+- NPM: https://www.npmjs.com/package/bruin

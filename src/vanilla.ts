@@ -27,12 +27,16 @@ export type StoreApi<T> = {
   clearHistory?: () => void;
 };
 
+export type SetStateWithTransaction<T> = StoreApi<T>['setState'] & {
+  transaction: StoreApi<T>['transaction'];
+};
+
 export type StateCreator<
   T,
   _Mps extends [StoreMutatorIdentifier, unknown][] = [],
   _Mcs extends [StoreMutatorIdentifier, unknown][] = [],
 > = (
-  set: StoreApi<T>['setState'],
+  set: SetStateWithTransaction<T>,
   get: StoreApi<T>['getState'],
   api: StoreApi<T>,
 ) => T;
@@ -54,11 +58,13 @@ type CreateStoreOptions = {
 };
 
 export const createStore = <T>(
-  initializer: (
-    set: StoreApi<T>['setState'],
-    get: StoreApi<T>['getState'],
-    api: StoreApi<T>,
-  ) => T,
+  initializer:
+    | ((
+        set: StoreApi<T>['setState'],
+        get: StoreApi<T>['getState'],
+        api: StoreApi<T>,
+      ) => T)
+    | StateCreator<T>,
   options?: CreateStoreOptions,
 ): StoreApi<T> => {
   let state: T;
@@ -610,8 +616,12 @@ export const createStore = <T>(
     },
   };
 
+  const setStateWithTransaction = Object.assign(api.setState, {
+    transaction: api.transaction,
+  }) as SetStateWithTransaction<T>;
+
   const tempState = {} as T;
-  const initialResult = initializer(api.setState, api.getState, api);
+  const initialResult = initializer(setStateWithTransaction, api.getState, api);
 
   originalInitialResult = initialResult;
 

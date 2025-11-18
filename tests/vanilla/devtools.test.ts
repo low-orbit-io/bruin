@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 /**
  * Vanilla devtools Middleware Tests
@@ -54,7 +54,7 @@ describe('Vanilla devtools Middleware', () => {
     const { createStore } = await import('../../src/vanilla');
     const { devtools } = await import('../../src/middleware/devtools');
 
-    createStore(
+    createStore<{ count: number; inc: () => void }>(
       devtools((set) => ({ count: 0, inc: () => set({ count: 1 }) }), {
         name: 'TestStore',
       }),
@@ -71,7 +71,7 @@ describe('Vanilla devtools Middleware', () => {
     const { devtools } = await import('../../src/middleware/devtools');
 
     createStore(
-      devtools((set) => ({ count: 0 }), {
+      devtools(() => ({ count: 0 }), {
         enabled: false,
       }),
     );
@@ -87,7 +87,7 @@ describe('Vanilla devtools Middleware', () => {
 
     // Should not throw, just skip connection
     expect(() => {
-      createStore(devtools((set) => ({ count: 0 })));
+      createStore(devtools(() => ({ count: 0 })));
     }).not.toThrow();
   });
 
@@ -95,7 +95,7 @@ describe('Vanilla devtools Middleware', () => {
     const { createStore } = await import('../../src/vanilla');
     const { devtools } = await import('../../src/middleware/devtools');
 
-    const store = createStore(
+    const store = createStore<{ count: number; inc: () => void }>(
       devtools((set) => ({
         count: 0,
         inc: () => set({ count: 1 }, false, 'increment'),
@@ -114,7 +114,7 @@ describe('Vanilla devtools Middleware', () => {
     const { createStore } = await import('../../src/vanilla');
     const { devtools } = await import('../../src/middleware/devtools');
 
-    const store = createStore(
+    const store = createStore<{ count: number; inc: () => void }>(
       devtools((set) => ({
         count: 0,
         inc: () => set({ count: 1 }),
@@ -133,7 +133,7 @@ describe('Vanilla devtools Middleware', () => {
     const { createStore } = await import('../../src/vanilla');
     const { devtools } = await import('../../src/middleware/devtools');
 
-    const store = createStore(
+    const store = createStore<{ count: number; inc: () => void }>(
       devtools((set) => ({
         count: 0,
         inc: () => set({ count: 1 }),
@@ -149,7 +149,7 @@ describe('Vanilla devtools Middleware', () => {
     const { createStore } = await import('../../src/vanilla');
     const { devtools } = await import('../../src/middleware/devtools');
 
-    const store = createStore(
+    const store = createStore<{ count: number; inc: () => void }>(
       devtools((set) => ({
         count: 0,
         inc: () => set((s) => ({ count: s.count + 1 })),
@@ -175,7 +175,7 @@ describe('Vanilla devtools Middleware', () => {
     const { createStore } = await import('../../src/vanilla');
     const { devtools } = await import('../../src/middleware/devtools');
 
-    const store = createStore(
+    const store = createStore<{ count: number; inc: () => void }>(
       devtools((set) => ({
         count: 0,
         inc: () => set((s) => ({ count: s.count + 1 })),
@@ -202,7 +202,7 @@ describe('Vanilla devtools Middleware', () => {
 
     // Should accept serialize options without error
     expect(() => {
-      createStore(
+      createStore<{ count: number; inc: () => void }>(
         devtools(
           (set) => ({
             count: 0,
@@ -225,7 +225,7 @@ describe('Vanilla devtools Middleware', () => {
     const { createStore } = await import('../../src/vanilla');
     const { devtools } = await import('../../src/middleware/devtools');
 
-    const store = createStore(
+    const store = createStore<{ count: number; inc: () => void }>(
       devtools((set) => ({
         count: 0,
         inc: () => set((s) => ({ count: s.count + 1 })),
@@ -251,7 +251,7 @@ describe('Vanilla devtools Middleware', () => {
     const { create } = await import('../../src/react');
     const { devtools } = await import('../../src/middleware/devtools');
 
-    const useStore = create(
+    const useStore = create<{ count: number; inc: () => void }>(
       devtools((set) => ({ count: 0, inc: () => set({ count: 1 }) }), {
         name: 'ReactStore',
       }),
@@ -269,11 +269,16 @@ describe('Vanilla devtools Middleware', () => {
     const { createStore } = await import('../../src/vanilla');
     const { devtools } = await import('../../src/middleware/devtools');
 
-    const store = createStore(
+    const store = createStore<{ count: number; inc: () => void }>(
       devtools(
         (set) => ({
           count: 0,
-          inc: () => set((s) => ({ count: s.count + 1 }), false, 'increment'),
+          inc: () =>
+            (set as any)(
+              (s: { count: number }) => ({ count: s.count + 1 }),
+              false,
+              'increment',
+            ),
         }),
         { name: 'HistoryStore' },
       ),
@@ -284,6 +289,7 @@ describe('Vanilla devtools Middleware', () => {
 
     // History should be tracked
     const history = store.getHistory();
+
     expect(history.length).toBeGreaterThan(0);
 
     // DevTools should receive history timeline info with store name prefix
@@ -298,7 +304,7 @@ describe('Vanilla devtools Middleware', () => {
     const { devtools } = await import('../../src/middleware/devtools');
 
     const store = createStore(
-      devtools((set) => ({
+      devtools(() => ({
         count: 0,
         text: 'hello',
       })),
@@ -325,7 +331,7 @@ describe('Vanilla devtools Middleware', () => {
     const { createStore } = await import('../../src/vanilla');
     const { devtools } = await import('../../src/middleware/devtools');
 
-    const store = createStore(
+    const store = createStore<{ count: number; inc: () => void }>(
       devtools(
         (set) => ({
           count: 0,
@@ -353,12 +359,8 @@ describe('Vanilla devtools Middleware', () => {
     const { createStore } = await import('../../src/vanilla');
     const { devtools } = await import('../../src/middleware/devtools');
 
-    const store1 = createStore(
-      devtools((set) => ({ count: 0 }), { name: 'Store1' }),
-    );
-    const store2 = createStore(
-      devtools((set) => ({ count: 0 }), { name: 'Store2' }),
-    );
+    createStore(devtools(() => ({ count: 0 }), { name: 'Store1' }));
+    createStore(devtools(() => ({ count: 0 }), { name: 'Store2' }));
 
     expect(mockDevtools.connect).toHaveBeenCalledTimes(2);
     expect(mockDevtools.connect).toHaveBeenCalledWith(
@@ -373,7 +375,7 @@ describe('Vanilla devtools Middleware', () => {
     const { createStore } = await import('../../src/vanilla');
     const { devtools } = await import('../../src/middleware/devtools');
 
-    const store = createStore(
+    const store = createStore<{ count: number; inc: () => void }>(
       devtools((set) => ({
         count: 0,
         inc: () => set((s) => ({ count: s.count + 1 })),
@@ -400,7 +402,7 @@ describe('Vanilla devtools Middleware', () => {
     const { createStore } = await import('../../src/vanilla');
     const { devtools } = await import('../../src/middleware/devtools');
 
-    const store = createStore(
+    const store = createStore<{ count: number; inc: () => void }>(
       devtools((set) => ({
         count: 0,
         inc: () => set((s) => ({ count: s.count + 1 })),
@@ -433,7 +435,7 @@ describe('Vanilla devtools Middleware', () => {
       const { devtools } = await import('../../src/middleware/devtools');
 
       const store = createStore(
-        devtools((set) => ({
+        devtools(() => ({
           count: 0,
         })),
       );
@@ -453,14 +455,14 @@ describe('Vanilla devtools Middleware', () => {
       const { devtools } = await import('../../src/middleware/devtools');
 
       const store1 = createStore(
-        devtools((set) => ({ count: 0 }), {
+        devtools(() => ({ count: 0 }), {
           name: 'MultiStore',
           store: 'store1',
         }),
       );
 
-      const store2 = createStore(
-        devtools((set) => ({ count: 0 }), {
+      createStore(
+        devtools(() => ({ count: 0 }), {
           name: 'MultiStore',
           store: 'store2',
         }),
@@ -490,7 +492,7 @@ describe('Vanilla devtools Middleware', () => {
       const { createStore } = await import('../../src/vanilla');
       const { devtools } = await import('../../src/middleware/devtools');
 
-      const store = createStore(
+      const store = createStore<{ count: number; increment: () => void }>(
         devtools((set) => ({
           count: 0,
           increment: () => {
@@ -514,7 +516,7 @@ describe('Vanilla devtools Middleware', () => {
       const { devtools } = await import('../../src/middleware/devtools');
 
       const store = createStore(
-        devtools((set) => ({
+        devtools(() => ({
           count: 0,
           text: 'hello',
         })),
@@ -550,7 +552,7 @@ describe('Vanilla devtools Middleware', () => {
         return state;
       };
 
-      const store = createStore(devtools(redux(reducer, { count: 0 })));
+      const store = createStore(devtools(redux(reducer, { count: 0 }))) as any;
 
       store.dispatch({ type: '__setState', state: { count: 1 } });
 
@@ -575,7 +577,10 @@ describe('Vanilla devtools Middleware', () => {
         }
       };
 
-      const store = createStore(devtools(redux(reducer, { count: 0 })));
+      const store = createStore<{
+        count: number;
+        dispatch: (action: any) => any;
+      }>(devtools(redux(reducer, { count: 0 })));
 
       const subscribeCallback = mockConnection.subscribe.mock.calls[0][0];
 
@@ -597,8 +602,8 @@ describe('Vanilla devtools Middleware', () => {
       const { createStore } = await import('../../src/vanilla');
       const { devtools } = await import('../../src/middleware/devtools');
 
-      const store = createStore(
-        devtools((set) => ({
+      createStore(
+        devtools(() => ({
           count: 0,
         })),
       );
@@ -624,7 +629,7 @@ describe('Vanilla devtools Middleware', () => {
       const { devtools } = await import('../../src/middleware/devtools');
 
       const store = createStore(
-        devtools((set) => ({
+        devtools(() => ({
           count: 0,
         })),
       );
@@ -644,14 +649,14 @@ describe('Vanilla devtools Middleware', () => {
       const { devtools } = await import('../../src/middleware/devtools');
 
       const store1 = createStore(
-        devtools((set) => ({ count: 0 }), {
+        devtools(() => ({ count: 0 }), {
           name: 'SharedConnection',
           store: 'store1',
         }),
       );
 
       const store2 = createStore(
-        devtools((set) => ({ count: 0 }), {
+        devtools(() => ({ count: 0 }), {
           name: 'SharedConnection',
           store: 'store2',
         }),
@@ -677,7 +682,7 @@ describe('Vanilla devtools Middleware', () => {
       const { devtools } = await import('../../src/middleware/devtools');
 
       const store = createStore(
-        devtools((set) => ({ count: 0 }), {
+        devtools(() => ({ count: 0 }), {
           name: 'MultiStore',
           store: 'myStore',
         }),
@@ -701,7 +706,7 @@ describe('Vanilla devtools Middleware', () => {
       const { devtools } = await import('../../src/middleware/devtools');
 
       const store = createStore(
-        devtools((set) => ({ count: 0 }), {
+        devtools(() => ({ count: 0 }), {
           name: 'MultiStore',
           store: 'myStore',
         }),
@@ -723,7 +728,7 @@ describe('Vanilla devtools Middleware', () => {
       const { devtools } = await import('../../src/middleware/devtools');
 
       const store = createStore(
-        devtools((set) => ({ count: 0 }), {
+        devtools(() => ({ count: 0 }), {
           name: 'MultiStore',
           store: 'myStore',
         }),
@@ -751,7 +756,7 @@ describe('Vanilla devtools Middleware', () => {
       const { devtools } = await import('../../src/middleware/devtools');
 
       const store = createStore(
-        devtools((set) => ({ count: 0 }), {
+        devtools(() => ({ count: 0 }), {
           name: 'MultiStore',
           store: 'myStore',
         }),
@@ -781,14 +786,14 @@ describe('Vanilla devtools Middleware', () => {
       const { devtools } = await import('../../src/middleware/devtools');
 
       const store1 = createStore(
-        devtools((set) => ({ count: 0 }), {
+        devtools(() => ({ count: 0 }), {
           name: 'TrackedStore',
           store: 'store1',
         }),
       );
 
       const store2 = createStore(
-        devtools((set) => ({ count: 0 }), {
+        devtools(() => ({ count: 0 }), {
           name: 'TrackedStore',
           store: 'store2',
         }),

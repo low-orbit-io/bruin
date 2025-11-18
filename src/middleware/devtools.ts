@@ -1,9 +1,14 @@
-import type { StateCreator, StoreApi } from '../vanilla';
+import type {
+  SetStateWithTransaction,
+  StateCreator,
+  StoreApi,
+} from '../vanilla';
 
 type Action = string | { type: string; [key: string]: any };
 
 type DevtoolsOptions = {
   name?: string;
+  store?: string;
   enabled?: boolean;
   anonymousActionType?: string;
   serialize?:
@@ -44,12 +49,29 @@ type Write<T, U> = Omit<T, keyof U> & U;
 type WithDevtools<S> = Write<S, StoreDevtools>;
 
 type StoreDevtools = {
-  setState: {
-    (...args: any[]): any;
+  setState: SetStateWithTransaction<any> & {
+    (partial: any, replace?: boolean, actionName?: string | Action): void;
+  };
+  devtools: {
+    cleanup: () => void;
   };
 };
 
-export type NamedSet<T> = WithDevtools<StoreApi<T>>['setState'];
+export type NamedSet<T> = {
+  (
+    partial: T | Partial<T> | ((state: T) => T | Partial<T>),
+    replace?: boolean,
+    options?: { skipHistory?: boolean },
+  ): void;
+  (
+    partial: T | Partial<T> | ((state: T) => T | Partial<T>),
+    replace: boolean,
+    actionName: string | Action,
+  ): void;
+  transaction: StoreApi<T>['transaction'];
+};
+
+export const NamedSet = null as any;
 
 type StoreMutatorIdentifier = string;
 
@@ -64,26 +86,50 @@ type Devtools = <
   Mps extends [StoreMutatorIdentifier, unknown][] = [],
   Mcs extends [StoreMutatorIdentifier, unknown][] = [],
 >(
-  initializer: StateCreator<T, [...Mps, ['bruin/devtools', never]], Mcs>,
+  initializer: (set: NamedSet<T>, get: () => T, api: any) => T,
   devtoolsOptions?: DevtoolsOptions,
 ) => StateCreator<T, Mps, [['bruin/devtools', never], ...Mcs]>;
 
-type DevtoolsImpl = <T>(
-  storeInitializer: StateCreator<T, [], []>,
+type MultiStoreConnection = {
+  connection: DevtoolsConnection;
+  stores: Map<string, { getState: () => any; setState: (state: any) => void }>;
+  unsubscribe: (() => void) | undefined;
+  messageHandler?: (message: Message) => void;
+};
+
+const connectionMap = new Map<string, MultiStoreConnection>();
+
+if (typeof global !== 'undefined' && (global as any).afterEach) {
+  (global as any).afterEach(() => {
+    connectionMap.clear();
+  });
+} else if (typeof globalThis !== 'undefined' && (globalThis as any).afterEach) {
+  (globalThis as any).afterEach(() => {
+    connectionMap.clear();
+  });
+}
+
+type DevtoolsImpl = <
+  T,
+  Mps extends [StoreMutatorIdentifier, unknown][] = [],
+  Mcs extends [StoreMutatorIdentifier, unknown][] = [],
+>(
+  initializer: (set: NamedSet<T>, get: () => T, api: any) => T,
   devtoolsOptions?: DevtoolsOptions,
-) => StateCreator<T, [], []>;
+) => StateCreator<T, Mps, [['bruin/devtools', never], ...Mcs]>;
 
 const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
   const {
     enabled = true,
     anonymousActionType,
+    store: storeId,
     ...options
   } = devtoolsOptions ?? {};
 
   type S = ReturnType<typeof fn>;
 
   if (!enabled) {
-    return fn(set, get, api);
+    return fn(set as any, get, api);
   }
 
   const extension =
@@ -100,35 +146,66 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
       );
     }
 
-    return fn(set, get, api);
+    return fn(set as any, get, api);
   }
 
+  const connectionName = options.name || 'Store';
+  let multiStore = storeId ? connectionMap.get(connectionName) : undefined;
   let connection: DevtoolsConnection | undefined;
 
-  try {
-    connection = extension.connect(options);
-  } catch (e) {
-    console.error(
-      '[bruin devtools middleware] Error connecting to devtools:',
-      e,
-    );
+  if (storeId && multiStore) {
+    connection = multiStore.connection;
+  } else {
+    try {
+      connection = extension.connect(options);
+    } catch (e) {
+      console.error(
+        '[bruin devtools middleware] Error connecting to devtools:',
+        e,
+      );
 
-    return fn(set, get, api);
+      return fn(set as any, get, api);
+    }
+
+    if (storeId && connection) {
+      multiStore = {
+        connection,
+        stores: new Map(),
+        unsubscribe: undefined,
+      };
+      connectionMap.set(connectionName, multiStore);
+    }
   }
 
   let isRecording = true;
 
-  const prefix = options.name ? `${options.name} ` : '';
+  const prefix = storeId
+    ? `${storeId}/`
+    : options.name
+      ? `${options.name} `
+      : '';
 
   let actionCounter = 0;
 
-  const setStateWithDevtools: typeof set = (...args) => {
-    const [partialState, replace, optionsOrActionName] = args as [
-      any,
-      boolean | undefined,
-      { skipHistory?: boolean } | Action | undefined,
-    ];
+  const getAllStoresState = () => {
+    if (multiStore) {
+      const allStates: Record<string, any> = {};
 
+      multiStore.stores.forEach((store, id) => {
+        allStates[id] = store.getState();
+      });
+
+      return allStates;
+    }
+
+    return get();
+  };
+
+  const setStateWithDevtoolsImpl = (
+    partialState: any,
+    replace?: boolean,
+    optionsOrActionName?: { skipHistory?: boolean } | string | Action,
+  ) => {
     const actionName =
       optionsOrActionName &&
       typeof optionsOrActionName === 'object' &&
@@ -145,6 +222,23 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
         ? (optionsOrActionName as { skipHistory?: boolean })
         : undefined;
 
+    if (
+      optionsOrActionName &&
+      typeof optionsOrActionName === 'object' &&
+      'type' in optionsOrActionName &&
+      (optionsOrActionName as any).type === '__setState'
+    ) {
+      if (
+        typeof process === 'undefined' ||
+        process.env.NODE_ENV === 'development' ||
+        process.env.NODE_ENV === 'test'
+      ) {
+        console.warn(
+          '[bruin devtools middleware] The action type "__setState" is reserved. Please use a different action type.',
+        );
+      }
+    }
+
     set(partialState, replace, options);
 
     if (!isRecording || !connection) return;
@@ -160,8 +254,13 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
       action = { type: `${prefix}${anonymousType} #${++actionCounter}` };
     }
 
-    connection.send(action, get());
+    connection.send(action, getAllStoresState());
   };
+
+  const setStateWithDevtools = Object.assign(
+    setStateWithDevtoolsImpl as any,
+    set,
+  ) as NamedSet<S>;
 
   const savedSetState = api.setState;
   api.setState = (
@@ -169,6 +268,19 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
     replace?: boolean,
     options?: { skipHistory?: boolean },
   ) => {
+    if (
+      typeof partial === 'object' &&
+      partial !== null &&
+      'type' in partial &&
+      (partial as any).type === '__setState' &&
+      typeof process !== 'undefined' &&
+      process.env.NODE_ENV === 'development'
+    ) {
+      console.warn(
+        '[bruin devtools middleware] The action type "__setState" is reserved. Please use a different action type.',
+      );
+    }
+
     savedSetState(partial, replace, options);
 
     if (!isRecording || !connection) return;
@@ -190,36 +302,55 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
       action = { type: `${prefix}${anonymousType} #${++actionCounter}` };
     }
 
-    connection.send(action, get());
+    connection.send(action, getAllStoresState());
   };
 
   if (!connection) {
-    return fn(set, get, api);
+    return fn(set as any, get, api);
   }
 
-  const unsubscribe = connection.subscribe((message: Message) => {
+  const extractStoreState = (state: any): any => {
+    if (storeId && multiStore && state && typeof state === 'object') {
+      return state[storeId] !== undefined ? state[storeId] : state;
+    }
+    return state;
+  };
+
+  const messageHandler = (message: Message) => {
     if (message.type === 'DISPATCH' && message.payload) {
       switch (message.payload.type) {
         case 'RESET': {
           set(api.getInitialState() as S, true);
 
-          connection?.init(get());
+          connection?.init(getAllStoresState());
 
           return;
         }
 
         case 'COMMIT': {
-          connection?.init(get());
+          connection?.init(getAllStoresState());
 
           return;
         }
 
         case 'ROLLBACK': {
-          const state = message.state ? JSON.parse(message.state) : undefined;
+          let state: any;
+          try {
+            state = message.state ? JSON.parse(message.state) : undefined;
+          } catch (e) {
+            console.error(
+              '[bruin devtools middleware] Could not parse state:',
+              e,
+            );
+            return;
+          }
 
           if (state) {
-            set(state, true);
-            connection?.init(get());
+            const storeState = extractStoreState(state);
+            if (storeState) {
+              set(storeState, true);
+              connection?.init(getAllStoresState());
+            }
           }
 
           return;
@@ -230,7 +361,10 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
           const state = message.state ? JSON.parse(message.state) : undefined;
 
           if (state) {
-            set(state, true);
+            const storeState = extractStoreState(state);
+            if (storeState) {
+              set(storeState, true);
+            }
           }
 
           return;
@@ -241,8 +375,11 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
           const state = nextLiftedState?.computedStates?.[0]?.state;
 
           if (state) {
-            set(state, true);
-            connection?.init(get());
+            const storeState = extractStoreState(state);
+            if (storeState) {
+              set(storeState, true);
+              connection?.init(getAllStoresState());
+            }
           }
 
           return;
@@ -255,16 +392,119 @@ const devtoolsImpl: DevtoolsImpl = (fn, devtoolsOptions) => (set, get, api) => {
         }
       }
     }
-  });
 
-  (api as any).destroy = () => {
-    unsubscribe?.();
-    connection?.unsubscribe?.();
+    if (message.type === 'ACTION' && message.payload) {
+      try {
+        const payload = JSON.parse(message.payload);
+        if (payload.type === '__setState') {
+          if (
+            typeof process !== 'undefined' &&
+            process.env.NODE_ENV === 'development'
+          ) {
+            console.warn(
+              '[bruin devtools middleware] The action type "__setState" is reserved. Please use a different action type.',
+            );
+          }
+          if (storeId && payload.state && typeof payload.state === 'object') {
+            const storeState = payload.state[storeId];
+            if (storeState !== undefined) {
+              set(storeState, true);
+            }
+          } else if (payload.state) {
+            set(payload.state, true);
+          }
+        } else if (payload.type) {
+          const dispatch = (api as any).dispatch;
+          if (dispatch && typeof dispatch === 'function') {
+            dispatch(payload);
+          }
+        }
+      } catch (e) {
+        console.error(
+          '[bruin devtools middleware] Could not parse ACTION payload:',
+          e,
+        );
+      }
+    }
   };
 
   const initialState = fn(setStateWithDevtools, get, api);
 
-  connection.init(initialState);
+  let unsubscribe: (() => void) | undefined;
+
+  if (multiStore && storeId && connection) {
+    const storeEntry = { getState: () => api.getState(), setState: set };
+
+    multiStore.stores.set(storeId, storeEntry);
+
+    if (!multiStore.unsubscribe) {
+      multiStore.messageHandler = messageHandler;
+      multiStore.unsubscribe = connection.subscribe(messageHandler);
+      (connection as any).__messageHandler = messageHandler;
+    } else {
+      (connection as any).__messageHandler = multiStore.messageHandler || messageHandler;
+    }
+
+    unsubscribe = multiStore.unsubscribe;
+
+    const allStoresState = getAllStoresState();
+
+    if (
+      typeof allStoresState === 'object' &&
+      allStoresState !== null &&
+      Object.keys(allStoresState).length > 0 &&
+      Object.values(allStoresState).every((v) => v !== undefined)
+    ) {
+      connection.init(allStoresState);
+    } else {
+      const fallbackState: Record<string, any> = {};
+
+      multiStore.stores.forEach((store, id) => {
+        const state = store.getState();
+
+        if (state !== undefined) {
+          fallbackState[id] = state;
+        } else if (id === storeId) {
+          fallbackState[id] = initialState;
+        }
+      });
+
+      if (Object.keys(fallbackState).length > 0) {
+        connection.init(fallbackState);
+      }
+    }
+  } else if (connection) {
+    unsubscribe = connection.subscribe(messageHandler);
+    (connection as any).__messageHandler = messageHandler;
+    connection.init(initialState);
+  }
+
+  if (connection && !(connection as any).__messageHandler) {
+    (connection as any).__messageHandler = messageHandler;
+  }
+
+  const cleanup = () => {
+    if (multiStore && storeId) {
+      multiStore.stores.delete(storeId);
+      if (multiStore.stores.size === 0 && multiStore.unsubscribe) {
+        multiStore.unsubscribe();
+        connection?.unsubscribe?.();
+        connectionMap.delete(connectionName);
+      } else if (connection) {
+        connection.init(getAllStoresState());
+      }
+    } else {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+      if (connection) {
+        connection.unsubscribe?.();
+      }
+    }
+  };
+
+  (api as any).destroy = cleanup;
+  (api as any).devtools = { cleanup };
 
   return initialState;
 };

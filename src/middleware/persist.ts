@@ -1,4 +1,8 @@
-import type { StateCreator, StoreApi } from '../vanilla';
+import type {
+  SetStateWithTransaction,
+  StateCreator,
+  StoreApi,
+} from '../vanilla';
 
 export interface StateStorage<R = unknown> {
   getItem: (name: string) => string | null | Promise<string | null>;
@@ -198,16 +202,17 @@ const persistImpl: PersistImpl =
     let storage = options.storage;
 
     if (!storage) {
-      return config(
+      const wrappedSetNoStorage = Object.assign(
         (...args: Parameters<typeof set>) => {
           console.warn(
             `[bruin persist middleware] Unable to update item '${options.name}', the given storage is currently unavailable.`,
           );
           set(...args);
         },
-        get,
-        api,
-      );
+        set,
+      ) as SetStateWithTransaction<S>;
+
+      return config(wrappedSetNoStorage, get, api);
     }
 
     const setItem = () => {
@@ -243,15 +248,13 @@ const persistImpl: PersistImpl =
       return setItem();
     };
 
-    const configResult = config(
-      (...args: Parameters<typeof set>) => {
-        set(...args);
+    const wrappedSet = Object.assign((...args: Parameters<typeof set>) => {
+      set(...args);
 
-        return setItem();
-      },
-      get,
-      api,
-    );
+      return setItem();
+    }, set) as SetStateWithTransaction<S>;
+
+    const configResult = config(wrappedSet, get, api);
 
     api.getInitialState = () => configResult;
 

@@ -236,6 +236,44 @@ describe('Transaction API', () => {
 
     expect(store.getState()).toEqual({ a: 0, b: 0 });
   });
+
+  it('supports set.transaction API in state creator', () => {
+    const store = createStore<{ a: number; b: number; updateBoth: (a: number, b: number) => void }>((set) => ({
+      a: 0,
+      b: 0,
+      updateBoth: (a: number, b: number) =>
+        set.transaction(() => {
+          set({ a });
+          set({ b });
+        }),
+    }));
+
+    store.getState().updateBoth(1, 2);
+
+    expect(store.getState().a).toBe(1);
+    expect(store.getState().b).toBe(2);
+
+    store.undo();
+
+    expect(store.getState().a).toBe(0);
+    expect(store.getState().b).toBe(0);
+  });
+
+  it('supports set.transaction with options', () => {
+    const store = createStore<{ value: number }>((set) => ({
+      value: 0,
+      update: (val: number) =>
+        set.transaction(() => {
+          set({ value: val });
+        }, { name: 'Custom Update' }),
+    }));
+
+    store.getState().update(42);
+
+    const history = store.getHistory();
+
+    expect(history[history.length - 1].name).toBe('Custom Update');
+  });
 });
 
 describe('Computed Fields', () => {
