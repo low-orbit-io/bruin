@@ -11,9 +11,7 @@ export type StoreApi<T> = {
   getState: () => T;
   getInitialState: () => T;
   subscribe: (
-    listenerOrPath:
-      | ((state: T, prevState: T) => void)
-      | (string | number)[],
+    listenerOrPath: ((state: T, prevState: T) => void) | (string | number)[],
     listener?: (state: T, prevState: T) => void,
   ) => () => void;
   undo: () => void;
@@ -128,31 +126,7 @@ export const createStore = <T>(
     return stateWithGetters;
   };
 
-  const getValueAtPath = (obj: any, path: (string | number)[]): any => {
-    let current = obj;
-    for (const key of path) {
-      if (current === null || current === undefined) {
-        return undefined;
-      }
-      current = current[key];
-    }
-    return current;
-  };
-
-  const hasPathChanged = (
-    prevState: T,
-    newState: T,
-    path: (string | number)[],
-  ): boolean => {
-    const prevValue = getValueAtPath(prevState, path);
-    const newValue = getValueAtPath(newState, path);
-    return !Object.is(prevValue, newValue);
-  };
-
-  const getChangedPaths = (
-    prevState: T,
-    newState: T,
-  ): Set<string> => {
+  const getChangedPaths = (prevState: T, newState: T): Set<string> => {
     const changedPaths = new Set<string>();
 
     if (!isImmerable(prevState) || !isImmerable(newState)) {
@@ -169,7 +143,8 @@ export const createStore = <T>(
           (obj[key] !== prevObj[key] ||
             (isImmerable(obj[key]) &&
               isImmerable(prevObj[key]) &&
-              Object.keys(obj[key]).length !== Object.keys(prevObj[key]).length))
+              Object.keys(obj[key]).length !==
+                Object.keys(prevObj[key]).length))
         ) {
           changedPaths.add(pathStr);
           if (isImmerable(obj[key]) && isImmerable(prevObj[key])) {
@@ -186,7 +161,11 @@ export const createStore = <T>(
   const notifyListeners = (newState: T, prevState: T) => {
     listeners.forEach((listener) => listener(newState, prevState));
 
-    if (pathListeners.size > 0 && isImmerable(newState) && isImmerable(prevState)) {
+    if (
+      pathListeners.size > 0 &&
+      isImmerable(newState) &&
+      isImmerable(prevState)
+    ) {
       const changedPaths = getChangedPaths(prevState, newState);
 
       pathListeners.forEach((pathListener) => {
@@ -206,6 +185,28 @@ export const createStore = <T>(
         }
       });
     }
+  };
+
+  const restoreHistoryState = (historyState: T, currentState: T): T => {
+    if (isImmerable(historyState) && isImmerable(currentState)) {
+      const descriptors = Object.getOwnPropertyDescriptors(currentState);
+      const newState = {} as T;
+
+      Object.assign(newState as any, historyState);
+
+      for (const key in descriptors) {
+        const descriptor = descriptors[key];
+
+        if (descriptor && descriptor.get) {
+          Object.defineProperty(newState, key, descriptor);
+        }
+      }
+
+      Object.setPrototypeOf(newState, Object.getPrototypeOf(currentState));
+
+      return newState;
+    }
+    return historyState;
   };
 
   const flushDebouncedHistory = () => {
@@ -439,13 +440,16 @@ export const createStore = <T>(
     subscribe: (listenerOrPath, listenerArg?) => {
       if (typeof listenerOrPath === 'function') {
         listeners.add(listenerOrPath);
+
         return () => listeners.delete(listenerOrPath);
       } else if (Array.isArray(listenerOrPath) && listenerArg) {
         const pathListener: PathListener = {
           listener: listenerArg,
           path: listenerOrPath,
         };
+
         pathListeners.add(pathListener);
+
         return () => pathListeners.delete(pathListener);
       } else {
         throw new Error(
@@ -460,34 +464,11 @@ export const createStore = <T>(
 
       if (historyIndex > 0) {
         const prevState = state;
-
         historyIndex--;
 
         const historyEntry = history[historyIndex];
         if (historyEntry) {
-          const historyState = historyEntry.state;
-
-          if (isImmerable(historyState) && isImmerable(state)) {
-            const descriptors = Object.getOwnPropertyDescriptors(state);
-            const newState = {} as T;
-
-            Object.assign(newState as any, historyState);
-
-            for (const key in descriptors) {
-              const descriptor = descriptors[key];
-
-              if (descriptor && descriptor.get) {
-                Object.defineProperty(newState, key, descriptor);
-              }
-            }
-
-            Object.setPrototypeOf(newState, Object.getPrototypeOf(state));
-
-            state = newState;
-          } else {
-            state = historyState;
-          }
-
+          state = restoreHistoryState(historyEntry.state, state);
           notifyListeners(state, prevState);
         }
       }
@@ -499,34 +480,11 @@ export const createStore = <T>(
 
       if (historyIndex < history.length - 1) {
         const prevState = state;
-
         historyIndex++;
 
         const historyEntry = history[historyIndex];
         if (historyEntry) {
-          const historyState = historyEntry.state;
-
-          if (isImmerable(historyState) && isImmerable(state)) {
-            const descriptors = Object.getOwnPropertyDescriptors(state);
-            const newState = {} as T;
-
-            Object.assign(newState as any, historyState);
-
-            for (const key in descriptors) {
-              const descriptor = descriptors[key];
-
-              if (descriptor && descriptor.get) {
-                Object.defineProperty(newState, key, descriptor);
-              }
-            }
-
-            Object.setPrototypeOf(newState, Object.getPrototypeOf(state));
-
-            state = newState;
-          } else {
-            state = historyState;
-          }
-
+          state = restoreHistoryState(historyEntry.state, state);
           notifyListeners(state, prevState);
         }
       }
