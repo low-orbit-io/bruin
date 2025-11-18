@@ -6,12 +6,12 @@ export type ReadonlyStoreApi<T> = {
   subscribe: (...args: any[]) => () => void;
 };
 
-export type UseBoundStore<S extends ReadonlyStoreApi<unknown>> = {
+export type UseBoundStore<S> = {
   (): ExtractState<S>;
   <U>(selector: (state: ExtractState<S>) => U): U;
 } & S;
 
-export type UseBoundStoreWithEqualityFn<S extends ReadonlyStoreApi<unknown>> = {
+export type UseBoundStoreWithEqualityFn<S> = {
   (): ExtractState<S>;
   <U>(
     selector: (state: ExtractState<S>) => U,
