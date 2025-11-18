@@ -23,6 +23,8 @@ export type StoreApi<T> = {
     options?: { name?: string; skipHistory?: boolean },
   ) => void;
   getHistory: () => any[];
+  restoreHistory?: (states: T[], index: number) => void;
+  clearHistory?: () => void;
 };
 
 export type StateCreator<T> = (
@@ -574,6 +576,32 @@ export const createStore = <T>(
 
       return history;
     },
+    restoreHistory: (states: T[], index: number) => {
+      // Restore history from persist middleware
+      history = states.map((s) => ({
+        state: s,
+        timestamp: Date.now(),
+      }));
+      historyIndex = index;
+
+      // Set current state to the state at the given index
+      if (historyIndex >= 0 && historyIndex < history.length) {
+        const historyEntry = history[historyIndex];
+        if (historyEntry) {
+          state = restoreHistoryState(historyEntry.state, state);
+        }
+      }
+    },
+    clearHistory: () => {
+      // Clear history and reset to current state only
+      history = [
+        {
+          state: cloneStateForHistory(state),
+          timestamp: Date.now(),
+        },
+      ];
+      historyIndex = 0;
+    },
   };
 
   const tempState = {} as T;
@@ -605,12 +633,16 @@ export const createStore = <T>(
 
   const initialState: T = state;
 
-  history.push({
-    state: cloneStateForHistory(state),
-    timestamp: Date.now(),
-  });
+  // Only push initial state to history if history is empty
+  // (history may already be populated by persist middleware's restoreHistory)
+  if (history.length === 0) {
+    history.push({
+      state: cloneStateForHistory(state),
+      timestamp: Date.now(),
+    });
 
-  historyIndex = 0;
+    historyIndex = 0;
+  }
 
   return api;
 };
