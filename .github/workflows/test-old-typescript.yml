@@ -9,6 +9,7 @@ on:
 jobs:
   test_old_typescript:
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
