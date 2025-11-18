@@ -238,7 +238,11 @@ describe('Transaction API', () => {
   });
 
   it('supports set.transaction API in state creator', () => {
-    const store = createStore<{ a: number; b: number; updateBoth: (a: number, b: number) => void }>((set) => ({
+    const store = createStore<{
+      a: number;
+      b: number;
+      updateBoth: (a: number, b: number) => void;
+    }>((set) => ({
       a: 0,
       b: 0,
       updateBoth: (a: number, b: number) =>
@@ -263,9 +267,12 @@ describe('Transaction API', () => {
     const store = createStore<{ value: number }>((set) => ({
       value: 0,
       update: (val: number) =>
-        set.transaction(() => {
-          set({ value: val });
-        }, { name: 'Custom Update' }),
+        set.transaction(
+          () => {
+            set({ value: val });
+          },
+          { name: 'Custom Update' },
+        ),
     }));
 
     store.getState().update(42);

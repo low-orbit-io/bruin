@@ -73,13 +73,7 @@ export default defineConfig(
             'object',
           ],
           'newlines-between': 'never',
-          pathGroups: [
-            {
-              pattern: 'react',
-              group: 'builtin',
-              position: 'before',
-            },
-          ],
+          pathGroups: [],
           pathGroupsExcludedImportTypes: ['builtin'],
         },
       ],
@@ -90,6 +84,13 @@ export default defineConfig(
       '@typescript-eslint/no-unused-vars': [
         'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
+      '@typescript-eslint/no-empty-object-type': [
+        'error',
+        {
+          allowInterfaces: 'with-single-extends',
+          allowWithName: 'Mutators$|Registry$',
+        },
       ],
     },
   },
@@ -104,6 +105,15 @@ export default defineConfig(
         'error',
         { fn: 'it', withinDescribe: 'it' },
       ],
+    },
+  },
+  {
+    files: ['src/types/core.ts'],
+    rules: {
+      // Type parameters S and A in StoreMutators interface are required for interface merging.
+      // Middleware files augment this interface and use these parameters. They cannot be prefixed
+      // with _ because TypeScript requires identical parameter names for interface merging.
+      '@typescript-eslint/no-unused-vars': 'off',
     },
   },
 );

@@ -26,13 +26,13 @@ The `create` function uses the curried form, which results in a store of type `U
 
 ```ts
 // store.ts
-import { create } from 'bruin'
+import { create } from 'bruin';
 
 // Define types for state & actions
 interface BearState {
-  bears: number
-  food: string
-  feed: (food: string) => void
+  bears: number;
+  food: string;
+  feed: (food: string) => void;
 }
 
 // Create store using the curried form of `create`
@@ -40,7 +40,7 @@ export const useBearStore = create<BearState>()((set) => ({
   bears: 2,
   food: 'honey',
   feed: (food) => set(() => ({ food })),
-}))
+}));
 ```
 
 ### Using the Store in Components
@@ -49,12 +49,12 @@ Inside components, you can read state and call actions. Selectors `(s) => s.bear
 This reduces re-renders and improves performance. JS can do this too, but with TS your IDE autocompletes state fields.
 
 ```tsx
-import { useBearStore } from './store'
+import { useBearStore } from './store';
 
 function BearCounter() {
   // Select only 'bears' to avoid unnecessary re-renders
-  const bears = useBearStore((s) => s.bears)
-  return <h1>{bears} bears around</h1>
+  const bears = useBearStore((s) => s.bears);
+  return <h1>{bears} bears around</h1>;
 }
 ```
 
@@ -64,24 +64,24 @@ Resetting is useful after logout or “clear session”. We use `typeof initialS
 TypeScript updates automatically if `initialState` changes. This is safer and cleaner compared to JS.
 
 ```tsx
-import { create } from 'bruin'
+import { create } from 'bruin';
 
-const initialState = { bears: 0, food: 'honey' }
+const initialState = { bears: 0, food: 'honey' };
 
 // Reuse state type dynamically
 type BearState = typeof initialState & {
-  increase: (by: number) => void
-  reset: () => void
-}
+  increase: (by: number) => void;
+  reset: () => void;
+};
 
 const useBearStore = create<BearState>()((set) => ({
   ...initialState,
   increase: (by) => set((s) => ({ bears: s.bears + by })),
   reset: () => set(initialState),
-}))
+}));
 
 function ResetZoo() {
-  const { bears, increase, reset } = useBearStore()
+  const { bears, increase, reset } = useBearStore();
 
   return (
     <div>
@@ -89,7 +89,7 @@ function ResetZoo() {
       <button onClick={() => increase(5)}>Increase by 5</button>
       <button onClick={reset}>Reset</button>
     </div>
-  )
+  );
 }
 ```
 
@@ -100,41 +100,41 @@ It returns the full type of your store’s state and actions without having to m
 
 ```ts
 // store.ts
-import { create, type ExtractState } from 'bruin'
+import { create, type ExtractState } from 'bruin';
 
 export const useBearStore = create((set) => ({
   bears: 3,
   food: 'honey',
   increase: (by: number) => set((s) => ({ bears: s.bears + by })),
-}))
+}));
 
 // Extract the type of the whole store state
-export type BearState = ExtractState<typeof useBearStore>
+export type BearState = ExtractState<typeof useBearStore>;
 ```
 
 Using extracted type in tests:
 
 ```ts
 // test.cy.ts
-import { BearState } from './store.ts'
+import { BearState } from './store.ts';
 
 test('should reset store', () => {
-  const snapshot: BearState = useBearStore.getState()
-  expect(snapshot.bears).toBeGreaterThanOrEqual(0)
-})
+  const snapshot: BearState = useBearStore.getState();
+  expect(snapshot.bears).toBeGreaterThanOrEqual(0);
+});
 ```
 
 and in utility function:
 
 ```ts
 // util.ts
-import { BearState } from './store.ts'
+import { BearState } from './store.ts';
 
 function logBearState(state: BearState) {
-  console.log(`We have ${state.bears} bears eating ${state.food}`)
+  console.log(`We have ${state.bears} bears eating ${state.food}`);
 }
 
-logBearState(useBearStore.getState())
+logBearState(useBearStore.getState());
 ```
 
 ### Selectors
@@ -148,31 +148,31 @@ This is more efficient than subscribing to the whole store. TypeScript ensures y
 See the [API documentation](../../hooks/use-shallow.md) for more details on `useShallow`.
 
 ```tsx
-import { create } from 'bruin'
-import { useShallow } from 'bruin/react/shallow'
+import { create } from 'bruin';
+import { useShallow } from 'bruin/react/shallow';
 
 // Bear store with explicit types
 interface BearState {
-  bears: number
-  food: number
+  bears: number;
+  food: number;
 }
 
 const useBearStore = create<BearState>()(() => ({
   bears: 2,
   food: 10,
-}))
+}));
 
 // In components, you can use both stores safely
 function MultipleSelectors() {
   const { bears, food } = useBearStore(
     useShallow((state) => ({ bears: state.bears, food: state.food })),
-  )
+  );
 
   return (
     <div>
       We have {food} units of food for {bears} bears
     </div>
-  )
+  );
 }
 ```
 
@@ -182,23 +182,23 @@ Not all values need to be stored directly - some can be computed from existing s
 This avoids duplication and keeps the store minimal. TypeScript ensures `bears` is a number, so math is safe.
 
 ```tsx
-import { create } from 'bruin'
+import { create } from 'bruin';
 
 interface BearState {
-  bears: number
-  foodPerBear: number
+  bears: number;
+  foodPerBear: number;
 }
 
 const useBearStore = create<BearState>()(() => ({
   bears: 3,
   foodPerBear: 2,
-}))
+}));
 
 function TotalFood() {
   // Derived value: required amount food for all bears
-  const totalFood = useBearStore((s) => s.bears * s.foodPerBear) // don't need to have extra property `{ totalFood: 6 }` in your Store
+  const totalFood = useBearStore((s) => s.bears * s.foodPerBear); // don't need to have extra property `{ totalFood: 6 }` in your Store
 
-  return <div>We need ${totalFood} jars of honey</div>
+  return <div>We need ${totalFood} jars of honey</div>;
 }
 ```
 
@@ -212,12 +212,12 @@ This is different from JS, where type safety is missing. It’s a very popular s
 See the [API documentation](../../middlewares/combine.md) for more details.
 
 ```ts
-import { create } from 'bruin'
-import { combine } from 'bruin/middleware'
+import { create } from 'bruin';
+import { combine } from 'bruin/middleware';
 
 interface BearState {
-  bears: number
-  increase: () => void
+  bears: number;
+  increase: () => void;
 }
 
 // State + actions are separated
@@ -225,7 +225,7 @@ export const useBearStore = create<BearState>()(
   combine({ bears: 0 }, (set) => ({
     increase: () => set((s) => ({ bears: s.bears + 1 })),
   })),
-)
+);
 ```
 
 #### `devtools` middleware
@@ -235,12 +235,12 @@ It’s extremely useful in development. TS ensures your actions and state remain
 See the [API documentation](../../middlewares/devtools.md) for more details.
 
 ```ts
-import { create } from 'bruin'
-import { devtools } from 'bruin/middleware'
+import { create } from 'bruin';
+import { devtools } from 'bruin/middleware';
 
 interface BearState {
-  bears: number
-  increase: () => void
+  bears: number;
+  increase: () => void;
 }
 
 export const useBearStore = create<BearState>()(
@@ -248,7 +248,7 @@ export const useBearStore = create<BearState>()(
     bears: 0,
     increase: () => set((s) => ({ bears: s.bears + 1 })),
   })),
-)
+);
 ```
 
 #### `persist` middleware
@@ -258,12 +258,12 @@ Great for apps where persistence matters. In TS, the state type stays consistent
 See the [API documentation](../../middlewares/persist.md) for more details.
 
 ```ts
-import { create } from 'bruin'
-import { persist } from 'bruin/middleware'
+import { create } from 'bruin';
+import { persist } from 'bruin/middleware';
 
 interface BearState {
-  bears: number
-  increase: () => void
+  bears: number;
+  increase: () => void;
 }
 
 export const useBearStore = create<BearState>()(
@@ -274,7 +274,7 @@ export const useBearStore = create<BearState>()(
     }),
     { name: 'bear-storage' }, // localStorage key
   ),
-)
+);
 ```
 
 ### Async Actions
@@ -283,26 +283,26 @@ Actions can be async to fetch remote data. Here we fetch bears count and update 
 TS enforces correct API response type (`BearData`). In JS you might misspell `count` - TS prevents that.
 
 ```ts
-import { create } from 'bruin'
+import { create } from 'bruin';
 
 interface BearData {
-  count: number
+  count: number;
 }
 
 interface BearState {
-  bears: number
-  fetchBears: () => Promise<void>
+  bears: number;
+  fetchBears: () => Promise<void>;
 }
 
 export const useBearStore = create<BearState>()((set) => ({
   bears: 0,
   fetchBears: async () => {
-    const res = await fetch('/api/bears')
-    const data: BearData = await res.json()
+    const res = await fetch('/api/bears');
+    const data: BearData = await res.json();
 
-    set({ bears: data.count })
+    set({ bears: data.count });
   },
-}))
+}));
 ```
 
 ### `createWithEqualityFn`
@@ -312,16 +312,16 @@ Not common, but shows Bruin’s flexibility. TS still keeps full type inference.
 See the [API documentation](../../apis/create-with-equality-fn.md) for more details.
 
 ```ts
-import { createWithEqualityFn } from 'bruin/traditional'
-import { shallow } from 'bruin/shallow'
+import { createWithEqualityFn } from 'bruin/traditional';
+import { shallow } from 'bruin/shallow';
 
 const useBearStore = createWithEqualityFn(() => ({
   bears: 0,
-}))
+}));
 
-const bears = useBearStore((s) => s.bears, Object.is)
+const bears = useBearStore((s) => s.bears, Object.is);
 // or
-const bears = useBearStore((s) => ({ bears: s.bears }), shallow)
+const bears = useBearStore((s) => ({ bears: s.bears }), shallow);
 ```
 
 ### Multiple Stores
@@ -330,34 +330,34 @@ You can create more than one store for different domains. For example, `BearStor
 This keeps state isolated and easier to maintain in larger apps. With TypeScript, each store has its own strict type - you can’t accidentally mix bears and fish.
 
 ```tsx
-import { create } from 'bruin'
+import { create } from 'bruin';
 
 // Bear store with explicit types
 interface BearState {
-  bears: number
-  addBear: () => void
+  bears: number;
+  addBear: () => void;
 }
 
 const useBearStore = create<BearState>()((set) => ({
   bears: 2,
   addBear: () => set((s) => ({ bears: s.bears + 1 })),
-}))
+}));
 
 // Fish store with explicit types
 interface FishState {
-  fish: number
-  addFish: () => void
+  fish: number;
+  addFish: () => void;
 }
 
 const useFishStore = create<FishState>()((set) => ({
   fish: 5,
   addFish: () => set((s) => ({ fish: s.fish + 1 })),
-}))
+}));
 
 // In components, you can use both stores safely
 function Zoo() {
-  const { bears, addBear } = useBearStore()
-  const { fish, addFish } = useFishStore()
+  const { bears, addBear } = useBearStore();
+  const { fish, addFish } = useFishStore();
 
   return (
     <div>
@@ -367,7 +367,7 @@ function Zoo() {
       <button onClick={addBear}>Add bear</button>
       <button onClick={addFish}>Add fish</button>
     </div>
-  )
+  );
 }
 ```
 

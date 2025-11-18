@@ -9,7 +9,7 @@ nav: 210
 `subscribeWithSelector` middleware lets you subscribe to specific data based on current state.
 
 ```js
-const nextStateCreatorFn = subscribeWithSelector(stateCreatorFn)
+const nextStateCreatorFn = subscribeWithSelector(stateCreatorFn);
 ```
 
 - [Types](#types)
@@ -56,50 +56,50 @@ By subscribing to partial state updates, you register a callback that fires when
 partial state updates. We can use `subscribe` for external state management.
 
 ```ts
-import { createStore } from 'bruin/vanilla'
-import { subscribeWithSelector } from 'bruin/middleware'
+import { createStore } from 'bruin/vanilla';
+import { subscribeWithSelector } from 'bruin/middleware';
 
-type PositionStoreState = { position: { x: number; y: number } }
+type PositionStoreState = { position: { x: number; y: number } };
 
 type PositionStoreActions = {
-  setPosition: (nextPosition: PositionStoreState['position']) => void
-}
+  setPosition: (nextPosition: PositionStoreState['position']) => void;
+};
 
-type PositionStore = PositionStoreState & PositionStoreActions
+type PositionStore = PositionStoreState & PositionStoreActions;
 
 const positionStore = createStore<PositionStore>()(
   subscribeWithSelector((set) => ({
     position: { x: 0, y: 0 },
     setPosition: (position) => set({ position }),
   })),
-)
+);
 
-const $dot = document.getElementById('dot') as HTMLDivElement
+const $dot = document.getElementById('dot') as HTMLDivElement;
 
 $dot.addEventListener('mouseenter', (event) => {
-  const parent = event.currentTarget.parentElement
-  const parentWidth = parent.clientWidth
-  const parentHeight = parent.clientHeight
+  const parent = event.currentTarget.parentElement;
+  const parentWidth = parent.clientWidth;
+  const parentHeight = parent.clientHeight;
 
   positionStore.getState().setPosition({
     x: Math.ceil(Math.random() * parentWidth),
     y: Math.ceil(Math.random() * parentHeight),
-  })
-})
+  });
+});
 
 const render: Parameters<typeof positionStore.subscribe>[0] = (state) => {
-  $dot.style.transform = `translate(${state.position.x}px, ${state.position.y}px)`
-}
+  $dot.style.transform = `translate(${state.position.x}px, ${state.position.y}px)`;
+};
 
-render(positionStore.getInitialState(), positionStore.getInitialState())
+render(positionStore.getInitialState(), positionStore.getInitialState());
 
-positionStore.subscribe((state) => state.position, render)
+positionStore.subscribe((state) => state.position, render);
 
 const logger: Parameters<typeof positionStore.subscribe>[0] = (x) => {
-  console.log('new x position', { x })
-}
+  console.log('new x position', { x });
+};
 
-positionStore.subscribe((state) => state.position.x, logger)
+positionStore.subscribe((state) => state.position.x, logger);
 ```
 
 Here's the `html` code

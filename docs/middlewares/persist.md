@@ -10,7 +10,7 @@ nav: 207
 restarts.
 
 ```js
-const nextStateCreatorFn = persist(stateCreatorFn, persistOptions)
+const nextStateCreatorFn = persist(stateCreatorFn, persistOptions);
 ```
 
 - [Types](#types)
@@ -82,16 +82,16 @@ coordinates) and an action to update it. We'll also use the `persist` middleware
 position in `localStorage`.
 
 ```ts
-import { createStore } from 'bruin/vanilla'
-import { persist } from 'bruin/middleware'
+import { createStore } from 'bruin/vanilla';
+import { persist } from 'bruin/middleware';
 
-type PositionStoreState = { position: { x: number; y: number } }
+type PositionStoreState = { position: { x: number; y: number } };
 
 type PositionStoreActions = {
-  setPosition: (nextPosition: PositionStoreState['position']) => void
-}
+  setPosition: (nextPosition: PositionStoreState['position']) => void;
+};
 
-type PositionStore = PositionStoreState & PositionStoreActions
+type PositionStore = PositionStoreState & PositionStoreActions;
 
 const positionStore = createStore<PositionStore>()(
   persist(
@@ -101,21 +101,23 @@ const positionStore = createStore<PositionStore>()(
     }),
     { name: 'position-storage' },
   ),
-)
+);
 ```
 
 Next, we'll track the mouse movements inside a div and update the store with the new position.
 
 ```ts
-const $dotContainer = document.getElementById('dot-container') as HTMLDivElement
-const $dot = document.getElementById('dot') as HTMLDivElement
+const $dotContainer = document.getElementById(
+  'dot-container',
+) as HTMLDivElement;
+const $dot = document.getElementById('dot') as HTMLDivElement;
 
 $dotContainer.addEventListener('pointermove', (event) => {
   positionStore.getState().setPosition({
     x: event.clientX,
     y: event.clientY,
-  })
-})
+  });
+});
 ```
 
 We want to reflect the position updates on the screen by moving a div element
@@ -123,27 +125,27 @@ We want to reflect the position updates on the screen by moving a div element
 
 ```ts
 const render: Parameters<typeof positionStore.subscribe>[0] = (state) => {
-  $dot.style.transform = `translate(${state.position.x}px, ${state.position.y}px)`
-}
+  $dot.style.transform = `translate(${state.position.x}px, ${state.position.y}px)`;
+};
 
-render(positionStore.getState(), positionStore.getState())
+render(positionStore.getState(), positionStore.getState());
 
-positionStore.subscribe(render)
+positionStore.subscribe(render);
 ```
 
 Here’s the complete code.
 
 ```ts
-import { createStore } from 'bruin/vanilla'
-import { persist } from 'bruin/middleware'
+import { createStore } from 'bruin/vanilla';
+import { persist } from 'bruin/middleware';
 
-type PositionStoreState = { position: { x: number; y: number } }
+type PositionStoreState = { position: { x: number; y: number } };
 
 type PositionStoreActions = {
-  setPosition: (nextPosition: PositionStoreState['position']) => void
-}
+  setPosition: (nextPosition: PositionStoreState['position']) => void;
+};
 
-type PositionStore = PositionStoreState & PositionStoreActions
+type PositionStore = PositionStoreState & PositionStoreActions;
 
 const positionStore = createStore<PositionStore>()(
   persist(
@@ -153,25 +155,27 @@ const positionStore = createStore<PositionStore>()(
     }),
     { name: 'position-storage' },
   ),
-)
+);
 
-const $dotContainer = document.getElementById('dot-container') as HTMLDivElement
-const $dot = document.getElementById('dot') as HTMLDivElement
+const $dotContainer = document.getElementById(
+  'dot-container',
+) as HTMLDivElement;
+const $dot = document.getElementById('dot') as HTMLDivElement;
 
 $dotContainer.addEventListener('pointermove', (event) => {
   positionStore.getState().setPosition({
     x: event.clientX,
     y: event.clientY,
-  })
-})
+  });
+});
 
 const render: Parameters<typeof positionStore.subscribe>[0] = (state) => {
-  $dot.style.transform = `translate(${state.position.x}px, ${state.position.y}px)`
-}
+  $dot.style.transform = `translate(${state.position.x}px, ${state.position.y}px)`;
+};
 
-render(positionStore.getState(), positionStore.getState())
+render(positionStore.getState(), positionStore.getState());
 
-positionStore.subscribe(render)
+positionStore.subscribe(render);
 ```
 
 Here's the `html` code
@@ -200,24 +204,24 @@ use the `persist` middleware to persist only the relevant part of the state (in 
 context containing the position).
 
 ```ts
-import { createStore } from 'bruin/vanilla'
-import { persist } from 'bruin/middleware'
+import { createStore } from 'bruin/vanilla';
+import { persist } from 'bruin/middleware';
 
 type PositionStoreState = {
   context: {
-    position: { x: number; y: number }
-  }
-}
+    position: { x: number; y: number };
+  };
+};
 
 type PositionStoreActions = {
   actions: {
     setPosition: (
       nextPosition: PositionStoreState['context']['position'],
-    ) => void
-  }
-}
+    ) => void;
+  };
+};
 
-type PositionStore = PositionStoreState & PositionStoreActions
+type PositionStore = PositionStoreState & PositionStoreActions;
 
 const positionStore = createStore<PositionStore>()(
   persist(
@@ -234,21 +238,23 @@ const positionStore = createStore<PositionStore>()(
       partialize: (state) => ({ context: state.context }),
     },
   ),
-)
+);
 ```
 
 Next, we'll track the mouse movements inside a div and update the store with the new position.
 
 ```ts
-const $dotContainer = document.getElementById('dot-container') as HTMLDivElement
-const $dot = document.getElementById('dot') as HTMLDivElement
+const $dotContainer = document.getElementById(
+  'dot-container',
+) as HTMLDivElement;
+const $dot = document.getElementById('dot') as HTMLDivElement;
 
 $dotContainer.addEventListener('pointermove', (event) => {
   positionStore.getState().actions.setPosition({
     x: event.clientX,
     y: event.clientY,
-  })
-})
+  });
+});
 ```
 
 We want to reflect the position updates on the screen by moving a div element
@@ -256,36 +262,36 @@ We want to reflect the position updates on the screen by moving a div element
 
 ```ts
 const render: Parameters<typeof positionStore.subscribe>[0] = (state) => {
-  $dot.style.transform = `translate(${state.context.position.x}px, ${state.context.position.y}px)`
-}
+  $dot.style.transform = `translate(${state.context.position.x}px, ${state.context.position.y}px)`;
+};
 
-render(positionStore.getState(), positionStore.getState())
+render(positionStore.getState(), positionStore.getState());
 
-positionStore.subscribe(render)
+positionStore.subscribe(render);
 ```
 
 Here’s the full code to create a dot that follows your mouse movement inside a container and
 persists the `context` in `localStorage`.
 
 ```ts
-import { createStore } from 'bruin/vanilla'
-import { persist } from 'bruin/middleware'
+import { createStore } from 'bruin/vanilla';
+import { persist } from 'bruin/middleware';
 
 type PositionStoreState = {
   context: {
-    position: { x: number; y: number }
-  }
-}
+    position: { x: number; y: number };
+  };
+};
 
 type PositionStoreActions = {
   actions: {
     setPosition: (
       nextPosition: PositionStoreState['context']['position'],
-    ) => void
-  }
-}
+    ) => void;
+  };
+};
 
-type PositionStore = PositionStoreState & PositionStoreActions
+type PositionStore = PositionStoreState & PositionStoreActions;
 
 const positionStore = createStore<PositionStore>()(
   persist(
@@ -302,25 +308,27 @@ const positionStore = createStore<PositionStore>()(
       partialize: (state) => ({ context: state.context }),
     },
   ),
-)
+);
 
-const $dotContainer = document.getElementById('dot-container') as HTMLDivElement
-const $dot = document.getElementById('dot') as HTMLDivElement
+const $dotContainer = document.getElementById(
+  'dot-container',
+) as HTMLDivElement;
+const $dot = document.getElementById('dot') as HTMLDivElement;
 
 $dotContainer.addEventListener('pointermove', (event) => {
   positionStore.getState().actions.setPosition({
     x: event.clientX,
     y: event.clientY,
-  })
-})
+  });
+});
 
 const render: Parameters<typeof positionStore.subscribe>[0] = (state) => {
-  $dot.style.transform = `translate(${state.context.position.x}px, ${state.context.position.y}px)`
-}
+  $dot.style.transform = `translate(${state.context.position.x}px, ${state.context.position.y}px)`;
+};
 
-render(positionStore.getState(), positionStore.getState())
+render(positionStore.getState(), positionStore.getState());
 
-positionStore.subscribe(render)
+positionStore.subscribe(render);
 ```
 
 Here's the `html` code
@@ -349,35 +357,35 @@ mechanism. This includes retrieving, setting, and removing parameters.
 
 ```ts
 const getSearchParams = () => {
-  return new URL(location.href).searchParams
-}
+  return new URL(location.href).searchParams;
+};
 
 const updateSearchParams = (searchParams: URLSearchParams) => {
   window.history.replaceState(
     {},
     '',
     `${location.pathname}?${searchParams.toString()}`,
-  )
-}
+  );
+};
 
 const getSearchParam = (key: string) => {
-  const searchParams = getSearchParams()
-  return searchParams.get(key)
-}
+  const searchParams = getSearchParams();
+  return searchParams.get(key);
+};
 
 const updateSearchParam = (key: string, value: string) => {
-  const searchParams = getSearchParams()
-  searchParams.set(key, value)
+  const searchParams = getSearchParams();
+  searchParams.set(key, value);
 
-  updateSearchParams(searchParams)
-}
+  updateSearchParams(searchParams);
+};
 
 const removeSearchParam = (key: string) => {
-  const searchParams = getSearchParams()
-  searchParams.delete(key)
+  const searchParams = getSearchParams();
+  searchParams.delete(key);
 
-  updateSearchParams(searchParams)
-}
+  updateSearchParams(searchParams);
+};
 ```
 
 To use the URL search parameters as storage, we define a `searchParamsStorage` object with
@@ -389,7 +397,7 @@ const searchParamsStorage = {
   getItem: (key: string) => getSearchParam(key),
   setItem: (key: string, value: string) => updateSearchParam(key, value),
   removeItem: (key: string) => removeSearchParam(key),
-}
+};
 ```
 
 Now, we initialize the vanilla store using the `persist` middleware, specifying that we want to use
@@ -397,16 +405,16 @@ our custom storage. Instead of the default `localStorage` or `sessionStorage`, w
 position data in the URL search parameters.
 
 ```ts
-import { createStore } from 'bruin/vanilla'
-import { persist, createJSONStorage } from 'bruin/middleware'
+import { createStore } from 'bruin/vanilla';
+import { persist, createJSONStorage } from 'bruin/middleware';
 
-type PositionStoreState = { position: { x: number; y: number } }
+type PositionStoreState = { position: { x: number; y: number } };
 
 type PositionStoreActions = {
-  setPosition: (nextPosition: PositionStoreState['position']) => void
-}
+  setPosition: (nextPosition: PositionStoreState['position']) => void;
+};
 
-type PositionStore = PositionStoreState & PositionStoreActions
+type PositionStore = PositionStoreState & PositionStoreActions;
 
 const positionStore = createStore<PositionStore>()(
   persist(
@@ -419,21 +427,23 @@ const positionStore = createStore<PositionStore>()(
       storage: createJSONStorage(() => searchParamsStorage),
     },
   ),
-)
+);
 ```
 
 Next, we'll track the mouse movements inside a div and update the store with the new position.
 
 ```ts
-const $dotContainer = document.getElementById('dot-container') as HTMLDivElement
-const $dot = document.getElementById('dot') as HTMLDivElement
+const $dotContainer = document.getElementById(
+  'dot-container',
+) as HTMLDivElement;
+const $dot = document.getElementById('dot') as HTMLDivElement;
 
 $dotContainer.addEventListener('pointermove', (event) => {
   positionStore.getState().setPosition({
     x: event.clientX,
     y: event.clientY,
-  })
-})
+  });
+});
 ```
 
 We want to reflect the position updates on the screen by moving a div element
@@ -441,65 +451,65 @@ We want to reflect the position updates on the screen by moving a div element
 
 ```ts
 const render: Parameters<typeof positionStore.subscribe>[0] = (state) => {
-  $dot.style.transform = `translate(${state.position.x}px, ${state.position.y}px)`
-}
+  $dot.style.transform = `translate(${state.position.x}px, ${state.position.y}px)`;
+};
 
-render(positionStore.getState(), positionStore.getState())
+render(positionStore.getState(), positionStore.getState());
 
-positionStore.subscribe(render)
+positionStore.subscribe(render);
 ```
 
 Here’s the full code to create a dot that follows your mouse movement inside a container and
 persists the position in URL's search parameters.
 
 ```ts
-import { createStore } from 'bruin/vanilla'
-import { persist, createJSONStorage } from 'bruin/middleware'
+import { createStore } from 'bruin/vanilla';
+import { persist, createJSONStorage } from 'bruin/middleware';
 
-type PositionStoreState = { position: { x: number; y: number } }
+type PositionStoreState = { position: { x: number; y: number } };
 
 type PositionStoreActions = {
-  setPosition: (nextPosition: PositionStoreState['position']) => void
-}
+  setPosition: (nextPosition: PositionStoreState['position']) => void;
+};
 
-type PositionStore = PositionStoreState & PositionStoreActions
+type PositionStore = PositionStoreState & PositionStoreActions;
 
 const getSearchParams = () => {
-  return new URL(location.href).searchParams
-}
+  return new URL(location.href).searchParams;
+};
 
 const updateSearchParams = (searchParams: URLSearchParams) => {
   window.history.replaceState(
     {},
     '',
     `${location.pathname}?${searchParams.toString()}`,
-  )
-}
+  );
+};
 
 const getSearchParam = (key: string) => {
-  const searchParams = getSearchParams()
-  return searchParams.get(key)
-}
+  const searchParams = getSearchParams();
+  return searchParams.get(key);
+};
 
 const updateSearchParam = (key: string, value: string) => {
-  const searchParams = getSearchParams()
-  searchParams.set(key, value)
+  const searchParams = getSearchParams();
+  searchParams.set(key, value);
 
-  updateSearchParams(searchParams)
-}
+  updateSearchParams(searchParams);
+};
 
 const removeSearchParam = (key: string) => {
-  const searchParams = getSearchParams()
-  searchParams.delete(key)
+  const searchParams = getSearchParams();
+  searchParams.delete(key);
 
-  updateSearchParams(searchParams)
-}
+  updateSearchParams(searchParams);
+};
 
 const searchParamsStorage = {
   getItem: (key: string) => getSearchParam(key),
   setItem: (key: string, value: string) => updateSearchParam(key, value),
   removeItem: (key: string) => removeSearchParam(key),
-}
+};
 
 const positionStore = createStore<PositionStore>()(
   persist(
@@ -512,25 +522,27 @@ const positionStore = createStore<PositionStore>()(
       storage: createJSONStorage(() => searchParamsStorage),
     },
   ),
-)
+);
 
-const $dotContainer = document.getElementById('dot-container') as HTMLDivElement
-const $dot = document.getElementById('dot') as HTMLDivElement
+const $dotContainer = document.getElementById(
+  'dot-container',
+) as HTMLDivElement;
+const $dot = document.getElementById('dot') as HTMLDivElement;
 
 $dotContainer.addEventListener('pointermove', (event) => {
   positionStore.getState().setPosition({
     x: event.clientX,
     y: event.clientY,
-  })
-})
+  });
+});
 
 const render: Parameters<typeof positionStore.subscribe>[0] = (state) => {
-  $dot.style.transform = `translate(${state.position.x}px, ${state.position.y}px)`
-}
+  $dot.style.transform = `translate(${state.position.x}px, ${state.position.y}px)`;
+};
 
-render(positionStore.getState(), positionStore.getState())
+render(positionStore.getState(), positionStore.getState());
 
-positionStore.subscribe(render)
+positionStore.subscribe(render);
 ```
 
 Here's the `html` code
@@ -566,7 +578,7 @@ if (!localStorage.getItem('position-storage')) {
       state: { x: 100, y: 100 }, // version 0 structure
       version: 0,
     }),
-  )
+  );
 }
 ```
 
@@ -577,27 +589,29 @@ handle changes between versions. In this example, we `migrate` the state from `v
 ```ts
 migrate: (persisted: any, version) => {
   if (version === 0) {
-    persisted.position = { x: persisted.x, y: persisted.y }
-    delete persisted.x
-    delete persisted.y
+    persisted.position = { x: persisted.x, y: persisted.y };
+    delete persisted.x;
+    delete persisted.y;
   }
 
-  return persisted
-}
+  return persisted;
+};
 ```
 
 Next, we'll track the mouse movements inside a div and update the store with the new position.
 
 ```ts
-const $dotContainer = document.getElementById('dot-container') as HTMLDivElement
-const $dot = document.getElementById('dot') as HTMLDivElement
+const $dotContainer = document.getElementById(
+  'dot-container',
+) as HTMLDivElement;
+const $dot = document.getElementById('dot') as HTMLDivElement;
 
 $dotContainer.addEventListener('pointermove', (event) => {
   positionStore.getState().setPosition({
     x: event.clientX,
     y: event.clientY,
-  })
-})
+  });
+});
 ```
 
 We want to reflect the position updates on the screen by moving a div element
@@ -605,19 +619,19 @@ We want to reflect the position updates on the screen by moving a div element
 
 ```ts
 const render: Parameters<typeof positionStore.subscribe>[0] = (state) => {
-  $dot.style.transform = `translate(${state.position.x}px, ${state.position.y}px)`
-}
+  $dot.style.transform = `translate(${state.position.x}px, ${state.position.y}px)`;
+};
 
-render(positionStore.getState(), positionStore.getState())
+render(positionStore.getState(), positionStore.getState());
 
-positionStore.subscribe(render)
+positionStore.subscribe(render);
 ```
 
 Here’s the complete code.
 
 ```ts
-import { createStore } from 'bruin/vanilla'
-import { persist } from 'bruin/middleware'
+import { createStore } from 'bruin/vanilla';
+import { persist } from 'bruin/middleware';
 
 // For tutorial purposes only
 if (!localStorage.getItem('position-storage')) {
@@ -627,16 +641,16 @@ if (!localStorage.getItem('position-storage')) {
       state: { x: 100, y: 100 },
       version: 0,
     }),
-  )
+  );
 }
 
-type PositionStoreState = { position: { x: number; y: number } }
+type PositionStoreState = { position: { x: number; y: number } };
 
 type PositionStoreActions = {
-  setPosition: (nextPosition: PositionStoreState['position']) => void
-}
+  setPosition: (nextPosition: PositionStoreState['position']) => void;
+};
 
-type PositionStore = PositionStoreState & PositionStoreActions
+type PositionStore = PositionStoreState & PositionStoreActions;
 
 const positionStore = createStore<PositionStore>()(
   persist(
@@ -649,34 +663,36 @@ const positionStore = createStore<PositionStore>()(
       version: 1,
       migrate: (persisted: any, version) => {
         if (version === 0) {
-          persisted.position = { x: persisted.x, y: persisted.y }
-          delete persisted.x
-          delete persisted.y
+          persisted.position = { x: persisted.x, y: persisted.y };
+          delete persisted.x;
+          delete persisted.y;
         }
 
-        return persisted
+        return persisted;
       },
     },
   ),
-)
+);
 
-const $dotContainer = document.getElementById('dot-container') as HTMLDivElement
-const $dot = document.getElementById('dot') as HTMLDivElement
+const $dotContainer = document.getElementById(
+  'dot-container',
+) as HTMLDivElement;
+const $dot = document.getElementById('dot') as HTMLDivElement;
 
 $dotContainer.addEventListener('pointermove', (event) => {
   positionStore.getState().setPosition({
     x: event.clientX,
     y: event.clientY,
-  })
-})
+  });
+});
 
 const render: Parameters<typeof positionStore.subscribe>[0] = (state) => {
-  $dot.style.transform = `translate(${state.position.x}px, ${state.position.y}px)`
-}
+  $dot.style.transform = `translate(${state.position.x}px, ${state.position.y}px)`;
+};
 
-render(positionStore.getState(), positionStore.getState())
+render(positionStore.getState(), positionStore.getState());
 
-positionStore.subscribe(render)
+positionStore.subscribe(render);
 ```
 
 Here's the `html` code
@@ -710,26 +726,26 @@ if (!localStorage.getItem('position-storage')) {
       state: { position: { y: 100 } }, // missing `x` field
       version: 0,
     }),
-  )
+  );
 }
 ```
 
 Now, we will create the store and configure it to use persistence and deep merging.
 
 ```ts
-import { createStore } from 'bruin/vanilla'
-import { persist } from 'bruin/middleware'
-import createDeepMerge from '@fastify/deepmerge'
+import { createStore } from 'bruin/vanilla';
+import { persist } from 'bruin/middleware';
+import createDeepMerge from '@fastify/deepmerge';
 
-const deepMerge = createDeepMerge({ all: true })
+const deepMerge = createDeepMerge({ all: true });
 
-type PositionStoreState = { position: { x: number; y: number } }
+type PositionStoreState = { position: { x: number; y: number } };
 
 type PositionStoreActions = {
-  setPosition: (nextPosition: PositionStoreState['position']) => void
-}
+  setPosition: (nextPosition: PositionStoreState['position']) => void;
+};
 
-type PositionStore = PositionStoreState & PositionStoreActions
+type PositionStore = PositionStoreState & PositionStoreActions;
 
 const positionStore = createStore<PositionStore>()(
   persist(
@@ -742,21 +758,23 @@ const positionStore = createStore<PositionStore>()(
       merge: (persisted, current) => deepMerge(current, persisted) as never,
     },
   ),
-)
+);
 ```
 
 Next, we'll track the mouse movements inside a div and update the store with the new position.
 
 ```ts
-const $dotContainer = document.getElementById('dot-container') as HTMLDivElement
-const $dot = document.getElementById('dot') as HTMLDivElement
+const $dotContainer = document.getElementById(
+  'dot-container',
+) as HTMLDivElement;
+const $dot = document.getElementById('dot') as HTMLDivElement;
 
 $dotContainer.addEventListener('pointermove', (event) => {
   positionStore.getState().setPosition({
     x: event.clientX,
     y: event.clientY,
-  })
-})
+  });
+});
 ```
 
 We want to reflect the position updates on the screen by moving a div element
@@ -764,22 +782,22 @@ We want to reflect the position updates on the screen by moving a div element
 
 ```ts
 const render: Parameters<typeof positionStore.subscribe>[0] = (state) => {
-  $dot.style.transform = `translate(${state.position.x}px, ${state.position.y}px)`
-}
+  $dot.style.transform = `translate(${state.position.x}px, ${state.position.y}px)`;
+};
 
-render(positionStore.getState(), positionStore.getState())
+render(positionStore.getState(), positionStore.getState());
 
-positionStore.subscribe(render)
+positionStore.subscribe(render);
 ```
 
 Here’s the complete code.
 
 ```ts
-import { createStore } from 'bruin/vanilla'
-import { persist } from 'bruin/middleware'
-import createDeepMerge from '@fastify/deepmerge'
+import { createStore } from 'bruin/vanilla';
+import { persist } from 'bruin/middleware';
+import createDeepMerge from '@fastify/deepmerge';
 
-const deepMerge = createDeepMerge({ all: true })
+const deepMerge = createDeepMerge({ all: true });
 
 // For tutorial purposes only
 if (!localStorage.getItem('position-storage')) {
@@ -789,16 +807,16 @@ if (!localStorage.getItem('position-storage')) {
       state: { position: { y: 100 } }, // missing `x` field
       version: 0,
     }),
-  )
+  );
 }
 
-type PositionStoreState = { position: { x: number; y: number } }
+type PositionStoreState = { position: { x: number; y: number } };
 
 type PositionStoreActions = {
-  setPosition: (nextPosition: PositionStoreState['position']) => void
-}
+  setPosition: (nextPosition: PositionStoreState['position']) => void;
+};
 
-type PositionStore = PositionStoreState & PositionStoreActions
+type PositionStore = PositionStoreState & PositionStoreActions;
 
 const positionStore = createStore<PositionStore>()(
   persist(
@@ -811,26 +829,28 @@ const positionStore = createStore<PositionStore>()(
       merge: (persisted, current) => deepMerge(current, persisted) as never,
     },
   ),
-)
+);
 
-const $dotContainer = document.getElementById('dot-container') as HTMLDivElement
-const $dot = document.getElementById('dot') as HTMLDivElement
+const $dotContainer = document.getElementById(
+  'dot-container',
+) as HTMLDivElement;
+const $dot = document.getElementById('dot') as HTMLDivElement;
 
 $dotContainer.addEventListener('pointermove', (event) => {
   positionStore.getState().setPosition({
     x: event.clientX,
     y: event.clientY,
-  })
-})
+  });
+});
 
 const render: Parameters<typeof positionStore.subscribe>[0] = (state) => {
-  console.log({ state })
-  $dot.style.transform = `translate(${state.position.x}px, ${state.position.y}px)`
-}
+  console.log({ state });
+  $dot.style.transform = `translate(${state.position.x}px, ${state.position.y}px)`;
+};
 
-render(positionStore.getState(), positionStore.getState())
+render(positionStore.getState(), positionStore.getState());
 
-positionStore.subscribe(render)
+positionStore.subscribe(render);
 ```
 
 Here's the `html` code
@@ -858,16 +878,16 @@ coordinates) and an action to update it. Furthermore, we'll also use the `persis
 store the position in `localStorage` but skipping hydration.
 
 ```ts
-import { createStore } from 'bruin/vanilla'
-import { persist } from 'bruin/middleware'
+import { createStore } from 'bruin/vanilla';
+import { persist } from 'bruin/middleware';
 
-type PositionStoreState = { position: { x: number; y: number } }
+type PositionStoreState = { position: { x: number; y: number } };
 
 type PositionStoreActions = {
-  setPosition: (nextPosition: PositionStoreState['position']) => void
-}
+  setPosition: (nextPosition: PositionStoreState['position']) => void;
+};
 
-type PositionStore = PositionStoreState & PositionStoreActions
+type PositionStore = PositionStoreState & PositionStoreActions;
 
 const positionStore = createStore<PositionStore>()(
   persist(
@@ -880,7 +900,7 @@ const positionStore = createStore<PositionStore>()(
       skipHydration: true,
     },
   ),
-)
+);
 ```
 
 Since we skipped hydration in the initial setup, we will manually rehydrate the state. Here, we’re
@@ -888,22 +908,24 @@ using `setTimeout` to simulate a delayed rehydration.
 
 ```ts
 setTimeout(() => {
-  positionStore.persist.rehydrate()
-}, 2000)
+  positionStore.persist.rehydrate();
+}, 2000);
 ```
 
 Next, we'll track the mouse movements inside a div and update the store with the new position.
 
 ```ts
-const $dotContainer = document.getElementById('dot-container') as HTMLDivElement
-const $dot = document.getElementById('dot') as HTMLDivElement
+const $dotContainer = document.getElementById(
+  'dot-container',
+) as HTMLDivElement;
+const $dot = document.getElementById('dot') as HTMLDivElement;
 
 $dotContainer.addEventListener('pointermove', (event) => {
   positionStore.getState().setPosition({
     x: event.clientX,
     y: event.clientY,
-  })
-})
+  });
+});
 ```
 
 We want to reflect the position updates on the screen by moving a div element
@@ -911,27 +933,27 @@ We want to reflect the position updates on the screen by moving a div element
 
 ```ts
 const render: Parameters<typeof positionStore.subscribe>[0] = (state) => {
-  $dot.style.transform = `translate(${state.position.x}px, ${state.position.y}px)`
-}
+  $dot.style.transform = `translate(${state.position.x}px, ${state.position.y}px)`;
+};
 
-render(positionStore.getState(), positionStore.getState())
+render(positionStore.getState(), positionStore.getState());
 
-positionStore.subscribe(render)
+positionStore.subscribe(render);
 ```
 
 Here’s the complete code.
 
 ```ts
-import { createStore } from 'bruin/vanilla'
-import { persist } from 'bruin/middleware'
+import { createStore } from 'bruin/vanilla';
+import { persist } from 'bruin/middleware';
 
-type PositionStoreState = { position: { x: number; y: number } }
+type PositionStoreState = { position: { x: number; y: number } };
 
 type PositionStoreActions = {
-  setPosition: (nextPosition: PositionStoreState['position']) => void
-}
+  setPosition: (nextPosition: PositionStoreState['position']) => void;
+};
 
-type PositionStore = PositionStoreState & PositionStoreActions
+type PositionStore = PositionStoreState & PositionStoreActions;
 
 const positionStore = createStore<PositionStore>()(
   persist(
@@ -944,29 +966,31 @@ const positionStore = createStore<PositionStore>()(
       skipHydration: true,
     },
   ),
-)
+);
 
-const $dotContainer = document.getElementById('dot-container') as HTMLDivElement
-const $dot = document.getElementById('dot') as HTMLDivElement
+const $dotContainer = document.getElementById(
+  'dot-container',
+) as HTMLDivElement;
+const $dot = document.getElementById('dot') as HTMLDivElement;
 
 $dotContainer.addEventListener('pointermove', (event) => {
   positionStore.getState().setPosition({
     x: event.clientX,
     y: event.clientY,
-  })
-})
+  });
+});
 
 const render: Parameters<typeof positionStore.subscribe>[0] = (state) => {
-  $dot.style.transform = `translate(${state.position.x}px, ${state.position.y}px)`
-}
+  $dot.style.transform = `translate(${state.position.x}px, ${state.position.y}px)`;
+};
 
 setTimeout(() => {
-  positionStore.persist.rehydrate()
-}, 2000)
+  positionStore.persist.rehydrate();
+}, 2000);
 
-render(positionStore.getState(), positionStore.getState())
+render(positionStore.getState(), positionStore.getState());
 
-positionStore.subscribe(render)
+positionStore.subscribe(render);
 ```
 
 Here's the `html` code

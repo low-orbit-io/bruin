@@ -30,8 +30,8 @@ In this tutorial, you'll build an interactive tic-tac-toe game with React and Br
 You can see what it will look like when you're finished here:
 
 ```jsx
-import { create } from 'bruin'
-import { combine } from 'bruin/middleware'
+import { create } from 'bruin';
+import { combine } from 'bruin/middleware';
 
 const useGameStore = create(
   combine(
@@ -47,7 +47,7 @@ const useGameStore = create(
               typeof nextHistory === 'function'
                 ? nextHistory(state.history)
                 : nextHistory,
-          }))
+          }));
         },
         setCurrentMove: (nextCurrentMove) => {
           set((state) => ({
@@ -55,12 +55,12 @@ const useGameStore = create(
               typeof nextCurrentMove === 'function'
                 ? nextCurrentMove(state.currentMove)
                 : nextCurrentMove,
-          }))
+          }));
         },
-      }
+      };
     },
   ),
-)
+);
 
 function Square({ value, onSquareClick }) {
   return (
@@ -81,20 +81,20 @@ function Square({ value, onSquareClick }) {
     >
       {value}
     </button>
-  )
+  );
 }
 
 function Board({ xIsNext, squares, onPlay }) {
-  const winner = calculateWinner(squares)
-  const turns = calculateTurns(squares)
-  const player = xIsNext ? 'X' : 'O'
-  const status = calculateStatus(winner, turns, player)
+  const winner = calculateWinner(squares);
+  const turns = calculateTurns(squares);
+  const player = xIsNext ? 'X' : 'O';
+  const status = calculateStatus(winner, turns, player);
 
   function handleClick(i) {
-    if (squares[i] || winner) return
-    const nextSquares = squares.slice()
-    nextSquares[i] = player
-    onPlay(nextSquares)
+    if (squares[i] || winner) return;
+    const nextSquares = squares.slice();
+    nextSquares[i] = player;
+    onPlay(nextSquares);
   }
 
   return (
@@ -119,25 +119,25 @@ function Board({ xIsNext, squares, onPlay }) {
         ))}
       </div>
     </>
-  )
+  );
 }
 
 export default function Game() {
-  const history = useGameStore((state) => state.history)
-  const setHistory = useGameStore((state) => state.setHistory)
-  const currentMove = useGameStore((state) => state.currentMove)
-  const setCurrentMove = useGameStore((state) => state.setCurrentMove)
-  const xIsNext = currentMove % 2 === 0
-  const currentSquares = history[currentMove]
+  const history = useGameStore((state) => state.history);
+  const setHistory = useGameStore((state) => state.setHistory);
+  const currentMove = useGameStore((state) => state.currentMove);
+  const setCurrentMove = useGameStore((state) => state.setCurrentMove);
+  const xIsNext = currentMove % 2 === 0;
+  const currentSquares = history[currentMove];
 
   function handlePlay(nextSquares) {
-    const nextHistory = [...history.slice(0, currentMove + 1), nextSquares]
-    setHistory(nextHistory)
-    setCurrentMove(nextHistory.length - 1)
+    const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
+    setHistory(nextHistory);
+    setCurrentMove(nextHistory.length - 1);
   }
 
   function jumpTo(nextMove) {
-    setCurrentMove(nextMove)
+    setCurrentMove(nextMove);
   }
 
   return (
@@ -157,7 +157,7 @@ export default function Game() {
             const description =
               historyIndex > 0
                 ? `Go to move #${historyIndex}`
-                : 'Go to game start'
+                : 'Go to game start';
 
             return (
               <li key={historyIndex}>
@@ -165,12 +165,12 @@ export default function Game() {
                   {description}
                 </button>
               </li>
-            )
+            );
           })}
         </ol>
       </div>
     </div>
-  )
+  );
 }
 
 function calculateWinner(squares) {
@@ -183,26 +183,26 @@ function calculateWinner(squares) {
     [2, 5, 8],
     [0, 4, 8],
     [2, 4, 6],
-  ]
+  ];
 
   for (let i = 0; i < lines.length; i++) {
-    const [a, b, c] = lines[i]
+    const [a, b, c] = lines[i];
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a]
+      return squares[a];
     }
   }
 
-  return null
+  return null;
 }
 
 function calculateTurns(squares) {
-  return squares.filter((square) => !square).length
+  return squares.filter((square) => !square).length;
 }
 
 function calculateStatus(winner, turns, player) {
-  if (!winner && !turns) return 'Draw'
-  if (winner) return `Winner ${winner}`
-  return `Next player: ${player}`
+  if (!winner && !turns) return 'Draw';
+  if (winner) return `Winner ${winner}`;
+  return `Next player: ${player}`;
 }
 ```
 
@@ -238,7 +238,7 @@ function Square({ value, onSquareClick }) {
     >
       {value}
     </button>
-  )
+  );
 }
 ```
 
@@ -279,7 +279,7 @@ export default function Board() {
       <Square value="8" />
       <Square value="9" />
     </div>
-  )
+  );
 }
 ```
 
@@ -311,8 +311,8 @@ Let's take this opportunity to try it out. Edit the `Board` component so that it
 variable named squares that defaults to an array of 9 nulls corresponding to the 9 squares:
 
 ```jsx
-import { create } from 'bruin'
-import { combine } from 'bruin/middleware'
+import { create } from 'bruin';
+import { combine } from 'bruin/middleware';
 
 const useGameStore = create(
   combine({ squares: Array(9).fill(null) }, (set) => {
@@ -323,15 +323,15 @@ const useGameStore = create(
             typeof nextSquares === 'function'
               ? nextSquares(state.squares)
               : nextSquares,
-        }))
+        }));
       },
-    }
+    };
   }),
-)
+);
 
 export default function Board() {
-  const squares = useGameStore((state) => state.squares)
-  const setSquares = useGameStore((state) => state.setSquares)
+  const squares = useGameStore((state) => state.squares);
+  const setSquares = useGameStore((state) => state.setSquares);
 
   return (
     <div
@@ -348,7 +348,7 @@ export default function Board() {
         <Square key={squareIndex} value={square} />
       ))}
     </div>
-  )
+  );
 }
 ```
 
@@ -358,7 +358,7 @@ array corresponds to the value of a square. When you fill the board in later, th
 will look like this:
 
 ```js
-const squares = ['O', null, 'X', 'X', 'X', 'O', 'O', null, null]
+const squares = ['O', null, 'X', 'X', 'X', 'O', 'O', null, null];
 ```
 
 Each Square will now receive a `value` prop that will either be `'X'`, `'O'`, or `null` for empty
@@ -390,14 +390,14 @@ to the square at the specified index (`i`) if is not already filled.
 
 ```jsx {5-10,27}
 export default function Board() {
-  const squares = useGameStore((state) => state.squares)
-  const setSquares = useGameStore((state) => state.setSquares)
+  const squares = useGameStore((state) => state.squares);
+  const setSquares = useGameStore((state) => state.setSquares);
 
   function handleClick(i) {
-    if (squares[i]) return
-    const nextSquares = squares.slice()
-    nextSquares[i] = 'X'
-    setSquares(nextSquares)
+    if (squares[i]) return;
+    const nextSquares = squares.slice();
+    nextSquares[i] = 'X';
+    setSquares(nextSquares);
   }
 
   return (
@@ -419,7 +419,7 @@ export default function Board() {
         />
       ))}
     </div>
-  )
+  );
 }
 ```
 
@@ -445,7 +445,7 @@ const useGameStore = create(
             typeof nextSquares === 'function'
               ? nextSquares(state.squares)
               : nextSquares,
-        }))
+        }));
       },
       setXIsNext: (nextXIsNext) => {
         set((state) => ({
@@ -453,11 +453,11 @@ const useGameStore = create(
             typeof nextXIsNext === 'function'
               ? nextXIsNext(state.xIsNext)
               : nextXIsNext,
-        }))
+        }));
       },
-    }
+    };
   }),
-)
+);
 ```
 
 Each time a player moves, `xIsNext` (a boolean) will be flipped to determine which player goes next
@@ -466,18 +466,18 @@ value of `xIsNext`:
 
 ```jsx {2-3,6,11}
 export default function Board() {
-  const xIsNext = useGameStore((state) => state.xIsNext)
-  const setXIsNext = useGameStore((state) => state.setXIsNext)
-  const squares = useGameStore((state) => state.squares)
-  const setSquares = useGameStore((state) => state.setSquares)
-  const player = xIsNext ? 'X' : 'O'
+  const xIsNext = useGameStore((state) => state.xIsNext);
+  const setXIsNext = useGameStore((state) => state.setXIsNext);
+  const squares = useGameStore((state) => state.squares);
+  const setSquares = useGameStore((state) => state.setSquares);
+  const player = xIsNext ? 'X' : 'O';
 
   function handleClick(i) {
-    if (squares[i]) return
-    const nextSquares = squares.slice()
-    nextSquares[i] = player
-    setSquares(nextSquares)
-    setXIsNext(!xIsNext)
+    if (squares[i]) return;
+    const nextSquares = squares.slice();
+    nextSquares[i] = player;
+    setSquares(nextSquares);
+    setXIsNext(!xIsNext);
   }
 
   return (
@@ -499,7 +499,7 @@ export default function Board() {
         />
       ))}
     </div>
-  )
+  );
 }
 ```
 
@@ -524,26 +524,26 @@ function calculateWinner(squares) {
     [2, 5, 8],
     [0, 4, 8],
     [2, 4, 6],
-  ]
+  ];
 
   for (let i = 0; i < lines.length; i++) {
-    const [a, b, c] = lines[i]
+    const [a, b, c] = lines[i];
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a]
+      return squares[a];
     }
   }
 
-  return null
+  return null;
 }
 
 function calculateTurns(squares) {
-  return squares.filter((square) => !square).length
+  return squares.filter((square) => !square).length;
 }
 
 function calculateStatus(winner, turns, player) {
-  if (!winner && !turns) return 'Draw'
-  if (winner) return `Winner ${winner}`
-  return `Next player: ${player}`
+  if (!winner && !turns) return 'Draw';
+  if (winner) return `Winner ${winner}`;
+  return `Next player: ${player}`;
 }
 ```
 
@@ -569,21 +569,21 @@ player's turn is next:
 
 ```jsx {6-7,9,21}
 export default function Board() {
-  const xIsNext = useGameStore((state) => state.xIsNext)
-  const setXIsNext = useGameStore((state) => state.setXIsNext)
-  const squares = useGameStore((state) => state.squares)
-  const setSquares = useGameStore((state) => state.setSquares)
-  const winner = calculateWinner(squares)
-  const turns = calculateTurns(squares)
-  const player = xIsNext ? 'X' : 'O'
-  const status = calculateStatus(winner, turns, player)
+  const xIsNext = useGameStore((state) => state.xIsNext);
+  const setXIsNext = useGameStore((state) => state.setXIsNext);
+  const squares = useGameStore((state) => state.squares);
+  const setSquares = useGameStore((state) => state.setSquares);
+  const winner = calculateWinner(squares);
+  const turns = calculateTurns(squares);
+  const player = xIsNext ? 'X' : 'O';
+  const status = calculateStatus(winner, turns, player);
 
   function handleClick(i) {
-    if (squares[i] || winner) return
-    const nextSquares = squares.slice()
-    nextSquares[i] = player
-    setSquares(nextSquares)
-    setXIsNext(!xIsNext)
+    if (squares[i] || winner) return;
+    const nextSquares = squares.slice();
+    nextSquares[i] = player;
+    setSquares(nextSquares);
+    setXIsNext(!xIsNext);
   }
 
   return (
@@ -608,7 +608,7 @@ export default function Board() {
         ))}
       </div>
     </>
-  )
+  );
 }
 ```
 
@@ -616,8 +616,8 @@ Congratulations! You now have a working tic-tac-toe game. And you've just learne
 React and Bruin too. So you are the real winner here. Here is what the code should look like:
 
 ```jsx
-import { create } from 'bruin'
-import { combine } from 'bruin/middleware'
+import { create } from 'bruin';
+import { combine } from 'bruin/middleware';
 
 const useGameStore = create(
   combine({ squares: Array(9).fill(null), xIsNext: true }, (set) => {
@@ -628,7 +628,7 @@ const useGameStore = create(
             typeof nextSquares === 'function'
               ? nextSquares(state.squares)
               : nextSquares,
-        }))
+        }));
       },
       setXIsNext: (nextXIsNext) => {
         set((state) => ({
@@ -636,11 +636,11 @@ const useGameStore = create(
             typeof nextXIsNext === 'function'
               ? nextXIsNext(state.xIsNext)
               : nextXIsNext,
-        }))
+        }));
       },
-    }
+    };
   }),
-)
+);
 
 function Square({ value, onSquareClick }) {
   return (
@@ -661,25 +661,25 @@ function Square({ value, onSquareClick }) {
     >
       {value}
     </button>
-  )
+  );
 }
 
 export default function Board() {
-  const xIsNext = useGameStore((state) => state.xIsNext)
-  const setXIsNext = useGameStore((state) => state.setXIsNext)
-  const squares = useGameStore((state) => state.squares)
-  const setSquares = useGameStore((state) => state.setSquares)
-  const winner = calculateWinner(squares)
-  const turns = calculateTurns(squares)
-  const player = xIsNext ? 'X' : 'O'
-  const status = calculateStatus(winner, turns, player)
+  const xIsNext = useGameStore((state) => state.xIsNext);
+  const setXIsNext = useGameStore((state) => state.setXIsNext);
+  const squares = useGameStore((state) => state.squares);
+  const setSquares = useGameStore((state) => state.setSquares);
+  const winner = calculateWinner(squares);
+  const turns = calculateTurns(squares);
+  const player = xIsNext ? 'X' : 'O';
+  const status = calculateStatus(winner, turns, player);
 
   function handleClick(i) {
-    if (squares[i] || winner) return
-    const nextSquares = squares.slice()
-    nextSquares[i] = player
-    setSquares(nextSquares)
-    setXIsNext(!xIsNext)
+    if (squares[i] || winner) return;
+    const nextSquares = squares.slice();
+    nextSquares[i] = player;
+    setSquares(nextSquares);
+    setXIsNext(!xIsNext);
   }
 
   return (
@@ -704,7 +704,7 @@ export default function Board() {
         ))}
       </div>
     </>
-  )
+  );
 }
 
 function calculateWinner(squares) {
@@ -717,26 +717,26 @@ function calculateWinner(squares) {
     [2, 5, 8],
     [0, 4, 8],
     [2, 4, 6],
-  ]
+  ];
 
   for (let i = 0; i < lines.length; i++) {
-    const [a, b, c] = lines[i]
+    const [a, b, c] = lines[i];
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a]
+      return squares[a];
     }
   }
 
-  return null
+  return null;
 }
 
 function calculateTurns(squares) {
-  return squares.filter((square) => !square).length
+  return squares.filter((square) => !square).length;
 }
 
 function calculateStatus(winner, turns, player) {
-  if (!winner && !turns) return 'Draw'
-  if (winner) return `Winner ${winner}`
-  return `Next player: ${player}`
+  if (!winner && !turns) return 'Draw';
+  if (winner) return `Winner ${winner}`;
+  return `Next player: ${player}`;
 }
 ```
 
@@ -763,7 +763,7 @@ const history = [
   // Third move
   ['X', 'O', null, null, null, null, null, null, null],
   // and so on...
-]
+];
 ```
 
 This approach allows you to easily navigate between different game states and implement the
@@ -784,21 +784,21 @@ what the code should look like:
 
 ```jsx {1,44-61}
 function Board() {
-  const xIsNext = useGameStore((state) => state.xIsNext)
-  const setXIsNext = useGameStore((state) => state.setXIsNext)
-  const squares = useGameStore((state) => state.squares)
-  const setSquares = useGameStore((state) => state.setSquares)
-  const winner = calculateWinner(squares)
-  const turns = calculateTurns(squares)
-  const player = xIsNext ? 'X' : 'O'
-  const status = calculateStatus(winner, turns, player)
+  const xIsNext = useGameStore((state) => state.xIsNext);
+  const setXIsNext = useGameStore((state) => state.setXIsNext);
+  const squares = useGameStore((state) => state.squares);
+  const setSquares = useGameStore((state) => state.setSquares);
+  const winner = calculateWinner(squares);
+  const turns = calculateTurns(squares);
+  const player = xIsNext ? 'X' : 'O';
+  const status = calculateStatus(winner, turns, player);
 
   function handleClick(i) {
-    if (squares[i] || winner) return
-    const nextSquares = squares.slice()
-    nextSquares[i] = player
-    setSquares(nextSquares)
-    setXIsNext(!xIsNext)
+    if (squares[i] || winner) return;
+    const nextSquares = squares.slice();
+    nextSquares[i] = player;
+    setSquares(nextSquares);
+    setXIsNext(!xIsNext);
   }
 
   return (
@@ -823,7 +823,7 @@ function Board() {
         ))}
       </div>
     </>
-  )
+  );
 }
 
 export default function Game() {
@@ -842,7 +842,7 @@ export default function Game() {
         <ol>{/* TODO */}</ol>
       </div>
     </div>
-  )
+  );
 }
 ```
 
@@ -858,7 +858,7 @@ const useGameStore = create(
             typeof nextHistory === 'function'
               ? nextHistory(state.history)
               : nextHistory,
-        }))
+        }));
       },
       setXIsNext: (nextXIsNext) => {
         set((state) => ({
@@ -866,11 +866,11 @@ const useGameStore = create(
             typeof nextXIsNext === 'function'
               ? nextXIsNext(state.xIsNext)
               : nextXIsNext,
-        }))
+        }));
       },
-    }
+    };
   }),
-)
+);
 ```
 
 Notice how `[Array(9).fill(null)]` creates an array with a single item, which is itself an array of
@@ -882,11 +882,11 @@ information to calculate it during rendering:
 
 ```jsx {2-6}
 export default function Game() {
-  const history = useGameStore((state) => state.history)
-  const setHistory = useGameStore((state) => state.setHistory)
-  const xIsNext = useGameStore((state) => state.xIsNext)
-  const setXIsNext = useGameStore((state) => state.setXIsNext)
-  const currentSquares = history[history.length - 1]
+  const history = useGameStore((state) => state.history);
+  const setHistory = useGameStore((state) => state.setHistory);
+  const xIsNext = useGameStore((state) => state.xIsNext);
+  const setXIsNext = useGameStore((state) => state.setXIsNext);
+  const currentSquares = history[history.length - 1];
 
   return (
     <div
@@ -903,7 +903,7 @@ export default function Game() {
         <ol>{/*TODO*/}</ol>
       </div>
     </div>
-  )
+  );
 }
 ```
 
@@ -913,11 +913,11 @@ component to update the game. Pass `xIsNext`, `currentSquares` and `handlePlay` 
 
 ```jsx {8-10,21}
 export default function Game() {
-  const history = useGameStore((state) => state.history)
-  const setHistory = useGameStore((state) => state.setHistory)
-  const currentMove = useGameStore((state) => state.currentMove)
-  const setCurrentMove = useGameStore((state) => state.setCurrentMove)
-  const currentSquares = history[history.length - 1]
+  const history = useGameStore((state) => state.history);
+  const setHistory = useGameStore((state) => state.setHistory);
+  const currentMove = useGameStore((state) => state.currentMove);
+  const setCurrentMove = useGameStore((state) => state.setCurrentMove);
+  const currentSquares = history[history.length - 1];
 
   function handlePlay(nextSquares) {
     // TODO
@@ -938,7 +938,7 @@ export default function Game() {
         <ol>{/*TODO*/}</ol>
       </div>
     </div>
-  )
+  );
 }
 ```
 
@@ -948,16 +948,16 @@ the `Board` component can call with the updated squares array when a player make
 
 ```jsx {1}
 function Board({ xIsNext, squares, onPlay }) {
-  const winner = calculateWinner(squares)
-  const turns = calculateTurns(squares)
-  const player = xIsNext ? 'X' : 'O'
-  const status = calculateStatus(winner, turns, player)
+  const winner = calculateWinner(squares);
+  const turns = calculateTurns(squares);
+  const player = xIsNext ? 'X' : 'O';
+  const status = calculateStatus(winner, turns, player);
 
   function handleClick(i) {
-    if (squares[i] || winner) return
-    const nextSquares = squares.slice()
-    nextSquares[i] = player
-    onPlay(nextSquares)
+    if (squares[i] || winner) return;
+    const nextSquares = squares.slice();
+    nextSquares[i] = player;
+    onPlay(nextSquares);
   }
 
   return (
@@ -982,7 +982,7 @@ function Board({ xIsNext, squares, onPlay }) {
         ))}
       </div>
     </>
-  )
+  );
 }
 ```
 
@@ -1001,8 +1001,8 @@ to do.
 
 ```js {2-3}
 function handlePlay(nextSquares) {
-  setHistory(history.concat([nextSquares]))
-  setXIsNext(!xIsNext)
+  setHistory(history.concat([nextSquares]));
+  setXIsNext(!xIsNext);
 }
 ```
 
@@ -1010,8 +1010,8 @@ At this point, you've moved the state to live in the `Game` component, and the U
 working, just as it was before the refactor. Here is what the code should look like at this point:
 
 ```jsx
-import { create } from 'bruin'
-import { combine } from 'bruin/middleware'
+import { create } from 'bruin';
+import { combine } from 'bruin/middleware';
 
 const useGameStore = create(
   combine({ history: [Array(9).fill(null)], xIsNext: true }, (set) => {
@@ -1022,7 +1022,7 @@ const useGameStore = create(
             typeof nextHistory === 'function'
               ? nextHistory(state.history)
               : nextHistory,
-        }))
+        }));
       },
       setXIsNext: (nextXIsNext) => {
         set((state) => ({
@@ -1030,11 +1030,11 @@ const useGameStore = create(
             typeof nextXIsNext === 'function'
               ? nextXIsNext(state.xIsNext)
               : nextXIsNext,
-        }))
+        }));
       },
-    }
+    };
   }),
-)
+);
 
 function Square({ value, onSquareClick }) {
   return (
@@ -1055,20 +1055,20 @@ function Square({ value, onSquareClick }) {
     >
       {value}
     </button>
-  )
+  );
 }
 
 function Board({ xIsNext, squares, onPlay }) {
-  const winner = calculateWinner(squares)
-  const turns = calculateTurns(squares)
-  const player = xIsNext ? 'X' : 'O'
-  const status = calculateStatus(winner, turns, player)
+  const winner = calculateWinner(squares);
+  const turns = calculateTurns(squares);
+  const player = xIsNext ? 'X' : 'O';
+  const status = calculateStatus(winner, turns, player);
 
   function handleClick(i) {
-    if (squares[i] || winner) return
-    const nextSquares = squares.slice()
-    nextSquares[i] = player
-    onPlay(nextSquares)
+    if (squares[i] || winner) return;
+    const nextSquares = squares.slice();
+    nextSquares[i] = player;
+    onPlay(nextSquares);
   }
 
   return (
@@ -1093,19 +1093,19 @@ function Board({ xIsNext, squares, onPlay }) {
         ))}
       </div>
     </>
-  )
+  );
 }
 
 export default function Game() {
-  const history = useGameStore((state) => state.history)
-  const setHistory = useGameStore((state) => state.setHistory)
-  const xIsNext = useGameStore((state) => state.xIsNext)
-  const setXIsNext = useGameStore((state) => state.setXIsNext)
-  const currentSquares = history[history.length - 1]
+  const history = useGameStore((state) => state.history);
+  const setHistory = useGameStore((state) => state.setHistory);
+  const xIsNext = useGameStore((state) => state.xIsNext);
+  const setXIsNext = useGameStore((state) => state.setXIsNext);
+  const currentSquares = history[history.length - 1];
 
   function handlePlay(nextSquares) {
-    setHistory(history.concat([nextSquares]))
-    setXIsNext(!xIsNext)
+    setHistory(history.concat([nextSquares]));
+    setXIsNext(!xIsNext);
   }
 
   return (
@@ -1123,7 +1123,7 @@ export default function Game() {
         <ol>{/*TODO*/}</ol>
       </div>
     </div>
-  )
+  );
 }
 
 function calculateWinner(squares) {
@@ -1136,26 +1136,26 @@ function calculateWinner(squares) {
     [2, 5, 8],
     [0, 4, 8],
     [2, 4, 6],
-  ]
+  ];
 
   for (let i = 0; i < lines.length; i++) {
-    const [a, b, c] = lines[i]
+    const [a, b, c] = lines[i];
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a]
+      return squares[a];
     }
   }
 
-  return null
+  return null;
 }
 
 function calculateTurns(squares) {
-  return squares.filter((square) => !square).length
+  return squares.filter((square) => !square).length;
 }
 
 function calculateStatus(winner, turns, player) {
-  if (!winner && !turns) return 'Draw'
-  if (winner) return `Winner ${winner}`
-  return `Next player: ${player}`
+  if (!winner && !turns) return 'Draw';
+  if (winner) return `Winner ${winner}`;
+  return `Next player: ${player}`;
 }
 ```
 
@@ -1174,15 +1174,15 @@ the `Game` component:
 
 ```jsx {29-44}
 export default function Game() {
-  const history = useGameStore((state) => state.history)
-  const setHistory = useGameStore((state) => state.setHistory)
-  const xIsNext = useGameStore((state) => state.xIsNext)
-  const setXIsNext = useGameStore((state) => state.setXIsNext)
-  const currentSquares = history[history.length - 1]
+  const history = useGameStore((state) => state.history);
+  const setHistory = useGameStore((state) => state.setHistory);
+  const xIsNext = useGameStore((state) => state.xIsNext);
+  const setXIsNext = useGameStore((state) => state.setXIsNext);
+  const currentSquares = history[history.length - 1];
 
   function handlePlay(nextSquares) {
-    setHistory(history.concat([nextSquares]))
-    setXIsNext(!xIsNext)
+    setHistory(history.concat([nextSquares]));
+    setXIsNext(!xIsNext);
   }
 
   function jumpTo(nextMove) {
@@ -1206,7 +1206,7 @@ export default function Game() {
             const description =
               historyIndex > 0
                 ? `Go to move #${historyIndex}`
-                : 'Go to game start'
+                : 'Go to game start';
 
             return (
               <li key={historyIndex}>
@@ -1214,12 +1214,12 @@ export default function Game() {
                   {description}
                 </button>
               </li>
-            )
+            );
           })}
         </ol>
       </div>
     </div>
-  )
+  );
 }
 ```
 
@@ -1239,7 +1239,7 @@ const useGameStore = create(
               typeof nextHistory === 'function'
                 ? nextHistory(state.history)
                 : nextHistory,
-          }))
+          }));
         },
         setCurrentMove: (nextCurrentMove) => {
           set((state) => ({
@@ -1247,7 +1247,7 @@ const useGameStore = create(
               typeof nextCurrentMove === 'function'
                 ? nextCurrentMove(state.currentMove)
                 : nextCurrentMove,
-          }))
+          }));
         },
         setXIsNext: (nextXIsNext) => {
           set((state) => ({
@@ -1255,12 +1255,12 @@ const useGameStore = create(
               typeof nextXIsNext === 'function'
                 ? nextXIsNext(state.xIsNext)
                 : nextXIsNext,
-          }))
+          }));
         },
-      }
+      };
     },
   ),
-)
+);
 ```
 
 Next, update the `jumpTo` function inside `Game` component to update that `currentMove`. You’ll
@@ -1268,8 +1268,8 @@ also set `xIsNext` to `true` if the number that you’re changing `currentMove` 
 
 ```js {2-3}
 function jumpTo(nextMove) {
-  setCurrentMove(nextMove)
-  setXIsNext(currentMove % 2 === 0)
+  setCurrentMove(nextMove);
+  setXIsNext(currentMove % 2 === 0);
 }
 ```
 
@@ -1284,10 +1284,10 @@ when you click on a square.
 
 ```js {2-4}
 function handlePlay(nextSquares) {
-  const nextHistory = history.slice(0, currentMove + 1).concat([nextSquares])
-  setHistory(nextHistory)
-  setCurrentMove(nextHistory.length - 1)
-  setXIsNext(!xIsNext)
+  const nextHistory = history.slice(0, currentMove + 1).concat([nextSquares]);
+  setHistory(nextHistory);
+  setCurrentMove(nextHistory.length - 1);
+  setXIsNext(!xIsNext);
 }
 ```
 
@@ -1296,24 +1296,24 @@ always rendering the final move:
 
 ```jsx {2-8}
 export default function Game() {
-  const history = useGameStore((state) => state.history)
-  const setHistory = useGameStore((state) => state.setHistory)
-  const currentMove = useGameStore((state) => state.currentMove)
-  const setCurrentMove = useGameStore((state) => state.setCurrentMove)
-  const xIsNext = useGameStore((state) => state.xIsNext)
-  const setXIsNext = useGameStore((state) => state.setXIsNext)
-  const currentSquares = history[currentMove]
+  const history = useGameStore((state) => state.history);
+  const setHistory = useGameStore((state) => state.setHistory);
+  const currentMove = useGameStore((state) => state.currentMove);
+  const setCurrentMove = useGameStore((state) => state.setCurrentMove);
+  const xIsNext = useGameStore((state) => state.xIsNext);
+  const setXIsNext = useGameStore((state) => state.setXIsNext);
+  const currentSquares = history[currentMove];
 
   function handlePlay(nextSquares) {
-    const nextHistory = history.slice(0, currentMove + 1).concat([nextSquares])
-    setHistory(nextHistory)
-    setCurrentMove(nextHistory.length - 1)
-    setXIsNext(!xIsNext)
+    const nextHistory = history.slice(0, currentMove + 1).concat([nextSquares]);
+    setHistory(nextHistory);
+    setCurrentMove(nextHistory.length - 1);
+    setXIsNext(!xIsNext);
   }
 
   function jumpTo(nextMove) {
-    setCurrentMove(nextMove)
-    setXIsNext(nextMove % 2 === 0)
+    setCurrentMove(nextMove);
+    setXIsNext(nextMove % 2 === 0);
   }
 
   return (
@@ -1333,7 +1333,7 @@ export default function Game() {
             const description =
               historyIndex > 0
                 ? `Go to move #${historyIndex}`
-                : 'Go to game start'
+                : 'Go to game start';
 
             return (
               <li key={historyIndex}>
@@ -1341,12 +1341,12 @@ export default function Game() {
                   {description}
                 </button>
               </li>
-            )
+            );
           })}
         </ol>
       </div>
     </div>
-  )
+  );
 }
 ```
 
@@ -1362,21 +1362,21 @@ because it can reduce bugs and make your code easier to understand. Instead, you
 
 ```jsx {2-5,13,17}
 export default function Game() {
-  const history = useGameStore((state) => state.history)
-  const setHistory = useGameStore((state) => state.setHistory)
-  const currentMove = useGameStore((state) => state.currentMove)
-  const setCurrentMove = useGameStore((state) => state.setCurrentMove)
-  const xIsNext = currentMove % 2 === 0
-  const currentSquares = history[currentMove]
+  const history = useGameStore((state) => state.history);
+  const setHistory = useGameStore((state) => state.setHistory);
+  const currentMove = useGameStore((state) => state.currentMove);
+  const setCurrentMove = useGameStore((state) => state.setCurrentMove);
+  const xIsNext = currentMove % 2 === 0;
+  const currentSquares = history[currentMove];
 
   function handlePlay(nextSquares) {
-    const nextHistory = history.slice(0, currentMove + 1).concat([nextSquares])
-    setHistory(nextHistory)
-    setCurrentMove(nextHistory.length - 1)
+    const nextHistory = history.slice(0, currentMove + 1).concat([nextSquares]);
+    setHistory(nextHistory);
+    setCurrentMove(nextHistory.length - 1);
   }
 
   function jumpTo(nextMove) {
-    setCurrentMove(nextMove)
+    setCurrentMove(nextMove);
   }
 
   return (
@@ -1396,7 +1396,7 @@ export default function Game() {
             const description =
               historyIndex > 0
                 ? `Go to move #${historyIndex}`
-                : 'Go to game start'
+                : 'Go to game start';
 
             return (
               <li key={historyIndex}>
@@ -1404,12 +1404,12 @@ export default function Game() {
                   {description}
                 </button>
               </li>
-            )
+            );
           })}
         </ol>
       </div>
     </div>
-  )
+  );
 }
 ```
 

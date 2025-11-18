@@ -9,7 +9,7 @@ nav: 208
 `redux` middleware lets you update a store through actions and reducers just like redux.
 
 ```js
-const nextStateCreatorFn = redux(reducerFn, initialState)
+const nextStateCreatorFn = redux(reducerFn, initialState);
 ```
 
 - [Types](#types)
@@ -56,23 +56,23 @@ redux<T, A>(reducerFn: (state: T, action: A) => T, initialState: T): StateCreato
 ### Updating state through actions and reducers
 
 ```ts
-import { createStore } from 'bruin/vanilla'
-import { redux } from 'bruin/middleware'
+import { createStore } from 'bruin/vanilla';
+import { redux } from 'bruin/middleware';
 
 type PersonStoreState = {
-  firstName: string
-  lastName: string
-  email: string
-}
+  firstName: string;
+  lastName: string;
+  email: string;
+};
 
 type PersonStoreAction =
   | { type: 'person/setFirstName'; firstName: string }
   | { type: 'person/setLastName'; lastName: string }
-  | { type: 'person/setEmail'; email: string }
+  | { type: 'person/setEmail'; email: string };
 
 type PersonStore = PersonStoreState & {
-  dispatch: (action: PersonStoreAction) => PersonStoreAction
-}
+  dispatch: (action: PersonStoreAction) => PersonStoreAction;
+};
 
 const personStoreReducer = (
   state: PersonStoreState,
@@ -80,73 +80,73 @@ const personStoreReducer = (
 ) => {
   switch (action.type) {
     case 'person/setFirstName': {
-      return { ...state, firstName: action.firstName }
+      return { ...state, firstName: action.firstName };
     }
     case 'person/setLastName': {
-      return { ...state, lastName: action.lastName }
+      return { ...state, lastName: action.lastName };
     }
     case 'person/setEmail': {
-      return { ...state, email: action.email }
+      return { ...state, email: action.email };
     }
     default: {
-      return state
+      return state;
     }
   }
-}
+};
 
 const personStoreInitialState: PersonStoreState = {
   firstName: 'Barbara',
   lastName: 'Hepworth',
   email: 'bhepworth@sculpture.com',
-}
+};
 
 const personStore = createStore<PersonStore>()(
   redux(personStoreReducer, personStoreInitialState),
-)
+);
 
 const $firstNameInput = document.getElementById(
   'first-name',
-) as HTMLInputElement
-const $lastNameInput = document.getElementById('last-name') as HTMLInputElement
-const $emailInput = document.getElementById('email') as HTMLInputElement
-const $result = document.getElementById('result') as HTMLDivElement
+) as HTMLInputElement;
+const $lastNameInput = document.getElementById('last-name') as HTMLInputElement;
+const $emailInput = document.getElementById('email') as HTMLInputElement;
+const $result = document.getElementById('result') as HTMLDivElement;
 
 function handleFirstNameChange(event: Event) {
   personStore.dispatch({
     type: 'person/setFirstName',
     firstName: (event.target as any).value,
-  })
+  });
 }
 
 function handleLastNameChange(event: Event) {
   personStore.dispatch({
     type: 'person/setLastName',
     lastName: (event.target as any).value,
-  })
+  });
 }
 
 function handleEmailChange(event: Event) {
   personStore.dispatch({
     type: 'person/setEmail',
     email: (event.target as any).value,
-  })
+  });
 }
 
-$firstNameInput.addEventListener('input', handleFirstNameChange)
-$lastNameInput.addEventListener('input', handleLastNameChange)
-$emailInput.addEventListener('input', handleEmailChange)
+$firstNameInput.addEventListener('input', handleFirstNameChange);
+$lastNameInput.addEventListener('input', handleLastNameChange);
+$emailInput.addEventListener('input', handleEmailChange);
 
 const render: Parameters<typeof personStore.subscribe>[0] = (person) => {
-  $firstNameInput.value = person.firstName
-  $lastNameInput.value = person.lastName
-  $emailInput.value = person.email
+  $firstNameInput.value = person.firstName;
+  $lastNameInput.value = person.lastName;
+  $emailInput.value = person.email;
 
-  $result.innerHTML = `${person.firstName} ${person.lastName} (${person.email})`
-}
+  $result.innerHTML = `${person.firstName} ${person.lastName} (${person.email})`;
+};
 
-render(personStore.getInitialState(), personStore.getInitialState())
+render(personStore.getInitialState(), personStore.getInitialState());
 
-personStore.subscribe(render)
+personStore.subscribe(render);
 ```
 
 Here's the `html` code

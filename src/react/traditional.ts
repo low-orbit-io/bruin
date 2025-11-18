@@ -1,5 +1,4 @@
 import { useSyncExternalStoreWithSelector } from 'use-sync-external-store/with-selector';
-import type { UseBoundStore } from '../react';
 import type {
   ExtractState,
   ExtractStateCreatorMutators,
@@ -7,22 +6,12 @@ import type {
   StateCreator,
   StoreApi,
   StoreMutatorIdentifier,
-} from '../vanilla';
+} from '../types/core';
+import type {
+  ReadonlyStoreApi,
+  UseBoundStoreWithEqualityFn,
+} from '../types/react';
 import { createStore as createVanillaStore } from '../vanilla';
-
-type ReadonlyStoreApi<T> = {
-  getState: StoreApi<T>['getState'];
-  getInitialState: StoreApi<T>['getInitialState'];
-  subscribe: (...args: any[]) => () => void;
-};
-
-type UseBoundStoreWithEqualityFn<S extends ReadonlyStoreApi<unknown>> = {
-  (): ExtractState<S>;
-  <U>(
-    selector: (state: ExtractState<S>) => U,
-    equalityFn?: (a: U, b: U) => boolean,
-  ): U;
-} & S;
 
 const identity = <T>(arg: T): T => arg;
 
@@ -69,9 +58,7 @@ const createWithEqualityFnImpl = <
 
   Object.assign(useBoundStore, api);
 
-  return useBoundStore as UseBoundStoreWithEqualityFn<
-    Mutate<StoreApi<T>, Mcs>
-  >;
+  return useBoundStore as UseBoundStoreWithEqualityFn<Mutate<StoreApi<T>, Mcs>>;
 };
 
 export function createWithEqualityFn<
@@ -79,10 +66,7 @@ export function createWithEqualityFn<
 >(
   createState: TCreator,
 ): UseBoundStoreWithEqualityFn<
-  Mutate<
-    StoreApi<ReturnType<TCreator>>,
-    ExtractStateCreatorMutators<TCreator>
-  >
+  Mutate<StoreApi<ReturnType<TCreator>>, ExtractStateCreatorMutators<TCreator>>
 >;
 export function createWithEqualityFn<
   T,

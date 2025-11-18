@@ -1,121 +1,34 @@
 import { enableMapSet, produce } from 'immer';
+import type {
+  CreateStoreOptions,
+  ExtractStateCreatorMutators,
+  Get,
+  HistoryEntry,
+  Mutate,
+  SetStateWithTransaction,
+  StateCreator,
+  StateCreatorSet,
+  StoreApi,
+  StoreMutatorIdentifier,
+  StoreSetState,
+  StoreSubscriber,
+} from './types/core';
 
 enableMapSet();
 
-type StoreTransaction<T> = (
-  fn: () => void,
-  options?: { name?: string; skipHistory?: boolean },
-) => void;
+export type {
+  ExtractState,
+  ExtractStateCreatorMutators,
+  Mutate,
+  StateCreator,
+  StoreApi,
+  StoreMutatorIdentifier,
+  StoreMutators,
+  StoreSetState,
+  SetStateWithTransaction,
+} from './types/core';
 
-type StoreSetState<T> = {
-  (
-    partial: T | Partial<T> | ((state: T) => T | Partial<T>),
-    replace?: false,
-    options?: { skipHistory?: boolean },
-  ): void;
-  (
-    state: T | ((state: T) => T),
-    replace: true,
-    options?: { skipHistory?: boolean },
-  ): void;
-  (
-    state: T | Partial<T> | ((state: T) => T | Partial<T>),
-    replace?: boolean,
-    options?: { skipHistory?: boolean },
-  ): void;
-};
-
-type Get<T, K, F> = K extends keyof T ? T[K] : F;
-
-export interface StoreMutators<S, A> {}
-
-export type StoreMutatorIdentifier = keyof StoreMutators<unknown, unknown>;
-
-type StoreSubscriber<T> = {
-  (
-    listener: (state: T, prevState: T) => void,
-  ): () => void;
-  (
-    path: (string | number)[],
-    listener: (state: T, prevState: T) => void,
-  ): () => void;
-};
-
-export type Mutate<
-  S,
-  Ms extends [StoreMutatorIdentifier, unknown][],
-> = number extends Ms['length']
-  ? S
-  : Ms extends []
-    ? S
-    : Ms extends [[infer Mi, infer Mp], ...infer Rest]
-      ? Mutate<
-          StoreMutators<S, Mp>[Mi & StoreMutatorIdentifier],
-          Rest extends [StoreMutatorIdentifier, unknown][] ? Rest : []
-        >
-      : S;
-
-type StateCreatorSet<
-  T,
-  Mps extends [StoreMutatorIdentifier, unknown][],
-> = Get<Mutate<StoreApi<T>, Mps>, 'setState', never> &
-  SetStateWithTransaction<T>;
-
-export type StateCreator<
-  T,
-  Mps extends [StoreMutatorIdentifier, unknown][] = [],
-  Mcs extends [StoreMutatorIdentifier, unknown][] = [],
-  U = T,
-> = ((set: StateCreatorSet<T, Mps>, get: Get<
-  Mutate<StoreApi<T>, Mps>,
-  'getState',
-  never
->, api: Mutate<StoreApi<T>, Mps>) => U) & { $$storeMutators?: Mcs };
-
-export type StoreApi<T> = {
-  setState: StoreSetState<T>;
-  getState: () => T;
-  getInitialState: () => T;
-  subscribe: StoreSubscriber<T>;
-  undo: () => void;
-  redo: () => void;
-  canUndo: () => boolean;
-  canRedo: () => boolean;
-  transaction: StoreTransaction<T>;
-  getHistory: () => any[];
-  restoreHistory?: (states: T[], index: number) => void;
-  clearHistory?: () => void;
-};
-
-export type SetStateWithTransaction<T> = StoreSetState<T> & {
-  transaction: StoreTransaction<T>;
-};
-
-export type ExtractState<S> = S extends { getState: () => infer T } ? T : never;
-
-export type ExtractStateCreatorMutators<
-  SC,
-> = SC extends { $$storeMutators?: infer Mutators }
-  ? Mutators extends [StoreMutatorIdentifier, unknown][]
-    ? Mutators
-    : []
-  : [];
-
-type HistoryEntry<T> = {
-  state: T;
-  timestamp: number;
-  name?: string;
-};
-
-type CreateStoreOptions = {
-  maxHistorySize?: number;
-  computedFields?: string[];
-  debounce?: number;
-};
-
-export function createStore<
-  TCreator extends StateCreator<any, [], any>,
->(
+export function createStore<TCreator extends StateCreator<any, [], any>>(
   initializer: TCreator,
   options?: CreateStoreOptions,
 ): Mutate<
@@ -337,202 +250,199 @@ export function createStore<
   };
 
   const setStateImpl: StoreSetState<T> = (
-    partial:
-      | T
-      | Partial<T>
-      | ((state: T) => T | Partial<T>),
+    partial: T | Partial<T> | ((state: T) => T | Partial<T>),
     replace = false,
     setOptions?: { skipHistory?: boolean },
   ) => {
-      const prevState = state;
+    const prevState = state;
 
+    if (partial === prevState) {
+      return;
+    }
+
+    if (replace) {
+      const nextState =
+        typeof partial === 'function'
+          ? (partial as (state: T) => T | Partial<T>)(state)
+          : partial;
+      state = nextState as T;
+    } else if (!isImmerable(state)) {
+      if (typeof partial === 'function') {
+        state = (partial as (state: T) => T | Partial<T>)(state) as T;
+      } else {
+        state = partial as T;
+      }
+    } else if (typeof partial === 'function') {
+      state = produce(state, (draft: T) => {
+        const updates = (partial as (state: T) => T | Partial<T>)(draft);
+
+        if (updates && updates !== draft) {
+          if (replace || !isImmerable(updates)) {
+            return updates as any;
+          } else {
+            Object.assign(draft as any, updates);
+          }
+        }
+      }) as T;
+      state = applyGetters(state);
+    } else if (!isImmerable(partial)) {
+      state = partial as T;
+    } else {
       if (partial === prevState) {
         return;
       }
 
-      if (replace) {
-        const nextState =
-          typeof partial === 'function'
-            ? (partial as (state: T) => T | Partial<T>)(state)
-            : partial;
-        state = nextState as T;
-      } else if (!isImmerable(state)) {
-        if (typeof partial === 'function') {
-          state = (partial as (state: T) => T | Partial<T>)(state) as T;
-        } else {
-          state = partial as T;
-        }
-      } else if (typeof partial === 'function') {
-        state = produce(state, (draft: T) => {
-          const updates = (partial as (state: T) => T | Partial<T>)(draft);
+      let contentMatches = true;
 
-          if (updates && updates !== draft) {
-            if (replace || !isImmerable(updates)) {
-              return updates as any;
-            } else {
-              Object.assign(draft as any, updates);
+      if (isImmerable(partial)) {
+        for (const key in partial as object) {
+          if (
+            !stateGetters[key] &&
+            (prevState as any)[key] !== (partial as any)[key]
+          ) {
+            contentMatches = false;
+            break;
+          }
+        }
+      }
+
+      const hasSamePrototype =
+        Object.getPrototypeOf(partial) === Object.getPrototypeOf(prevState);
+      const isOriginalObject = partial === originalInitialResult;
+      const isSpread =
+        !isOriginalObject &&
+        partial !== state &&
+        Object.keys(partial as object).length ===
+          Object.keys(state as object).length &&
+        Object.keys(partial as object).every(
+          (key) => (partial as any)[key] === (state as any)[key],
+        ) &&
+        Object.getPrototypeOf(partial) === Object.prototype;
+
+      if (isSpread) {
+        state = applyGetters({ ...partial } as T);
+      } else {
+        const newState = produce(state, (draft: T) => {
+          if (isImmerable(partial)) {
+            for (const key in partial as object) {
+              if (
+                !stateGetters[key] &&
+                (draft as any)[key] !== (partial as any)[key]
+              ) {
+                (draft as any)[key] = (partial as any)[key];
+              }
             }
           }
         }) as T;
-        state = applyGetters(state);
-      } else if (!isImmerable(partial)) {
-        state = partial as T;
-      } else {
-        if (partial === prevState) {
+
+        if (
+          contentMatches &&
+          (hasSamePrototype || isOriginalObject) &&
+          newState === state
+        ) {
           return;
         }
 
-        let contentMatches = true;
-
-        if (isImmerable(partial)) {
-          for (const key in partial as object) {
-            if (
-              !stateGetters[key] &&
-              (prevState as any)[key] !== (partial as any)[key]
-            ) {
-              contentMatches = false;
-              break;
-            }
-          }
-        }
-
-        const hasSamePrototype =
-          Object.getPrototypeOf(partial) === Object.getPrototypeOf(prevState);
-        const isOriginalObject = partial === originalInitialResult;
-        const isSpread =
-          !isOriginalObject &&
-          partial !== state &&
-          Object.keys(partial as object).length ===
-            Object.keys(state as object).length &&
-          Object.keys(partial as object).every(
-            (key) => (partial as any)[key] === (state as any)[key],
-          ) &&
-          Object.getPrototypeOf(partial) === Object.prototype;
-
-        if (isSpread) {
-          state = applyGetters({ ...partial } as T);
+        if (newState !== state) {
+          state = applyGetters(newState);
         } else {
-          const newState = produce(state, (draft: T) => {
-            if (isImmerable(partial)) {
-              for (const key in partial as object) {
-                if (
-                  !stateGetters[key] &&
-                  (draft as any)[key] !== (partial as any)[key]
-                ) {
-                  (draft as any)[key] = (partial as any)[key];
-                }
-              }
-            }
-          }) as T;
-
-          if (
-            contentMatches &&
-            (hasSamePrototype || isOriginalObject) &&
-            newState === state
-          ) {
-            return;
-          }
-
-          if (newState !== state) {
-            state = applyGetters(newState);
-          } else {
-            return;
-          }
+          return;
         }
       }
+    }
 
-      if (!Object.is(state, prevState)) {
-        if (!inTransaction && !setOptions?.skipHistory) {
-          if (debounceMs && debounceMs > 0) {
-            debouncePendingState = state;
-            debouncePendingPrevState = prevState;
-            debouncePendingSkipHistory = false;
+    if (!Object.is(state, prevState)) {
+      if (!inTransaction && !setOptions?.skipHistory) {
+        if (debounceMs && debounceMs > 0) {
+          debouncePendingState = state;
+          debouncePendingPrevState = prevState;
+          debouncePendingSkipHistory = false;
 
-            if (debounceTimer) {
-              clearTimeout(debounceTimer);
-            }
-
-            debounceTimer = setTimeout(() => {
-              flushDebouncedHistory();
-            }, debounceMs);
-          } else {
-            if (historyIndex < history.length - 1) {
-              history = history.slice(0, historyIndex + 1);
-            }
-
-            history.push({
-              state: cloneStateForHistory(state),
-              timestamp: Date.now(),
-            });
-
-            if (history.length > maxHistorySize + 1) {
-              history = history.slice(-(maxHistorySize + 1));
-            }
-
-            historyIndex = history.length - 1;
-
-            notifyListeners(state, prevState);
+          if (debounceTimer) {
+            clearTimeout(debounceTimer);
           }
-        } else if (!inTransaction) {
-          if (debounceMs && debounceMs > 0 && !setOptions?.skipHistory) {
-            debouncePendingState = state;
-            debouncePendingPrevState = prevState;
-            debouncePendingSkipHistory = false;
 
-            if (debounceTimer) {
-              clearTimeout(debounceTimer);
-            }
-
-            debounceTimer = setTimeout(() => {
-              flushDebouncedHistory();
-            }, debounceMs);
-          } else {
-            if (setOptions?.skipHistory) {
-              const changedKeys = new Set<string>();
-
-              if (isImmerable(state) && isImmerable(prevState)) {
-                for (const key in state) {
-                  if ((state as any)[key] !== (prevState as any)[key]) {
-                    changedKeys.add(key);
-                  }
-                }
-              }
-
-              for (let i = 0; i < history.length; i++) {
-                const historyEntry = history[i];
-
-                if (historyEntry) {
-                  const historyState = historyEntry.state;
-
-                  if (isImmerable(historyState)) {
-                    const updatedState = { ...historyState };
-
-                    for (const key of changedKeys) {
-                      (updatedState as any)[key] = (state as any)[key];
-                    }
-
-                    const updatedEntry: HistoryEntry<T> = {
-                      state: updatedState as T,
-                      timestamp: historyEntry.timestamp,
-                    };
-
-                    if (historyEntry.name !== undefined) {
-                      updatedEntry.name = historyEntry.name;
-                    }
-
-                    history[i] = updatedEntry;
-                  }
-                }
-              }
-            }
-            notifyListeners(state, prevState);
-          }
+          debounceTimer = setTimeout(() => {
+            flushDebouncedHistory();
+          }, debounceMs);
         } else {
-          if (transactionPrevState === null) {
-            transactionPrevState = prevState;
+          if (historyIndex < history.length - 1) {
+            history = history.slice(0, historyIndex + 1);
           }
+
+          history.push({
+            state: cloneStateForHistory(state),
+            timestamp: Date.now(),
+          });
+
+          if (history.length > maxHistorySize + 1) {
+            history = history.slice(-(maxHistorySize + 1));
+          }
+
+          historyIndex = history.length - 1;
+
+          notifyListeners(state, prevState);
+        }
+      } else if (!inTransaction) {
+        if (debounceMs && debounceMs > 0 && !setOptions?.skipHistory) {
+          debouncePendingState = state;
+          debouncePendingPrevState = prevState;
+          debouncePendingSkipHistory = false;
+
+          if (debounceTimer) {
+            clearTimeout(debounceTimer);
+          }
+
+          debounceTimer = setTimeout(() => {
+            flushDebouncedHistory();
+          }, debounceMs);
+        } else {
+          if (setOptions?.skipHistory) {
+            const changedKeys = new Set<string>();
+
+            if (isImmerable(state) && isImmerable(prevState)) {
+              for (const key in state) {
+                if ((state as any)[key] !== (prevState as any)[key]) {
+                  changedKeys.add(key);
+                }
+              }
+            }
+
+            for (let i = 0; i < history.length; i++) {
+              const historyEntry = history[i];
+
+              if (historyEntry) {
+                const historyState = historyEntry.state;
+
+                if (isImmerable(historyState)) {
+                  const updatedState = { ...historyState };
+
+                  for (const key of changedKeys) {
+                    (updatedState as any)[key] = (state as any)[key];
+                  }
+
+                  const updatedEntry: HistoryEntry<T> = {
+                    state: updatedState as T,
+                    timestamp: historyEntry.timestamp,
+                  };
+
+                  if (historyEntry.name !== undefined) {
+                    updatedEntry.name = historyEntry.name;
+                  }
+
+                  history[i] = updatedEntry;
+                }
+              }
+            }
+          }
+          notifyListeners(state, prevState);
+        }
+      } else {
+        if (transactionPrevState === null) {
+          transactionPrevState = prevState;
         }
       }
+    }
   };
 
   const subscribeImpl: StoreSubscriber<T> = ((

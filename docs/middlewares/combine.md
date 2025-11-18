@@ -15,7 +15,7 @@ infers types, so there’s no need for explicit type definitions.
 > `create` and `createStore` not necessary for middleware usage.
 
 ```js
-const nextStateCreatorFn = combine(initialState, additionalStateCreatorFn)
+const nextStateCreatorFn = combine(initialState, additionalStateCreatorFn);
 ```
 
 - [Types](#types)
@@ -56,32 +56,34 @@ This example shows you how you can create a store and get types automatically in
 don’t need to define them explicitly.
 
 ```ts
-import { createStore } from 'bruin/vanilla'
-import { combine } from 'bruin/middleware'
+import { createStore } from 'bruin/vanilla';
+import { combine } from 'bruin/middleware';
 
 const positionStore = createStore(
   combine({ position: { x: 0, y: 0 } }, (set) => ({
     setPosition: (position) => set({ position }),
   })),
-)
+);
 
-const $dotContainer = document.getElementById('dot-container') as HTMLDivElement
-const $dot = document.getElementById('dot') as HTMLDivElement
+const $dotContainer = document.getElementById(
+  'dot-container',
+) as HTMLDivElement;
+const $dot = document.getElementById('dot') as HTMLDivElement;
 
 $dotContainer.addEventListener('pointermove', (event) => {
   positionStore.getState().setPosition({
     x: event.clientX,
     y: event.clientY,
-  })
-})
+  });
+});
 
 const render: Parameters<typeof positionStore.subscribe>[0] = (state) => {
-  $dot.style.transform = `translate(${state.position.x}px, ${state.position.y}px)`
-}
+  $dot.style.transform = `translate(${state.position.x}px, ${state.position.y}px)`;
+};
 
-render(positionStore.getInitialState(), positionStore.getInitialState())
+render(positionStore.getInitialState(), positionStore.getInitialState());
 
-positionStore.subscribe(render)
+positionStore.subscribe(render);
 ```
 
 Here's the `html` code

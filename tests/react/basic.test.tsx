@@ -24,13 +24,13 @@ describe('React Integration - Basic', () => {
   });
 
   it('creates a store hook', () => {
-    const useStore = create(() => ({ count: 0 }));
+    const useStore = create<{ count: number }>()(() => ({ count: 0 }));
     expect(useStore).toBeDefined();
     expect(typeof useStore).toBe('function');
   });
 
   it('uses the store without selector', async () => {
-    const useStore = create(() => ({ count: 0 }));
+    const useStore = create<{ count: number }>()(() => ({ count: 0 }));
 
     function Counter() {
       const state = useStore();
@@ -43,7 +43,10 @@ describe('React Integration - Basic', () => {
   });
 
   it('uses the store with selector', async () => {
-    const useStore = create(() => ({ count: 0, text: 'hello' }));
+    const useStore = create<{ count: number; text: string }>()(() => ({
+      count: 0,
+      text: 'hello',
+    }));
 
     function Counter() {
       const count = useStore((s) => s.count);
@@ -152,7 +155,7 @@ describe('React Integration - Basic', () => {
   });
 
   it('accesses store API from hook', () => {
-    const useStore = create(() => ({ count: 0 }));
+    const useStore = create<{ count: number }>()(() => ({ count: 0 }));
 
     expect(useStore.getState).toBeDefined();
     expect(useStore.setState).toBeDefined();
@@ -164,7 +167,7 @@ describe('React Integration - Basic', () => {
   });
 
   it('updates state via store API', async () => {
-    const useStore = create(() => ({ count: 0 }));
+    const useStore = create<{ count: number }>()(() => ({ count: 0 }));
 
     function Counter() {
       const count = useStore((s) => s.count);
@@ -183,7 +186,9 @@ describe('React Integration - Basic', () => {
   });
 
   it('handles undefined state', async () => {
-    const useStore = create(() => undefined as { count: number } | undefined);
+    const useStore = create<{ count: number } | undefined>()(
+      () => undefined as { count: number } | undefined,
+    );
 
     function Component() {
       const state = useStore();
@@ -196,7 +201,7 @@ describe('React Integration - Basic', () => {
   });
 
   it('handles non-object state (primitives)', async () => {
-    const useStore = create(() => 0);
+    const useStore = create<number>()(() => 0);
 
     function Counter() {
       const count = useStore();
@@ -215,7 +220,10 @@ describe('React Integration - Basic', () => {
   });
 
   it('handles selector returning primitive', async () => {
-    const useStore = create(() => ({ count: 0, text: 'hello' }));
+    const useStore = create<{ count: number; text: string }>()(() => ({
+      count: 0,
+      text: 'hello',
+    }));
 
     function Component() {
       const count = useStore((s) => s.count);
@@ -233,7 +241,7 @@ describe('React Integration - Basic', () => {
   });
 
   it('handles selector returning object', async () => {
-    const useStore = create(() => ({
+    const useStore = create<{ nested: { value: number } }>()(() => ({
       nested: { value: 0 },
     }));
 
@@ -322,7 +330,7 @@ describe('React Integration - Basic', () => {
   });
 
   it('handles errors in selector', async () => {
-    const useStore = create(() => ({ count: 0 }));
+    const useStore = create<{ count: number }>()(() => ({ count: 0 }));
     const consoleError = vi
       .spyOn(console, 'error')
       .mockImplementation(() => {});
@@ -372,7 +380,7 @@ describe('React Integration - Basic', () => {
   });
 
   it('handles dynamic selector changes', async () => {
-    const useStore = create(() => ({
+    const useStore = create<{ count1: number; count2: number }>()(() => ({
       count1: 0,
       count2: 100,
     }));
@@ -397,7 +405,7 @@ describe('React Integration - Basic', () => {
   });
 
   it('works with useEffect dependencies', async () => {
-    const useStore = create(() => ({ count: 0 }));
+    const useStore = create<{ count: number }>()(() => ({ count: 0 }));
     const effectCallback = vi.fn();
 
     function Component() {

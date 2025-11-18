@@ -46,32 +46,32 @@ const useBoundStore = create((set) => ({
 If you can't live without Redux-like reducers, you can define a `dispatch` function on the root level of the store:
 
 ```typescript
-const types = { increase: 'INCREASE', decrease: 'DECREASE' }
+const types = { increase: 'INCREASE', decrease: 'DECREASE' };
 
 const reducer = (state, { type, by = 1 }) => {
   switch (type) {
     case types.increase:
-      return { grumpiness: state.grumpiness + by }
+      return { grumpiness: state.grumpiness + by };
     case types.decrease:
-      return { grumpiness: state.grumpiness - by }
+      return { grumpiness: state.grumpiness - by };
   }
-}
+};
 
 const useGrumpyStore = create((set) => ({
   grumpiness: 0,
   dispatch: (args) => set((state) => reducer(state, args)),
-}))
+}));
 
-const dispatch = useGrumpyStore((state) => state.dispatch)
-dispatch({ type: types.increase, by: 2 })
+const dispatch = useGrumpyStore((state) => state.dispatch);
+dispatch({ type: types.increase, by: 2 });
 ```
 
 You could also use our redux-middleware. It wires up your main reducer, sets initial state, and adds a dispatch function to the state itself and the vanilla api.
 
 ```typescript
-import { redux } from 'bruin/middleware'
+import { redux } from 'bruin/middleware';
 
-const useReduxStore = create(redux(reducer, initialState))
+const useReduxStore = create(redux(reducer, initialState));
 ```
 
 Another way to update the store could be through functions wrapping the state functions. These could also handle side-effects of actions. For example, with HTTP-calls. To use Bruin in a non-reactive way, see [the readme](https://github.com/pmndrs/zustand#readingwriting-state-and-reacting-to-changes-outside-of-components).

@@ -7,7 +7,7 @@ nav: 24
 `createStore` lets you create a vanilla store that exposes API utilities.
 
 ```js
-const someStore = createStore(stateCreatorFn)
+const someStore = createStore(stateCreatorFn);
 ```
 
 - [Types](#types)
@@ -51,19 +51,19 @@ createStore<T>()(stateCreatorFn: StateCreator<T, [], []>): StoreApi<T>
 This example shows how you can support **updater functions** within **actions**.
 
 ```tsx
-import { createStore } from 'bruin/vanilla'
+import { createStore } from 'bruin/vanilla';
 
-type AgeStoreState = { age: number }
+type AgeStoreState = { age: number };
 
 type AgeStoreActions = {
   setAge: (
     nextAge:
       | AgeStoreState['age']
       | ((currentAge: AgeStoreState['age']) => AgeStoreState['age']),
-  ) => void
-}
+  ) => void;
+};
 
-type AgeStore = AgeStoreState & AgeStoreActions
+type AgeStore = AgeStoreState & AgeStoreActions;
 
 const ageStore = createStore<AgeStore>()((set) => ({
   age: 42,
@@ -71,39 +71,39 @@ const ageStore = createStore<AgeStore>()((set) => ({
     set((state) => ({
       age: typeof nextAge === 'function' ? nextAge(state.age) : nextAge,
     })),
-}))
+}));
 
 function increment() {
-  ageStore.getState().setAge((currentAge) => currentAge + 1)
+  ageStore.getState().setAge((currentAge) => currentAge + 1);
 }
 
 const $yourAgeHeading = document.getElementById(
   'your-age',
-) as HTMLHeadingElement
+) as HTMLHeadingElement;
 const $incrementBy3Button = document.getElementById(
   'increment-by-3',
-) as HTMLButtonElement
+) as HTMLButtonElement;
 const $incrementBy1Button = document.getElementById(
   'increment-by-1',
-) as HTMLButtonElement
+) as HTMLButtonElement;
 
 $incrementBy3Button.addEventListener('click', () => {
-  increment()
-  increment()
-  increment()
-})
+  increment();
+  increment();
+  increment();
+});
 
 $incrementBy1Button.addEventListener('click', () => {
-  increment()
-})
+  increment();
+});
 
 const render: Parameters<typeof ageStore.subscribe>[0] = (state) => {
-  $yourAgeHeading.innerHTML = `Your age: ${state.age}`
-}
+  $yourAgeHeading.innerHTML = `Your age: ${state.age}`;
+};
 
-render(ageStore.getInitialState(), ageStore.getInitialState())
+render(ageStore.getInitialState(), ageStore.getInitialState());
 
-ageStore.subscribe(render)
+ageStore.subscribe(render);
 ```
 
 Here's the `html` code
@@ -125,26 +125,28 @@ correctly, and avoid unexpected behaviors.
 > the state with a new one, use the `replace` parameter set to `true`
 
 ```ts
-import { createStore } from 'bruin/vanilla'
+import { createStore } from 'bruin/vanilla';
 
-type XStore = number
+type XStore = number;
 
-const xStore = createStore<XStore>()(() => 0)
+const xStore = createStore<XStore>()(() => 0);
 
-const $dotContainer = document.getElementById('dot-container') as HTMLDivElement
-const $dot = document.getElementById('dot') as HTMLDivElement
+const $dotContainer = document.getElementById(
+  'dot-container',
+) as HTMLDivElement;
+const $dot = document.getElementById('dot') as HTMLDivElement;
 
 $dotContainer.addEventListener('pointermove', (event) => {
-  xStore.setState(event.clientX, true)
-})
+  xStore.setState(event.clientX, true);
+});
 
 const render: Parameters<typeof xStore.subscribe>[0] = (x) => {
-  $dot.style.transform = `translate(${x}px, 0)`
-}
+  $dot.style.transform = `translate(${x}px, 0)`;
+};
 
-render(xStore.getInitialState(), xStore.getInitialState())
+render(xStore.getInitialState(), xStore.getInitialState());
 
-xStore.subscribe(render)
+xStore.subscribe(render);
 ```
 
 Here's the `html` code
@@ -173,38 +175,40 @@ replace the state with a new one, use the `replace` parameter set to `true` with
 discards any existing nested data within the state.
 
 ```ts
-import { createStore } from 'bruin/vanilla'
+import { createStore } from 'bruin/vanilla';
 
-type PositionStoreState = { position: { x: number; y: number } }
+type PositionStoreState = { position: { x: number; y: number } };
 
 type PositionStoreActions = {
-  setPosition: (nextPosition: PositionStoreState['position']) => void
-}
+  setPosition: (nextPosition: PositionStoreState['position']) => void;
+};
 
-type PositionStore = PositionStoreState & PositionStoreActions
+type PositionStore = PositionStoreState & PositionStoreActions;
 
 const positionStore = createStore<PositionStore>()((set) => ({
   position: { x: 0, y: 0 },
   setPosition: (position) => set({ position }),
-}))
+}));
 
-const $dotContainer = document.getElementById('dot-container') as HTMLDivElement
-const $dot = document.getElementById('dot') as HTMLDivElement
+const $dotContainer = document.getElementById(
+  'dot-container',
+) as HTMLDivElement;
+const $dot = document.getElementById('dot') as HTMLDivElement;
 
 $dotContainer.addEventListener('pointermove', (event) => {
   positionStore.getState().setPosition({
     x: event.clientX,
     y: event.clientY,
-  })
-})
+  });
+});
 
 const render: Parameters<typeof positionStore.subscribe>[0] = (state) => {
-  $dot.style.transform = `translate(${state.position.x}px, ${state.position.y}px)`
-}
+  $dot.style.transform = `translate(${state.position.x}px, ${state.position.y}px)`;
+};
 
-render(positionStore.getInitialState(), positionStore.getInitialState())
+render(positionStore.getInitialState(), positionStore.getInitialState());
 
-positionStore.subscribe(render)
+positionStore.subscribe(render);
 ```
 
 Here's the `html` code
@@ -238,26 +242,28 @@ replace the state with a new one, use the `replace` parameter set to `true`.
 > `shift(...)`, `splice(...)`, `reverse(...)`, and `sort(...)`.
 
 ```ts
-import { createStore } from 'bruin/vanilla'
+import { createStore } from 'bruin/vanilla';
 
-type PositionStore = [number, number]
+type PositionStore = [number, number];
 
-const positionStore = createStore<PositionStore>()(() => [0, 0])
+const positionStore = createStore<PositionStore>()(() => [0, 0]);
 
-const $dotContainer = document.getElementById('dot-container') as HTMLDivElement
-const $dot = document.getElementById('dot') as HTMLDivElement
+const $dotContainer = document.getElementById(
+  'dot-container',
+) as HTMLDivElement;
+const $dot = document.getElementById('dot') as HTMLDivElement;
 
 $dotContainer.addEventListener('pointermove', (event) => {
-  positionStore.setState([event.clientX, event.clientY], true)
-})
+  positionStore.setState([event.clientX, event.clientY], true);
+});
 
 const render: Parameters<typeof positionStore.subscribe>[0] = ([x, y]) => {
-  $dot.style.transform = `translate(${x}px, ${y}px)`
-}
+  $dot.style.transform = `translate(${x}px, ${y}px)`;
+};
 
-render(positionStore.getInitialState(), positionStore.getInitialState())
+render(positionStore.getInitialState(), positionStore.getInitialState());
 
-positionStore.subscribe(render)
+positionStore.subscribe(render);
 ```
 
 Here's the `html` code
@@ -280,47 +286,47 @@ By subscribing to state updates, you register a callback that fires whenever the
 updates. We can use `subscribe` for external state management.
 
 ```ts
-import { createStore } from 'bruin/vanilla'
+import { createStore } from 'bruin/vanilla';
 
-type PositionStoreState = { position: { x: number; y: number } }
+type PositionStoreState = { position: { x: number; y: number } };
 
 type PositionStoreActions = {
-  setPosition: (nextPosition: PositionStoreState['position']) => void
-}
+  setPosition: (nextPosition: PositionStoreState['position']) => void;
+};
 
-type PositionStore = PositionStoreState & PositionStoreActions
+type PositionStore = PositionStoreState & PositionStoreActions;
 
 const positionStore = createStore<PositionStore>()((set) => ({
   position: { x: 0, y: 0 },
   setPosition: (position) => set({ position }),
-}))
+}));
 
-const $dot = document.getElementById('dot') as HTMLDivElement
+const $dot = document.getElementById('dot') as HTMLDivElement;
 
 $dot.addEventListener('mouseenter', (event) => {
-  const parent = event.currentTarget.parentElement
-  const parentWidth = parent.clientWidth
-  const parentHeight = parent.clientHeight
+  const parent = event.currentTarget.parentElement;
+  const parentWidth = parent.clientWidth;
+  const parentHeight = parent.clientHeight;
 
   positionStore.getState().setPosition({
     x: Math.ceil(Math.random() * parentWidth),
     y: Math.ceil(Math.random() * parentHeight),
-  })
-})
+  });
+});
 
 const render: Parameters<typeof positionStore.subscribe>[0] = (state) => {
-  $dot.style.transform = `translate(${state.position.x}px, ${state.position.y}px)`
-}
+  $dot.style.transform = `translate(${state.position.x}px, ${state.position.y}px)`;
+};
 
-render(positionStore.getInitialState(), positionStore.getInitialState())
+render(positionStore.getInitialState(), positionStore.getInitialState());
 
-positionStore.subscribe(render)
+positionStore.subscribe(render);
 
 const logger: Parameters<typeof positionStore.subscribe>[0] = (state) => {
-  console.log('new position', { position: state.position })
-}
+  console.log('new position', { position: state.position });
+};
 
-positionStore.subscribe(logger)
+positionStore.subscribe(logger);
 ```
 
 Here's the `html` code
@@ -349,17 +355,17 @@ values for all other fields.
 These input fields don’t work because the `oninput` handlers mutate the state:
 
 ```ts
-import { createStore } from 'bruin/vanilla'
+import { createStore } from 'bruin/vanilla';
 
 type PersonStoreState = {
-  person: { firstName: string; lastName: string; email: string }
-}
+  person: { firstName: string; lastName: string; email: string };
+};
 
 type PersonStoreActions = {
-  setPerson: (nextPerson: PersonStoreState['person']) => void
-}
+  setPerson: (nextPerson: PersonStoreState['person']) => void;
+};
 
-type PersonStore = PersonStoreState & PersonStoreActions
+type PersonStore = PersonStoreState & PersonStoreActions;
 
 const personStore = createStore<PersonStore>()((set) => ({
   person: {
@@ -368,42 +374,42 @@ const personStore = createStore<PersonStore>()((set) => ({
     email: 'bhepworth@sculpture.com',
   },
   setPerson: (person) => set({ person }),
-}))
+}));
 
 const $firstNameInput = document.getElementById(
   'first-name',
-) as HTMLInputElement
-const $lastNameInput = document.getElementById('last-name') as HTMLInputElement
-const $emailInput = document.getElementById('email') as HTMLInputElement
-const $result = document.getElementById('result') as HTMLDivElement
+) as HTMLInputElement;
+const $lastNameInput = document.getElementById('last-name') as HTMLInputElement;
+const $emailInput = document.getElementById('email') as HTMLInputElement;
+const $result = document.getElementById('result') as HTMLDivElement;
 
 function handleFirstNameChange(event: Event) {
-  personStore.getState().person.firstName = (event.target as any).value
+  personStore.getState().person.firstName = (event.target as any).value;
 }
 
 function handleLastNameChange(event: Event) {
-  personStore.getState().person.lastName = (event.target as any).value
+  personStore.getState().person.lastName = (event.target as any).value;
 }
 
 function handleEmailChange(event: Event) {
-  personStore.getState().person.email = (event.target as any).value
+  personStore.getState().person.email = (event.target as any).value;
 }
 
-$firstNameInput.addEventListener('input', handleFirstNameChange)
-$lastNameInput.addEventListener('input', handleLastNameChange)
-$emailInput.addEventListener('input', handleEmailChange)
+$firstNameInput.addEventListener('input', handleFirstNameChange);
+$lastNameInput.addEventListener('input', handleLastNameChange);
+$emailInput.addEventListener('input', handleEmailChange);
 
 const render: Parameters<typeof personStore.subscribe>[0] = (state) => {
-  $firstNameInput.value = state.person.firstName
-  $lastNameInput.value = state.person.lastName
-  $emailInput.value = state.person.email
+  $firstNameInput.value = state.person.firstName;
+  $lastNameInput.value = state.person.lastName;
+  $emailInput.value = state.person.email;
 
-  $result.innerHTML = `${state.person.firstName} ${state.person.lastName} (${state.person.email})`
-}
+  $result.innerHTML = `${state.person.firstName} ${state.person.lastName} (${state.person.email})`;
+};
 
-render(personStore.getInitialState(), personStore.getInitialState())
+render(personStore.getInitialState(), personStore.getInitialState());
 
-personStore.subscribe(render)
+personStore.subscribe(render);
 ```
 
 Here's the `html` code
@@ -427,7 +433,7 @@ Here's the `html` code
 For example, this line mutates the state from a past render:
 
 ```ts
-personStore.getState().firstName = (e.target as any).value
+personStore.getState().firstName = (e.target as any).value;
 ```
 
 The reliable way to get the behavior you’re looking for is to create a new object and pass it to
@@ -437,7 +443,7 @@ fields has changed:
 ```ts
 personStore.getState().setPerson({
   firstName: e.target.value, // New first name from the input
-})
+});
 ```
 
 > [!NOTE]
@@ -450,17 +456,17 @@ Notice how you didn’t declare a separate state variable for each input field. 
 keeping all data grouped in an object is very convenient—as long as you update it correctly!
 
 ```ts {32-34,38-40,44-46}
-import { createStore } from 'bruin/vanilla'
+import { createStore } from 'bruin/vanilla';
 
 type PersonStoreState = {
-  person: { firstName: string; lastName: string; email: string }
-}
+  person: { firstName: string; lastName: string; email: string };
+};
 
 type PersonStoreActions = {
-  setPerson: (nextPerson: PersonStoreState['person']) => void
-}
+  setPerson: (nextPerson: PersonStoreState['person']) => void;
+};
 
-type PersonStore = PersonStoreState & PersonStoreActions
+type PersonStore = PersonStoreState & PersonStoreActions;
 
 const personStore = createStore<PersonStore>()((set) => ({
   person: {
@@ -469,49 +475,49 @@ const personStore = createStore<PersonStore>()((set) => ({
     email: 'bhepworth@sculpture.com',
   },
   setPerson: (person) => set({ person }),
-}))
+}));
 
 const $firstNameInput = document.getElementById(
   'first-name',
-) as HTMLInputElement
-const $lastNameInput = document.getElementById('last-name') as HTMLInputElement
-const $emailInput = document.getElementById('email') as HTMLInputElement
-const $result = document.getElementById('result') as HTMLDivElement
+) as HTMLInputElement;
+const $lastNameInput = document.getElementById('last-name') as HTMLInputElement;
+const $emailInput = document.getElementById('email') as HTMLInputElement;
+const $result = document.getElementById('result') as HTMLDivElement;
 
 function handleFirstNameChange(event: Event) {
   personStore.getState().setPerson({
     ...personStore.getState().person,
     firstName: (event.target as any).value,
-  })
+  });
 }
 
 function handleLastNameChange(event: Event) {
   personStore.getState().setPerson({
     ...personStore.getState().person,
     lastName: (event.target as any).value,
-  })
+  });
 }
 
 function handleEmailChange(event: Event) {
   personStore.getState().setPerson({
     ...personStore.getState().person,
     email: (event.target as any).value,
-  })
+  });
 }
 
-$firstNameInput.addEventListener('input', handleFirstNameChange)
-$lastNameInput.addEventListener('input', handleLastNameChange)
-$emailInput.addEventListener('input', handleEmailChange)
+$firstNameInput.addEventListener('input', handleFirstNameChange);
+$lastNameInput.addEventListener('input', handleLastNameChange);
+$emailInput.addEventListener('input', handleEmailChange);
 
 const render: Parameters<typeof personStore.subscribe>[0] = (state) => {
-  $firstNameInput.value = state.person.firstName
-  $lastNameInput.value = state.person.lastName
-  $emailInput.value = state.person.email
+  $firstNameInput.value = state.person.firstName;
+  $lastNameInput.value = state.person.lastName;
+  $emailInput.value = state.person.email;
 
-  $result.innerHTML = `${state.person.firstName} ${state.person.lastName} (${state.person.email})`
-}
+  $result.innerHTML = `${state.person.firstName} ${state.person.lastName} (${state.person.email})`;
+};
 
-render(personStore.getInitialState(), personStore.getInitialState())
+render(personStore.getInitialState(), personStore.getInitialState());
 
-personStore.subscribe(render)
+personStore.subscribe(render);
 ```

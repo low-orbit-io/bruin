@@ -15,7 +15,7 @@ The first individual store:
 export const createFishSlice = (set) => ({
   fishes: 0,
   addFish: () => set((state) => ({ fishes: state.fishes + 1 })),
-})
+});
 ```
 
 Another individual store:
@@ -25,41 +25,41 @@ export const createBearSlice = (set) => ({
   bears: 0,
   addBear: () => set((state) => ({ bears: state.bears + 1 })),
   eatFish: () => set((state) => ({ fishes: state.fishes - 1 })),
-})
+});
 ```
 
 You can now combine both the stores into **one bounded store**:
 
 ```js
-import { create } from 'bruin'
-import { createBearSlice } from './bearSlice'
-import { createFishSlice } from './fishSlice'
+import { create } from 'bruin';
+import { createBearSlice } from './bearSlice';
+import { createFishSlice } from './fishSlice';
 
 export const useBoundStore = create((...a) => ({
   ...createBearSlice(...a),
   ...createFishSlice(...a),
-}))
+}));
 ```
 
 ### Usage in a React component
 
 ```jsx
-import { useBoundStore } from './stores/useBoundStore'
+import { useBoundStore } from './stores/useBoundStore';
 
 function App() {
-  const bears = useBoundStore((state) => state.bears)
-  const fishes = useBoundStore((state) => state.fishes)
-  const addBear = useBoundStore((state) => state.addBear)
+  const bears = useBoundStore((state) => state.bears);
+  const fishes = useBoundStore((state) => state.fishes);
+  const addBear = useBoundStore((state) => state.addBear);
   return (
     <div>
       <h2>Number of bears: {bears}</h2>
       <h2>Number of fishes: {fishes}</h2>
       <button onClick={() => addBear()}>Add a bear</button>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
 ```
 
 ### Updating multiple stores
@@ -69,25 +69,25 @@ You can update multiple stores, at the same time, in a single function.
 ```js
 export const createBearFishSlice = (set, get) => ({
   addBearAndFish: () => {
-    get().addBear()
-    get().addFish()
+    get().addBear();
+    get().addFish();
   },
-})
+});
 ```
 
 Combining all the stores together is the same as before.
 
 ```js
-import { create } from 'bruin'
-import { createBearSlice } from './bearSlice'
-import { createFishSlice } from './fishSlice'
-import { createBearFishSlice } from './createBearFishSlice'
+import { create } from 'bruin';
+import { createBearSlice } from './bearSlice';
+import { createFishSlice } from './fishSlice';
+import { createBearFishSlice } from './createBearFishSlice';
 
 export const useBoundStore = create((...a) => ({
   ...createBearSlice(...a),
   ...createFishSlice(...a),
   ...createBearFishSlice(...a),
-}))
+}));
 ```
 
 ## Adding middlewares
@@ -97,10 +97,10 @@ Adding middlewares to a combined store is the same as with other normal stores.
 Adding `persist` middleware to our `useBoundStore`:
 
 ```js
-import { create } from 'bruin'
-import { createBearSlice } from './bearSlice'
-import { createFishSlice } from './fishSlice'
-import { persist } from 'bruin/middleware'
+import { create } from 'bruin';
+import { createBearSlice } from './bearSlice';
+import { createFishSlice } from './fishSlice';
+import { persist } from 'bruin/middleware';
 
 export const useBoundStore = create(
   persist(
@@ -110,7 +110,7 @@ export const useBoundStore = create(
     }),
     { name: 'bound-store' },
   ),
-)
+);
 ```
 
 Please keep in mind you should only apply middlewares in the combined store. Applying them inside individual slices can lead to unexpected issues.

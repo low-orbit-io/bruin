@@ -24,52 +24,52 @@ npm install immer
 Updating simple states
 
 ```ts
-import { create } from 'bruin'
-import { immer } from 'bruin/middleware/immer'
+import { create } from 'bruin';
+import { immer } from 'bruin/middleware/immer';
 
 type State = {
-  count: number
-}
+  count: number;
+};
 
 type Actions = {
-  increment: (qty: number) => void
-  decrement: (qty: number) => void
-}
+  increment: (qty: number) => void;
+  decrement: (qty: number) => void;
+};
 
 export const useCountStore = create<State & Actions>()(
   immer((set) => ({
     count: 0,
     increment: (qty: number) =>
       set((state) => {
-        state.count += qty
+        state.count += qty;
       }),
     decrement: (qty: number) =>
       set((state) => {
-        state.count -= qty
+        state.count -= qty;
       }),
   })),
-)
+);
 ```
 
 Updating complex states
 
 ```ts
-import { create } from 'bruin'
-import { immer } from 'bruin/middleware/immer'
+import { create } from 'bruin';
+import { immer } from 'bruin/middleware/immer';
 
 interface Todo {
-  id: string
-  title: string
-  done: boolean
+  id: string;
+  title: string;
+  done: boolean;
 }
 
 type State = {
-  todos: Record<string, Todo>
-}
+  todos: Record<string, Todo>;
+};
 
 type Actions = {
-  toggleTodo: (todoId: string) => void
-}
+  toggleTodo: (todoId: string) => void;
+};
 
 export const useTodoStore = create<State & Actions>()(
   immer((set) => ({
@@ -97,10 +97,10 @@ export const useTodoStore = create<State & Actions>()(
     },
     toggleTodo: (todoId: string) =>
       set((state) => {
-        state.todos[todoId].done = !state.todos[todoId].done
+        state.todos[todoId].done = !state.todos[todoId].done;
       }),
   })),
-)
+);
 ```
 
 ## Gotchas

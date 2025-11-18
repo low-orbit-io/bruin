@@ -13,7 +13,7 @@ over when components re-render, improving performance and responsiveness.
 > `use-sync-external-store` library due to `bruin/traditional` relies on `useSyncExternalStoreWithSelector`.
 
 ```js
-const useSomeStore = createWithEqualityFn(stateCreatorFn, equalityFn)
+const useSomeStore = createWithEqualityFn(stateCreatorFn, equalityFn);
 ```
 
 - [Types](#types)
@@ -64,20 +64,20 @@ about that [here](https://react.dev/learn/queueing-a-series-of-state-updates).
 This example shows how you can support **updater functions** within **actions**.
 
 ```tsx
-import { createWithEqualityFn } from 'bruin/traditional'
-import { shallow } from 'bruin/vanilla/shallow'
+import { createWithEqualityFn } from 'bruin/traditional';
+import { shallow } from 'bruin/vanilla/shallow';
 
-type AgeStoreState = { age: number }
+type AgeStoreState = { age: number };
 
 type AgeStoreActions = {
   setAge: (
     nextAge:
       | AgeStoreState['age']
       | ((currentAge: AgeStoreState['age']) => AgeStoreState['age']),
-  ) => void
-}
+  ) => void;
+};
 
-type AgeStore = AgeStoreState & AgeStoreActions
+type AgeStore = AgeStoreState & AgeStoreActions;
 
 const useAgeStore = createWithEqualityFn<AgeStore>()(
   (set) => ({
@@ -88,14 +88,14 @@ const useAgeStore = createWithEqualityFn<AgeStore>()(
       })),
   }),
   shallow,
-)
+);
 
 export default function App() {
-  const age = useAgeStore((state) => state.age)
-  const setAge = useAgeStore((state) => state.setAge)
+  const age = useAgeStore((state) => state.age);
+  const setAge = useAgeStore((state) => state.setAge);
 
   function increment() {
-    setAge((currentAge) => currentAge + 1)
+    setAge((currentAge) => currentAge + 1);
   }
 
   return (
@@ -104,9 +104,9 @@ export default function App() {
       <button
         type="button"
         onClick={() => {
-          increment()
-          increment()
-          increment()
+          increment();
+          increment();
+          increment();
         }}
       >
         +3
@@ -114,13 +114,13 @@ export default function App() {
       <button
         type="button"
         onClick={() => {
-          increment()
+          increment();
         }}
       >
         +1
       </button>
     </>
-  )
+  );
 }
 ```
 
@@ -135,24 +135,24 @@ correctly, and avoid unexpected behaviors.
 > the state with a new one, use the `replace` parameter set to `true`
 
 ```tsx
-import { createWithEqualityFn } from 'bruin/traditional'
-import { shallow } from 'bruin/vanilla/shallow'
+import { createWithEqualityFn } from 'bruin/traditional';
+import { shallow } from 'bruin/vanilla/shallow';
 
-type XStore = number
+type XStore = number;
 
-const useXStore = createWithEqualityFn<XStore>()(() => 0, shallow)
+const useXStore = createWithEqualityFn<XStore>()(() => 0, shallow);
 
 export default function MovingDot() {
-  const x = useXStore()
+  const x = useXStore();
   const setX = (nextX: number) => {
-    useXStore.setState(nextX, true)
-  }
-  const position = { y: 0, x }
+    useXStore.setState(nextX, true);
+  };
+  const position = { y: 0, x };
 
   return (
     <div
       onPointerMove={(e) => {
-        setX(e.clientX)
+        setX(e.clientX);
       }}
       style={{
         position: 'relative',
@@ -173,7 +173,7 @@ export default function MovingDot() {
         }}
       />
     </div>
-  )
+  );
 }
 ```
 
@@ -189,16 +189,16 @@ replace the state with a new one, use the `replace` parameter set to `true` with
 discards any existing nested data within the state.
 
 ```tsx
-import { createWithEqualityFn } from 'bruin/traditional'
-import { shallow } from 'bruin/vanilla/shallow'
+import { createWithEqualityFn } from 'bruin/traditional';
+import { shallow } from 'bruin/vanilla/shallow';
 
-type PositionStoreState = { position: { x: number; y: number } }
+type PositionStoreState = { position: { x: number; y: number } };
 
 type PositionStoreActions = {
-  setPosition: (nextPosition: PositionStoreState['position']) => void
-}
+  setPosition: (nextPosition: PositionStoreState['position']) => void;
+};
 
-type PositionStore = PositionStoreState & PositionStoreActions
+type PositionStore = PositionStoreState & PositionStoreActions;
 
 const usePositionStore = createWithEqualityFn<PositionStore>()(
   (set) => ({
@@ -206,11 +206,11 @@ const usePositionStore = createWithEqualityFn<PositionStore>()(
     setPosition: (position) => set({ position }),
   }),
   shallow,
-)
+);
 
 export default function MovingDot() {
-  const position = usePositionStore((state) => state.position)
-  const setPosition = usePositionStore((state) => state.setPosition)
+  const position = usePositionStore((state) => state.position);
+  const setPosition = usePositionStore((state) => state.setPosition);
 
   return (
     <div
@@ -218,7 +218,7 @@ export default function MovingDot() {
         setPosition({
           x: e.clientX,
           y: e.clientY,
-        })
+        });
       }}
       style={{
         position: 'relative',
@@ -239,7 +239,7 @@ export default function MovingDot() {
         }}
       />
     </div>
-  )
+  );
 }
 ```
 
@@ -260,27 +260,27 @@ replace the state with a new one, use the `replace` parameter set to `true`.
 > `shift(...)`, `splice(...)`, `reverse(...)`, and `sort(...)`.
 
 ```tsx
-import { createWithEqualityFn } from 'bruin/traditional'
-import { shallow } from 'bruin/vanilla/shallow'
+import { createWithEqualityFn } from 'bruin/traditional';
+import { shallow } from 'bruin/vanilla/shallow';
 
-type PositionStore = [number, number]
+type PositionStore = [number, number];
 
 const usePositionStore = createWithEqualityFn<PositionStore>()(
   () => [0, 0],
   shallow,
-)
+);
 
 export default function MovingDot() {
-  const [x, y] = usePositionStore()
-  const position = { x, y }
+  const [x, y] = usePositionStore();
+  const position = { x, y };
   const setPosition: typeof usePositionStore.setState = (nextPosition) => {
-    usePositionStore.setState(nextPosition, true)
-  }
+    usePositionStore.setState(nextPosition, true);
+  };
 
   return (
     <div
       onPointerMove={(e) => {
-        setPosition([e.clientX, e.clientY])
+        setPosition([e.clientX, e.clientY]);
       }}
       style={{
         position: 'relative',
@@ -301,7 +301,7 @@ export default function MovingDot() {
         }}
       />
     </div>
-  )
+  );
 }
 ```
 
@@ -315,20 +315,20 @@ require a hook to call an action, and it facilitates code splitting.
 > located together with your state).
 
 ```tsx
-import { createWithEqualityFn } from 'bruin/traditional'
-import { shallow } from 'bruin/vanilla/shallow'
+import { createWithEqualityFn } from 'bruin/traditional';
+import { shallow } from 'bruin/vanilla/shallow';
 
 const usePositionStore = createWithEqualityFn<{
-  x: number
-  y: number
-}>()(() => ({ x: 0, y: 0 }), shallow)
+  x: number;
+  y: number;
+}>()(() => ({ x: 0, y: 0 }), shallow);
 
 const setPosition: typeof usePositionStore.setState = (nextPosition) => {
-  usePositionStore.setState(nextPosition)
-}
+  usePositionStore.setState(nextPosition);
+};
 
 export default function MovingDot() {
-  const position = usePositionStore()
+  const position = usePositionStore();
 
   return (
     <div
@@ -350,18 +350,18 @@ export default function MovingDot() {
           height: 20,
         }}
         onMouseEnter={(event) => {
-          const parent = event.currentTarget.parentElement
-          const parentWidth = parent.clientWidth
-          const parentHeight = parent.clientHeight
+          const parent = event.currentTarget.parentElement;
+          const parentWidth = parent.clientWidth;
+          const parentHeight = parent.clientHeight;
 
           setPosition({
             x: Math.ceil(Math.random() * parentWidth),
             y: Math.ceil(Math.random() * parentHeight),
-          })
+          });
         }}
       />
     </div>
-  )
+  );
 }
 ```
 
@@ -371,17 +371,17 @@ By subscribing to state updates, you register a callback that fires whenever the
 updates. We can use `subscribe` for external state management.
 
 ```tsx
-import { useEffect } from 'react'
-import { createWithEqualityFn } from 'bruin/traditional'
-import { shallow } from 'bruin/vanilla/shallow'
+import { useEffect } from 'react';
+import { createWithEqualityFn } from 'bruin/traditional';
+import { shallow } from 'bruin/vanilla/shallow';
 
-type PositionStoreState = { position: { x: number; y: number } }
+type PositionStoreState = { position: { x: number; y: number } };
 
 type PositionStoreActions = {
-  setPosition: (nextPosition: PositionStoreState['position']) => void
-}
+  setPosition: (nextPosition: PositionStoreState['position']) => void;
+};
 
-type PositionStore = PositionStoreState & PositionStoreActions
+type PositionStore = PositionStoreState & PositionStoreActions;
 
 const usePositionStore = createWithEqualityFn<PositionStore>()(
   (set) => ({
@@ -389,23 +389,23 @@ const usePositionStore = createWithEqualityFn<PositionStore>()(
     setPosition: (nextPosition) => set({ position: nextPosition }),
   }),
   shallow,
-)
+);
 
 export default function MovingDot() {
-  const position = usePositionStore((state) => state.position)
-  const setPosition = usePositionStore((state) => state.setPosition)
+  const position = usePositionStore((state) => state.position);
+  const setPosition = usePositionStore((state) => state.setPosition);
 
   useEffect(() => {
     const unsubscribePositionStore = usePositionStore.subscribe(
       ({ position }) => {
-        console.log('new position', { position })
+        console.log('new position', { position });
       },
-    )
+    );
 
     return () => {
-      unsubscribePositionStore()
-    }
-  }, [])
+      unsubscribePositionStore();
+    };
+  }, []);
 
   return (
     <div
@@ -427,18 +427,18 @@ export default function MovingDot() {
           height: 20,
         }}
         onMouseEnter={(event) => {
-          const parent = event.currentTarget.parentElement
-          const parentWidth = parent.clientWidth
-          const parentHeight = parent.clientHeight
+          const parent = event.currentTarget.parentElement;
+          const parentWidth = parent.clientWidth;
+          const parentHeight = parent.clientHeight;
 
           setPosition({
             x: Math.ceil(Math.random() * parentWidth),
             y: Math.ceil(Math.random() * parentHeight),
-          })
+          });
         }}
       />
     </div>
-  )
+  );
 }
 ```
 
@@ -454,18 +454,18 @@ values for all other fields.
 These input fields don’t work because the `onChange` handlers mutate the state:
 
 ```tsx
-import { createWithEqualityFn } from 'bruin/traditional'
-import { shallow } from 'bruin/vanilla/shallow'
+import { createWithEqualityFn } from 'bruin/traditional';
+import { shallow } from 'bruin/vanilla/shallow';
 
 type PersonStoreState = {
-  person: { firstName: string; lastName: string; email: string }
-}
+  person: { firstName: string; lastName: string; email: string };
+};
 
 type PersonStoreActions = {
-  setPerson: (nextPerson: PersonStoreState['person']) => void
-}
+  setPerson: (nextPerson: PersonStoreState['person']) => void;
+};
 
-type PersonStore = PersonStoreState & PersonStoreActions
+type PersonStore = PersonStoreState & PersonStoreActions;
 
 const usePersonStore = createWithEqualityFn<PersonStore>()(
   (set) => ({
@@ -477,22 +477,22 @@ const usePersonStore = createWithEqualityFn<PersonStore>()(
     setPerson: (person) => set({ person }),
   }),
   shallow,
-)
+);
 
 export default function Form() {
-  const person = usePersonStore((state) => state.person)
-  const setPerson = usePersonStore((state) => state.setPerson)
+  const person = usePersonStore((state) => state.person);
+  const setPerson = usePersonStore((state) => state.setPerson);
 
   function handleFirstNameChange(e: ChangeEvent<HTMLInputElement>) {
-    person.firstName = e.target.value
+    person.firstName = e.target.value;
   }
 
   function handleLastNameChange(e: ChangeEvent<HTMLInputElement>) {
-    person.lastName = e.target.value
+    person.lastName = e.target.value;
   }
 
   function handleEmailChange(e: ChangeEvent<HTMLInputElement>) {
-    person.email = e.target.value
+    person.email = e.target.value;
   }
 
   return (
@@ -513,14 +513,14 @@ export default function Form() {
         {person.firstName} {person.lastName} ({person.email})
       </p>
     </>
-  )
+  );
 }
 ```
 
 For example, this line mutates the state from a past render:
 
 ```tsx
-person.firstName = e.target.value
+person.firstName = e.target.value;
 ```
 
 The reliable way to get the behavior you’re looking for is to create a new object and pass it to
@@ -528,7 +528,7 @@ The reliable way to get the behavior you’re looking for is to create a new obj
 fields has changed:
 
 ```ts
-setPerson({ ...person, firstName: e.target.value }) // New first name from the input
+setPerson({ ...person, firstName: e.target.value }); // New first name from the input
 ```
 
 > [!NOTE]
@@ -541,19 +541,19 @@ Notice how you didn’t declare a separate state variable for each input field. 
 keeping all data grouped in an object is very convenient—as long as you update it correctly!
 
 ```tsx {32,36,40}
-import { type ChangeEvent } from 'react'
-import { createWithEqualityFn } from 'bruin/traditional'
-import { shallow } from 'bruin/vanilla/shallow'
+import { type ChangeEvent } from 'react';
+import { createWithEqualityFn } from 'bruin/traditional';
+import { shallow } from 'bruin/vanilla/shallow';
 
 type PersonStoreState = {
-  person: { firstName: string; lastName: string; email: string }
-}
+  person: { firstName: string; lastName: string; email: string };
+};
 
 type PersonStoreActions = {
-  setPerson: (nextPerson: PersonStoreState['person']) => void
-}
+  setPerson: (nextPerson: PersonStoreState['person']) => void;
+};
 
-type PersonStore = PersonStoreState & PersonStoreActions
+type PersonStore = PersonStoreState & PersonStoreActions;
 
 const usePersonStore = createWithEqualityFn<PersonStore>()(
   (set) => ({
@@ -565,22 +565,22 @@ const usePersonStore = createWithEqualityFn<PersonStore>()(
     setPerson: (nextPerson) => set({ person: nextPerson }),
   }),
   shallow,
-)
+);
 
 export default function Form() {
-  const person = usePersonStore((state) => state.person)
-  const setPerson = usePersonStore((state) => state.setPerson)
+  const person = usePersonStore((state) => state.person);
+  const setPerson = usePersonStore((state) => state.setPerson);
 
   function handleFirstNameChange(e: ChangeEvent<HTMLInputElement>) {
-    setPerson({ ...person, firstName: e.target.value })
+    setPerson({ ...person, firstName: e.target.value });
   }
 
   function handleLastNameChange(e: ChangeEvent<HTMLInputElement>) {
-    setPerson({ ...person, lastName: e.target.value })
+    setPerson({ ...person, lastName: e.target.value });
   }
 
   function handleEmailChange(e: ChangeEvent<HTMLInputElement>) {
-    setPerson({ ...person, email: e.target.value })
+    setPerson({ ...person, email: e.target.value });
   }
 
   return (
@@ -601,6 +601,6 @@ export default function Form() {
         {person.firstName} {person.lastName} ({person.email})
       </p>
     </>
-  )
+  );
 }
 ```

@@ -7,7 +7,7 @@ nav: 28
 `useShallow` is a React Hook that lets you optimize re-renders.
 
 ```js
-const memoizedSelector = useShallow(selector)
+const memoizedSelector = useShallow(selector);
 ```
 
 - [Types](#types)
@@ -45,17 +45,17 @@ three properties: `papaBear`, `mamaBear`, and `babyBear`, each representing a di
 the bear family and their respective oatmeal pot sizes.
 
 ```tsx
-import { create } from 'bruin'
+import { create } from 'bruin';
 
 type BearFamilyMealsStore = {
-  [key: string]: string
-}
+  [key: string]: string;
+};
 
 const useBearFamilyMealsStore = create<BearFamilyMealsStore>()(() => ({
   papaBear: 'large porridge-pot',
   mamaBear: 'middle-size porridge pot',
   babyBear: 'A little, small, wee pot',
-}))
+}));
 ```
 
 Next, we'll create a `BearNames` component that retrieves the keys of our state (the bear family
@@ -63,9 +63,9 @@ members) and displays them.
 
 ```tsx
 function BearNames() {
-  const names = useBearFamilyMealsStore((state) => Object.keys(state))
+  const names = useBearFamilyMealsStore((state) => Object.keys(state));
 
-  return <div>{names.join(', ')}</div>
+  return <div>{names.join(', ')}</div>;
 }
 ```
 
@@ -84,22 +84,22 @@ const meals = [
   'A wee, small, little jar',
   'A tiny, wee, small pan',
   'A small, wee, little crock',
-]
+];
 
 function UpdateBabyBearMeal() {
   useEffect(() => {
     const timer = setInterval(() => {
       useBearFamilyMealsStore.setState({
         babyBear: meals[Math.floor(Math.random() * (meals.length - 1))],
-      })
-    }, 1000)
+      });
+    }, 1000);
 
     return () => {
-      clearInterval(timer)
-    }
-  }, [])
+      clearInterval(timer);
+    };
+  }, []);
 
-  return null
+  return null;
 }
 ```
 
@@ -112,25 +112,25 @@ export default function App() {
       <UpdateBabyBearMeal />
       <BearNames />
     </>
-  )
+  );
 }
 ```
 
 Here is what the code should look like:
 
 ```tsx
-import { useEffect } from 'react'
-import { create } from 'bruin'
+import { useEffect } from 'react';
+import { create } from 'bruin';
 
 type BearFamilyMealsStore = {
-  [key: string]: string
-}
+  [key: string]: string;
+};
 
 const useBearFamilyMealsStore = create<BearFamilyMealsStore>()(() => ({
   papaBear: 'large porridge-pot',
   mamaBear: 'middle-size porridge pot',
   babyBear: 'A little, small, wee pot',
-}))
+}));
 
 const meals = [
   'A tiny, little, wee bowl',
@@ -143,28 +143,28 @@ const meals = [
   'A wee, small, little jar',
   'A tiny, wee, small pan',
   'A small, wee, little crock',
-]
+];
 
 function UpdateBabyBearMeal() {
   useEffect(() => {
     const timer = setInterval(() => {
       useBearFamilyMealsStore.setState({
         babyBear: meals[Math.floor(Math.random() * (meals.length - 1))],
-      })
-    }, 1000)
+      });
+    }, 1000);
 
     return () => {
-      clearInterval(timer)
-    }
-  }, [])
+      clearInterval(timer);
+    };
+  }, []);
 
-  return null
+  return null;
 }
 
 function BearNames() {
-  const names = useBearFamilyMealsStore((state) => Object.keys(state))
+  const names = useBearFamilyMealsStore((state) => Object.keys(state));
 
-  return <div>{names.join(', ')}</div>
+  return <div>{names.join(', ')}</div>;
 }
 
 export default function App() {
@@ -173,7 +173,7 @@ export default function App() {
       <UpdateBabyBearMeal />
       <BearNames />
     </>
-  )
+  );
 }
 ```
 
@@ -188,28 +188,28 @@ the state change:
 function BearNames() {
   const names = useBearFamilyMealsStore(
     useShallow((state) => Object.keys(state)),
-  )
+  );
 
-  return <div>{names.join(', ')}</div>
+  return <div>{names.join(', ')}</div>;
 }
 ```
 
 Here is what the code should look like:
 
 ```tsx
-import { useEffect } from 'react'
-import { create } from 'bruin'
-import { useShallow } from 'bruin/react/shallow'
+import { useEffect } from 'react';
+import { create } from 'bruin';
+import { useShallow } from 'bruin/react/shallow';
 
 type BearFamilyMealsStore = {
-  [key: string]: string
-}
+  [key: string]: string;
+};
 
 const useBearFamilyMealsStore = create<BearFamilyMealsStore>()(() => ({
   papaBear: 'large porridge-pot',
   mamaBear: 'middle-size porridge pot',
   babyBear: 'A little, small, wee pot',
-}))
+}));
 
 const meals = [
   'A tiny, little, wee bowl',
@@ -222,30 +222,30 @@ const meals = [
   'A wee, small, little jar',
   'A tiny, wee, small pan',
   'A small, wee, little crock',
-]
+];
 
 function UpdateBabyBearMeal() {
   useEffect(() => {
     const timer = setInterval(() => {
       useBearFamilyMealsStore.setState({
         babyBear: meals[Math.floor(Math.random() * (meals.length - 1))],
-      })
-    }, 1000)
+      });
+    }, 1000);
 
     return () => {
-      clearInterval(timer)
-    }
-  }, [])
+      clearInterval(timer);
+    };
+  }, []);
 
-  return null
+  return null;
 }
 
 function BearNames() {
   const names = useBearFamilyMealsStore(
     useShallow((state) => Object.keys(state)),
-  )
+  );
 
-  return <div>{names.join(', ')}</div>
+  return <div>{names.join(', ')}</div>;
 }
 
 export default function App() {
@@ -254,7 +254,7 @@ export default function App() {
       <UpdateBabyBearMeal />
       <BearNames />
     </>
-  )
+  );
 }
 ```
 

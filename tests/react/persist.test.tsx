@@ -568,7 +568,7 @@ describe('Persist Middleware - History Persistence (Bruin Feature)', () => {
 
     const { storage, setItemSpy } = createPersistentStore(null);
 
-    const useStore = create(
+    const useStore = create<{ count: number; inc: () => void }>()(
       persist(
         (set) => ({
           count: 0,
@@ -586,6 +586,7 @@ describe('Persist Middleware - History Persistence (Bruin Feature)', () => {
 
     // Check that storage does NOT include history
     const lastCall = setItemSpy.mock.calls[setItemSpy.mock.calls.length - 1];
+    if (!lastCall) throw new Error('No storage call found');
     const stored = JSON.parse(lastCall[1]);
 
     // Functions are not serialized by JSON.stringify
@@ -604,7 +605,7 @@ describe('Persist Middleware - History Persistence (Bruin Feature)', () => {
 
     const { storage, setItemSpy } = createPersistentStore(null);
 
-    const useStore = create(
+    const useStore = create<{ count: number; inc: () => void }>()(
       persist(
         (set) => ({
           count: 0,
@@ -623,6 +624,7 @@ describe('Persist Middleware - History Persistence (Bruin Feature)', () => {
 
     // Check that storage INCLUDES history
     const lastCall = setItemSpy.mock.calls[setItemSpy.mock.calls.length - 1];
+    if (!lastCall) throw new Error('No storage call found');
     const stored = JSON.parse(lastCall[1]);
 
     expect(stored.persistHistory).toBe(true);
@@ -650,7 +652,7 @@ describe('Persist Middleware - History Persistence (Bruin Feature)', () => {
       removeItem: () => {},
     };
 
-    const useStore = create(
+    const useStore = create<{ count: number; inc: () => void }>()(
       persist(
         (set) => ({
           count: 0,
@@ -697,7 +699,7 @@ describe('Persist Middleware - History Persistence (Bruin Feature)', () => {
       removeItem: () => {},
     };
 
-    const useStore = create(
+    const useStore = create<{ count: number; inc: () => void }>()(
       persist(
         (set) => ({
           count: 0,
@@ -726,7 +728,7 @@ describe('Persist Middleware - History Persistence (Bruin Feature)', () => {
 
     const { storage, setItemSpy } = createPersistentStore(null);
 
-    const useStore = create(
+    const useStore = create<{ count: number; inc: () => void }>()(
       persist(
         (set) => ({
           count: 0,
@@ -756,6 +758,7 @@ describe('Persist Middleware - History Persistence (Bruin Feature)', () => {
     // Check that storage has only current state in history
     expect(setItemSpy.mock.calls.length).toBeGreaterThan(callCountBeforeClear);
     const lastCall = setItemSpy.mock.calls[setItemSpy.mock.calls.length - 1];
+    if (!lastCall) throw new Error('No storage call found');
     const stored = JSON.parse(lastCall[1]);
 
     expect(stored.history).toBeDefined();

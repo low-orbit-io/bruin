@@ -51,33 +51,33 @@ export const App = () => {
         <div>Hello World!</div>
       </body>
     </html>
-  )
-}
+  );
+};
 ```
 
 ```tsx
 // server.tsx
-import express from 'express'
-import React from 'react'
-import ReactDOMServer from 'react-dom/server'
+import express from 'express';
+import React from 'react';
+import ReactDOMServer from 'react-dom/server';
 
-import { App } from './app.tsx'
+import { App } from './app.tsx';
 
-const port = Number.parseInt(process.env.PORT || '3000', 10)
-const app = express()
+const port = Number.parseInt(process.env.PORT || '3000', 10);
+const app = express();
 
 app.get('/', (_, res) => {
   const { pipe } = ReactDOMServer.renderToPipeableStream(<App />, {
     onShellReady() {
-      res.setHeader('content-type', 'text/html')
-      pipe(res)
+      res.setHeader('content-type', 'text/html');
+      pipe(res);
     },
-  })
-})
+  });
+});
 
 app.listen(port, () => {
-  console.log(`Server is listening at ${port}`)
-})
+  console.log(`Server is listening at ${port}`);
+});
 ```
 
 ```sh
@@ -138,43 +138,43 @@ export const App = () => {
         <div>Hello World!</div>
       </body>
     </html>
-  )
-}
+  );
+};
 ```
 
 ```tsx
 // main.tsx
-import ReactDOMClient from 'react-dom/client'
+import ReactDOMClient from 'react-dom/client';
 
-import { App } from './app.tsx'
+import { App } from './app.tsx';
 
-ReactDOMClient.hydrateRoot(document, <App />)
+ReactDOMClient.hydrateRoot(document, <App />);
 ```
 
 ```tsx
 // server.tsx
-import express from 'express'
-import React from 'react'
-import ReactDOMServer from 'react-dom/server'
+import express from 'express';
+import React from 'react';
+import ReactDOMServer from 'react-dom/server';
 
-import { App } from './app.tsx'
+import { App } from './app.tsx';
 
-const port = Number.parseInt(process.env.PORT || '3000', 10)
-const app = express()
+const port = Number.parseInt(process.env.PORT || '3000', 10);
+const app = express();
 
 app.use('/', (_, res) => {
   const { pipe } = ReactDOMServer.renderToPipeableStream(<App />, {
     bootstrapScripts: ['/main.js'],
     onShellReady() {
-      res.setHeader('content-type', 'text/html')
-      pipe(res)
+      res.setHeader('content-type', 'text/html');
+      pipe(res);
     },
-  })
-})
+  });
+});
 
 app.listen(port, () => {
-  console.log(`Server is listening at ${port}`)
-})
+  console.log(`Server is listening at ${port}`);
+});
 ```
 
 ```sh

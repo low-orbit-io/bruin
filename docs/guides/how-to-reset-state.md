@@ -9,9 +9,9 @@ The following pattern can be used to reset the state to its initial value.
 const useSomeStore = create<State & Actions>()((set, get, store) => ({
   // your code here
   reset: () => {
-    set(store.getInitialState())
+    set(store.getInitialState());
   },
-}))
+}));
 ```
 
 Resetting multiple stores at once

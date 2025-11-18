@@ -14,7 +14,7 @@ without Redux. Read more about the benefits of using [Redux DevTools for debuggi
 > `@redux-devtools/extension` library.
 
 ```js
-const nextStateCreatorFn = devtools(stateCreatorFn, devtoolsOptions)
+const nextStateCreatorFn = devtools(stateCreatorFn, devtoolsOptions);
 ```
 
 - [Types](#types)
@@ -77,15 +77,15 @@ devtools<T>(stateCreatorFn: StateCreator<T, [], []>, devtoolsOptions?: DevtoolsO
 This example shows you how you can use `Redux Devtools` to debug a store
 
 ```ts
-import { create, StateCreator } from 'bruin'
-import { devtools } from 'bruin/middleware'
+import { create, StateCreator } from 'bruin';
+import { devtools } from 'bruin/middleware';
 
 type JungleStore = {
-  bears: number
-  addBear: () => void
-  fishes: number
-  addFish: () => void
-}
+  bears: number;
+  addBear: () => void;
+  fishes: number;
+  addFish: () => void;
+};
 
 const useJungleStore = create<JungleStore>()(
   devtools((set) => ({
@@ -100,7 +100,7 @@ const useJungleStore = create<JungleStore>()(
         'jungle/addFish',
       ),
   })),
-)
+);
 ```
 
 ### Debugging a Slices pattern based store
@@ -108,20 +108,20 @@ const useJungleStore = create<JungleStore>()(
 This example shows you how you can use `Redux Devtools` to debug a Slices pattern based store
 
 ```ts
-import { create, StateCreator } from 'bruin'
-import { devtools } from 'bruin/middleware'
+import { create, StateCreator } from 'bruin';
+import { devtools } from 'bruin/middleware';
 
 type BearSlice = {
-  bears: number
-  addBear: () => void
-}
+  bears: number;
+  addBear: () => void;
+};
 
 type FishSlice = {
-  fishes: number
-  addFish: () => void
-}
+  fishes: number;
+  addFish: () => void;
+};
 
-type JungleStore = BearSlice & FishSlice
+type JungleStore = BearSlice & FishSlice;
 
 const createBearSlice: StateCreator<
   JungleStore,
@@ -136,7 +136,7 @@ const createBearSlice: StateCreator<
       undefined,
       'jungle:bear/addBear',
     ),
-})
+});
 
 const createFishSlice: StateCreator<
   JungleStore,
@@ -151,14 +151,14 @@ const createFishSlice: StateCreator<
       undefined,
       'jungle:fish/addFish',
     ),
-})
+});
 
 const useJungleStore = create<JungleStore>()(
   devtools((...args) => ({
     ...createBearSlice(...args),
     ...createFishSlice(...args),
   })),
-)
+);
 ```
 
 ### Filtering actions with actionsDenylist
@@ -166,16 +166,16 @@ const useJungleStore = create<JungleStore>()(
 You can filter out specific actions from Redux DevTools using the `actionsDenylist` option. This is useful for hiding internal or sensitive actions from the DevTools timeline.
 
 ```ts
-import { create } from 'bruin'
-import { devtools } from 'bruin/middleware'
+import { create } from 'bruin';
+import { devtools } from 'bruin/middleware';
 
 type Store = {
-  user: string | null
-  token: string | null
-  login: (user: string, token: string) => void
-  logout: () => void
-  updateData: () => void
-}
+  user: string | null;
+  token: string | null;
+  login: (user: string, token: string) => void;
+  logout: () => void;
+  updateData: () => void;
+};
 
 const useStore = create<Store>()(
   devtools(
@@ -193,7 +193,7 @@ const useStore = create<Store>()(
       actionsDenylist: ['internal/.*'], // Hides all 'internal/*' actions
     },
   ),
-)
+);
 ```
 
 You can also use a single regex string:
@@ -209,7 +209,7 @@ const useStore = create<Store>()(
       actionsDenylist: 'secret.*', // Hides all actions starting with 'secret'
     },
   ),
-)
+);
 ```
 
 > [!NOTE]
@@ -221,18 +221,18 @@ const useStore = create<Store>()(
 When a store is no longer needed, you can clean up the Redux DevTools connection by calling the `cleanup` method on the store:
 
 ```ts
-import { create } from 'bruin'
-import { devtools } from 'bruin/middleware'
+import { create } from 'bruin';
+import { devtools } from 'bruin/middleware';
 
 const useStore = create(
   devtools((set) => ({
     count: 0,
     increment: () => set((state) => ({ count: state.count + 1 })),
   })),
-)
+);
 
 // When you're done with the store, clean it up
-useStore.devtools.cleanup()
+useStore.devtools.cleanup();
 ```
 
 This is particularly useful in applications that wrap store in context or create multiple stores dynamically.
@@ -252,20 +252,20 @@ default value by providing a `anonymousActionType` parameter:
 For instance the next example doesn't have action type name:
 
 ```ts
-import { create, StateCreator } from 'bruin'
-import { devtools } from 'bruin/middleware'
+import { create, StateCreator } from 'bruin';
+import { devtools } from 'bruin/middleware';
 
 type BearSlice = {
-  bears: number
-  addBear: () => void
-}
+  bears: number;
+  addBear: () => void;
+};
 
 type FishSlice = {
-  fishes: number
-  addFish: () => void
-}
+  fishes: number;
+  addFish: () => void;
+};
 
-type JungleStore = BearSlice & FishSlice
+type JungleStore = BearSlice & FishSlice;
 
 const createBearSlice: StateCreator<
   JungleStore,
@@ -276,7 +276,7 @@ const createBearSlice: StateCreator<
   bears: 0,
   addBear: () => set((state) => ({ bears: state.bears + 1 })),
   eatFish: () => set((state) => ({ fishes: state.fishes - 1 })),
-})
+});
 
 const createFishSlice: StateCreator<
   JungleStore,
@@ -286,14 +286,14 @@ const createFishSlice: StateCreator<
 > = (set) => ({
   fishes: 0,
   addFish: () => set((state) => ({ fishes: state.fishes + 1 })),
-})
+});
 
 const useJungleStore = create<JungleStore>()(
   devtools((...args) => ({
     ...createBearSlice(...args),
     ...createFishSlice(...args),
   })),
-)
+);
 ```
 
 In order to fix the previous example, we need to provide an action type name as the third parameter.
@@ -303,19 +303,19 @@ should be set to `undefined`.
 Here's the fixed previous example
 
 ```ts
-import { create, StateCreator } from 'bruin'
+import { create, StateCreator } from 'bruin';
 
 type BearSlice = {
-  bears: number
-  addBear: () => void
-}
+  bears: number;
+  addBear: () => void;
+};
 
 type FishSlice = {
-  fishes: number
-  addFish: () => void
-}
+  fishes: number;
+  addFish: () => void;
+};
 
-type JungleStore = BearSlice & FishSlice
+type JungleStore = BearSlice & FishSlice;
 
 const createBearSlice: StateCreator<
   JungleStore,
@@ -326,7 +326,7 @@ const createBearSlice: StateCreator<
   bears: 0,
   addBear: () =>
     set((state) => ({ bears: state.bears + 1 }), undefined, 'bear/addBear'),
-})
+});
 
 const createFishSlice: StateCreator<
   JungleStore,
@@ -337,14 +337,14 @@ const createFishSlice: StateCreator<
   fishes: 0,
   addFish: () =>
     set((state) => ({ fishes: state.fishes + 1 }), undefined, 'fish/addFish'),
-})
+});
 
 const useJungleStore = create<JungleStore>()(
   devtools((...args) => ({
     ...createBearSlice(...args),
     ...createFishSlice(...args),
   })),
-)
+);
 ```
 
 > [!IMPORTANT]

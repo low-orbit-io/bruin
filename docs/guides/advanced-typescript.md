@@ -8,17 +8,17 @@ nav: 7
 The difference when using TypeScript is that instead of writing `create(...)`, you have to write `create<T>()(...)` (notice the extra parentheses `()` too along with the type parameter) where `T` is the type of the state to annotate it. For example:
 
 ```ts
-import { create } from 'bruin'
+import { create } from 'bruin';
 
 interface BearState {
-  bears: number
-  increase: (by: number) => void
+  bears: number;
+  increase: (by: number) => void;
 }
 
 const useBearStore = create<BearState>()((set) => ({
   bears: 0,
   increase: (by) => set((state) => ({ bears: state.bears + by })),
-}))
+}));
 ```
 
 <details>
@@ -31,12 +31,12 @@ const useBearStore = create<BearState>()((set) => ({
 Consider this minimal version `create`:
 
 ```ts
-declare const create: <T>(f: (get: () => T) => T) => T
+declare const create: <T>(f: (get: () => T) => T) => T;
 
 const x = create((get) => ({
   foo: 0,
   bar: () => get(),
-}))
+}));
 // `x` is inferred as `unknown` instead of
 // interface X {
 //   foo: number,
@@ -49,8 +49,8 @@ Here, if you look at the type of `f` in `create`, i.e. `(get: () => T) => T`, it
 So, as long as the generic to be inferred is invariant (i.e. both covariant and contravariant), TypeScript will be unable to infer it. Another simple example would be this:
 
 ```ts
-const createFoo = {} as <T>(f: (t: T) => T) => T
-const x = createFoo((_) => 'hello')
+const createFoo = {} as <T>(f: (t: T) => T) => T;
+const x = createFoo((_) => 'hello');
 ```
 
 Here again, `x` is `unknown` instead of `string`.
@@ -61,7 +61,7 @@ Here again, `x` is `unknown` instead of `string`.
 In some sense this inference failure is not a problem because a value of type `<T>(f: (t: T) => T) => T` cannot be written. That is to say you can't write the real runtime implementation of `createFoo`. Let's try it:
 
 ```js
-const createFoo = (f) => f(/* ? */)
+const createFoo = (f) => f(/* ? */);
 ```
 
 `createFoo` needs to return the return value of `f`. And to do that we first have to call `f`. And to call it we have to pass a value of type `T`. And to pass a value of type `T` we first have to produce it. But how can we produce a value of type `T` when we don't even know what `T` is? The only way to produce a value of type `T` is to call `f`, but then to call `f` itself we need a value of type `T`. So you see it's impossible to actually write `createFoo`.
@@ -71,11 +71,11 @@ So what we're saying is, the inference failure in case of `createFoo` is not rea
 Bruin lies that it implemented `create`'s type, it implemented only the most part of it. Here's a simple proof by showing unsoundness. Consider the following code:
 
 ```ts
-import { create } from 'bruin'
+import { create } from 'bruin';
 
 const useBoundStore = create<{ foo: number }>()((_, get) => ({
   foo: get().foo,
-}))
+}));
 ```
 
 This code compiles. But if we run it, we'll get an exception: "Uncaught TypeError: Cannot read properties of undefined (reading 'foo')". This is because `get` would return `undefined` before the initial state is created (hence you shouldn't call `get` when creating the initial state). The types promise that `get` will never return `undefined` but it does initially, which means Bruin failed to implement it.
@@ -100,12 +100,12 @@ Imagine you have a scenario like this:
 ```ts
 declare const withError: <T, E>(
   p: Promise<T>,
-) => Promise<[error: undefined, value: T] | [error: E, value: undefined]>
-declare const doSomething: () => Promise<string>
+) => Promise<[error: undefined, value: T] | [error: E, value: undefined]>;
+declare const doSomething: () => Promise<string>;
 
 const main = async () => {
-  let [error, value] = await withError(doSomething())
-}
+  let [error, value] = await withError(doSomething());
+};
 ```
 
 Here, `T` is inferred to be a `string` and `E` is inferred to be `unknown`. You might want to annotate `E` as `Foo`, because you are certain of the shape of error `doSomething()` would throw. However, you can't do that. You can either pass all generics or none. Along with annotating `E` as `Foo`, you will also have to annotate `T` as `string` even though it gets inferred anyway. The solution is to make a curried version of `withError` that does nothing at runtime. Its purpose is to just allow you annotate `E`.
@@ -114,19 +114,19 @@ Here, `T` is inferred to be a `string` and `E` is inferred to be `unknown`. You 
 declare const withError: {
   <E>(): <T>(
     p: Promise<T>,
-  ) => Promise<[error: undefined, value: T] | [error: E, value: undefined]>
+  ) => Promise<[error: undefined, value: T] | [error: E, value: undefined]>;
   <T, E>(
     p: Promise<T>,
-  ): Promise<[error: undefined, value: T] | [error: E, value: undefined]>
-}
-declare const doSomething: () => Promise<string>
+  ): Promise<[error: undefined, value: T] | [error: E, value: undefined]>;
+};
+declare const doSomething: () => Promise<string>;
 interface Foo {
-  bar: string
+  bar: string;
 }
 
 const main = async () => {
-  let [error, value] = await withError<Foo>()(doSomething())
-}
+  let [error, value] = await withError<Foo>()(doSomething());
+};
 ```
 
 This way, `T` gets inferred and you get to annotate `E`. Bruin has the same use case when we want to annotate the state (the first type parameter) but allow other parameters to get inferred.
@@ -136,14 +136,14 @@ This way, `T` gets inferred and you get to annotate `E`. Bruin has the same use 
 Alternatively, you can also use `combine`, which infers the state so that you do not need to type it.
 
 ```ts
-import { create } from 'bruin'
-import { combine } from 'bruin/middleware'
+import { create } from 'bruin';
+import { combine } from 'bruin/middleware';
 
 const useBearStore = create(
   combine({ bears: 0 }, (set) => ({
     increase: (by: number) => set((state) => ({ bears: state.bears + by })),
   })),
-)
+);
 ```
 
 <details>
@@ -164,16 +164,16 @@ Note that we don't use the curried version when using `combine` because `combine
 If you want to infer state type also outside of state declaration, you can use the `ExtractState` type helper:
 
 ```ts
-import { create, ExtractState } from 'bruin'
-import { combine } from 'bruin/middleware'
+import { create, ExtractState } from 'bruin';
+import { combine } from 'bruin/middleware';
 
-type BearState = ExtractState<typeof useBearStore>
+type BearState = ExtractState<typeof useBearStore>;
 
 const useBearStore = create(
   combine({ bears: 0 }, (set) => ({
     increase: (by: number) => set((state) => ({ bears: state.bears + by })),
   })),
-)
+);
 ```
 
 ## Using middlewares
@@ -181,12 +181,12 @@ const useBearStore = create(
 You do not have to do anything special to use middlewares in TypeScript.
 
 ```ts
-import { create } from 'bruin'
-import { devtools, persist } from 'bruin/middleware'
+import { create } from 'bruin';
+import { devtools, persist } from 'bruin/middleware';
 
 interface BearState {
-  bears: number
-  increase: (by: number) => void
+  bears: number;
+  increase: (by: number) => void;
 }
 
 const useBearStore = create<BearState>()(
@@ -199,20 +199,20 @@ const useBearStore = create<BearState>()(
       { name: 'bearStore' },
     ),
   ),
-)
+);
 ```
 
 Just make sure you are using them immediately inside `create` so as to make the contextual inference work. Doing something even remotely fancy like the following `myMiddlewares` would require more advanced types.
 
 ```ts
-import { create } from 'bruin'
-import { devtools, persist } from 'bruin/middleware'
+import { create } from 'bruin';
+import { devtools, persist } from 'bruin/middleware';
 
-const myMiddlewares = (f) => devtools(persist(f, { name: 'bearStore' }))
+const myMiddlewares = (f) => devtools(persist(f, { name: 'bearStore' }));
 
 interface BearState {
-  bears: number
-  increase: (by: number) => void
+  bears: number;
+  increase: (by: number) => void;
 }
 
 const useBearStore = create<BearState>()(
@@ -220,7 +220,7 @@ const useBearStore = create<BearState>()(
     bears: 0,
     increase: (by) => set((state) => ({ bears: state.bears + by })),
   })),
-)
+);
 ```
 
 Also, we recommend using `devtools` middleware as last as possible. For example, when you use it with `immer` as a middleware, it should be `devtools(immer(...))` and not `immer(devtools(...))`. This is because`devtools` mutates the `setState` and adds a type parameter on it, which could get lost if other middlewares (like `immer`) also mutate `setState` before `devtools`. Hence using `devtools` at the end makes sure that no middlewares mutate `setState` before it.
@@ -230,15 +230,15 @@ Also, we recommend using `devtools` middleware as last as possible. For example,
 Imagine you had to write this hypothetical middleware.
 
 ```ts
-import { create } from 'bruin'
+import { create } from 'bruin';
 
 const foo = (f, bar) => (set, get, store) => {
-  store.foo = bar
-  return f(set, get, store)
-}
+  store.foo = bar;
+  return f(set, get, store);
+};
 
-const useBearStore = create(foo(() => ({ bears: 0 }), 'hello'))
-console.log(useBearStore.foo.toUpperCase())
+const useBearStore = create(foo(() => ({ bears: 0 }), 'hello'));
+console.log(useBearStore.foo.toUpperCase());
 ```
 
 Bruin middlewares can mutate the store. But how could we possibly encode the mutation on the type-level? That is to say how could we type `foo` so that this code compiles?
@@ -252,33 +252,33 @@ If you are eager to know what the answer is to this particular problem then you 
 If the value of the `replace` flag is not known at compile time and is determined dynamically, you might face issues. To handle this, you can use a workaround by annotating the `replace` parameter with the parameters of the `setState` function:
 
 ```ts
-const replaceFlag = Math.random() > 0.5
+const replaceFlag = Math.random() > 0.5;
 const args = [{ bears: 5 }, replaceFlag] as Parameters<
   typeof useBearStore.setState
->
-store.setState(...args)
+>;
+store.setState(...args);
 ```
 
 #### Example with `as Parameters` Workaround
 
 ```ts
-import { create } from 'bruin'
+import { create } from 'bruin';
 
 interface BearState {
-  bears: number
-  increase: (by: number) => void
+  bears: number;
+  increase: (by: number) => void;
 }
 
 const useBearStore = create<BearState>()((set) => ({
   bears: 0,
   increase: (by) => set((state) => ({ bears: state.bears + by })),
-}))
+}));
 
-const replaceFlag = Math.random() > 0.5
+const replaceFlag = Math.random() > 0.5;
 const args = [{ bears: 5 }, replaceFlag] as Parameters<
   typeof useBearStore.setState
->
-useBearStore.setState(...args) // Using the workaround
+>;
+useBearStore.setState(...args); // Using the workaround
 ```
 
 By following this approach, you can ensure that your code handles dynamic `replace` flags without encountering type issues.
@@ -288,7 +288,7 @@ By following this approach, you can ensure that your code handles dynamic `repla
 ### Middleware that doesn't change the store type
 
 ```ts
-import { create, StateCreator, StoreMutatorIdentifier } from 'bruin'
+import { create, StateCreator, StoreMutatorIdentifier } from 'bruin';
 
 type Logger = <
   T,
@@ -297,28 +297,28 @@ type Logger = <
 >(
   f: StateCreator<T, Mps, Mcs>,
   name?: string,
-) => StateCreator<T, Mps, Mcs>
+) => StateCreator<T, Mps, Mcs>;
 
 type LoggerImpl = <T>(
   f: StateCreator<T, [], []>,
   name?: string,
-) => StateCreator<T, [], []>
+) => StateCreator<T, [], []>;
 
 const loggerImpl: LoggerImpl = (f, name) => (set, get, store) => {
   const loggedSet: typeof set = (...a) => {
-    set(...(a as Parameters<typeof set>))
-    console.log(...(name ? [`${name}:`] : []), get())
-  }
-  const setState = store.setState
+    set(...(a as Parameters<typeof set>));
+    console.log(...(name ? [`${name}:`] : []), get());
+  };
+  const setState = store.setState;
   store.setState = (...a) => {
-    setState(...(a as Parameters<typeof setState>))
-    console.log(...(name ? [`${name}:`] : []), store.getState())
-  }
+    setState(...(a as Parameters<typeof setState>));
+    console.log(...(name ? [`${name}:`] : []), store.getState());
+  };
 
-  return f(loggedSet, get, store)
-}
+  return f(loggedSet, get, store);
+};
 
-export const logger = loggerImpl as unknown as Logger
+export const logger = loggerImpl as unknown as Logger;
 
 // ---
 
@@ -330,7 +330,7 @@ const useBearStore = create<BearState>()(
     }),
     'bear-store',
   ),
-)
+);
 ```
 
 ### Middleware that changes the store type
@@ -342,7 +342,7 @@ import {
   StoreMutatorIdentifier,
   Mutate,
   StoreApi,
-} from 'bruin'
+} from 'bruin';
 
 type Foo = <
   T,
@@ -352,38 +352,38 @@ type Foo = <
 >(
   f: StateCreator<T, [...Mps, ['foo', A]], Mcs>,
   bar: A,
-) => StateCreator<T, Mps, [['foo', A], ...Mcs]>
+) => StateCreator<T, Mps, [['foo', A], ...Mcs]>;
 
 declare module 'bruin' {
   interface StoreMutators<S, A> {
-    foo: Write<Cast<S, object>, { foo: A }>
+    foo: Write<Cast<S, object>, { foo: A }>;
   }
 }
 
 type FooImpl = <T, A>(
   f: StateCreator<T, [], []>,
   bar: A,
-) => StateCreator<T, [], []>
+) => StateCreator<T, [], []>;
 
 const fooImpl: FooImpl = (f, bar) => (set, get, _store) => {
-  type T = ReturnType<typeof f>
-  type A = typeof bar
+  type T = ReturnType<typeof f>;
+  type A = typeof bar;
 
-  const store = _store as Mutate<StoreApi<T>, [['foo', A]]>
-  store.foo = bar
-  return f(set, get, _store)
-}
+  const store = _store as Mutate<StoreApi<T>, [['foo', A]]>;
+  store.foo = bar;
+  return f(set, get, _store);
+};
 
-export const foo = fooImpl as unknown as Foo
+export const foo = fooImpl as unknown as Foo;
 
-type Write<T extends object, U extends object> = Omit<T, keyof U> & U
+type Write<T extends object, U extends object> = Omit<T, keyof U> & U;
 
-type Cast<T, U> = T extends U ? T : U
+type Cast<T, U> = T extends U ? T : U;
 
 // ---
 
-const useBearStore = create(foo(() => ({ bears: 0 }), 'hello'))
-console.log(useBearStore.foo.toUpperCase())
+const useBearStore = create(foo(() => ({ bears: 0 }), 'hello'));
+console.log(useBearStore.foo.toUpperCase());
 ```
 
 ### `create` without curried workaround
@@ -413,22 +413,22 @@ const useBearStore = create<
 ### Slices pattern
 
 ```ts
-import { create, StateCreator } from 'bruin'
+import { create, StateCreator } from 'bruin';
 
 interface BearSlice {
-  bears: number
-  addBear: () => void
-  eatFish: () => void
+  bears: number;
+  addBear: () => void;
+  eatFish: () => void;
 }
 
 interface FishSlice {
-  fishes: number
-  addFish: () => void
+  fishes: number;
+  addFish: () => void;
 }
 
 interface SharedSlice {
-  addBoth: () => void
-  getBoth: () => number
+  addBoth: () => void;
+  getBoth: () => number;
 }
 
 const createBearSlice: StateCreator<
@@ -440,7 +440,7 @@ const createBearSlice: StateCreator<
   bears: 0,
   addBear: () => set((state) => ({ bears: state.bears + 1 })),
   eatFish: () => set((state) => ({ fishes: state.fishes - 1 })),
-})
+});
 
 const createFishSlice: StateCreator<
   BearSlice & FishSlice,
@@ -450,7 +450,7 @@ const createFishSlice: StateCreator<
 > = (set) => ({
   fishes: 0,
   addFish: () => set((state) => ({ fishes: state.fishes + 1 })),
-})
+});
 
 const createSharedSlice: StateCreator<
   BearSlice & FishSlice,
@@ -460,19 +460,19 @@ const createSharedSlice: StateCreator<
 > = (set, get) => ({
   addBoth: () => {
     // you can reuse previous methods
-    get().addBear()
-    get().addFish()
+    get().addBear();
+    get().addFish();
     // or do them from scratch
     // set((state) => ({ bears: state.bears + 1, fishes: state.fishes + 1 })
   },
   getBoth: () => get().bears + get().fishes,
-})
+});
 
 const useBoundStore = create<BearSlice & FishSlice & SharedSlice>()((...a) => ({
   ...createBearSlice(...a),
   ...createFishSlice(...a),
   ...createSharedSlice(...a),
-}))
+}));
 ```
 
 A detailed explanation on the slices pattern can be found [here](./slices-pattern.md).
@@ -482,53 +482,53 @@ If you have some middlewares then replace `StateCreator<MyState, [], [], MySlice
 ### Bounded `useStore` hook for vanilla stores
 
 ```ts
-import { useStore } from 'bruin'
-import { createStore } from 'bruin/vanilla'
+import { useStore } from 'bruin';
+import { createStore } from 'bruin/vanilla';
 
 interface BearState {
-  bears: number
-  increase: (by: number) => void
+  bears: number;
+  increase: (by: number) => void;
 }
 
 const bearStore = createStore<BearState>()((set) => ({
   bears: 0,
   increase: (by) => set((state) => ({ bears: state.bears + by })),
-}))
+}));
 
-function useBearStore(): BearState
-function useBearStore<T>(selector: (state: BearState) => T): T
+function useBearStore(): BearState;
+function useBearStore<T>(selector: (state: BearState) => T): T;
 function useBearStore<T>(selector?: (state: BearState) => T) {
-  return useStore(bearStore, selector!)
+  return useStore(bearStore, selector!);
 }
 ```
 
 You can also make an abstract `createBoundedUseStore` function if you need to create bounded `useStore` hooks often and want to DRY things up...
 
 ```ts
-import { useStore, StoreApi } from 'bruin'
-import { createStore } from 'bruin/vanilla'
+import { useStore, StoreApi } from 'bruin';
+import { createStore } from 'bruin/vanilla';
 
 interface BearState {
-  bears: number
-  increase: (by: number) => void
+  bears: number;
+  increase: (by: number) => void;
 }
 
 const bearStore = createStore<BearState>()((set) => ({
   bears: 0,
   increase: (by) => set((state) => ({ bears: state.bears + by })),
-}))
+}));
 
 const createBoundedUseStore = ((store) => (selector) =>
   useStore(store, selector)) as <S extends StoreApi<unknown>>(
   store: S,
 ) => {
-  (): ExtractState<S>
-  <T>(selector: (state: ExtractState<S>) => T): T
-}
+  (): ExtractState<S>;
+  <T>(selector: (state: ExtractState<S>) => T): T;
+};
 
-type ExtractState<S> = S extends { getState: () => infer X } ? X : never
+type ExtractState<S> = S extends { getState: () => infer X } ? X : never;
 
-const useBearStore = createBoundedUseStore(bearStore)
+const useBearStore = createBoundedUseStore(bearStore);
 ```
 
 ## Middlewares and their mutators reference

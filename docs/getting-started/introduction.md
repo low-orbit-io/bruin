@@ -41,14 +41,14 @@ Your store is a hook! You can put anything in it: primitives, objects, functions
 The `set` function _merges_ state by default.
 
 ```js
-import { create } from 'bruin'
+import { create } from 'bruin';
 
 const useBear = create((set) => ({
   bears: 0,
   increasePopulation: () => set((state) => ({ bears: state.bears + 1 })),
   removeAllBears: () => set({ bears: 0 }),
   updateBears: (newBears) => set({ bears: newBears }),
-}))
+}));
 ```
 
 ## Then bind your components, and that's it!
@@ -58,13 +58,13 @@ Select your state and the consuming component will re-render when that state cha
 
 ```jsx
 function BearCounter() {
-  const bears = useBear((state) => state.bears)
-  return <h1>{bears} bears around here...</h1>
+  const bears = useBear((state) => state.bears);
+  return <h1>{bears} bears around here...</h1>;
 }
 
 function Controls() {
-  const increasePopulation = useBear((state) => state.increasePopulation)
-  return <button onClick={increasePopulation}>one up</button>
+  const increasePopulation = useBear((state) => state.increasePopulation);
+  return <button onClick={increasePopulation}>one up</button>;
 }
 ```
 
@@ -73,18 +73,19 @@ function Controls() {
 Bruin automatically tracks state changes, enabling time-travel debugging:
 
 ```js
-import { create } from 'bruin'
+import { create } from 'bruin';
 
 const useStore = create((set) => ({
   count: 0,
-  increment: () => set((state) => ({ count: state.count + 1 }), false, 'increment'),
-}))
+  increment: () =>
+    set((state) => ({ count: state.count + 1 }), false, 'increment'),
+}));
 
 // Access history
-const store = useStore.getState()
-console.log(store.getHistory()) // Array of state snapshots
-store.undo() // Go back one step
-store.redo() // Go forward one step
+const store = useStore.getState();
+console.log(store.getHistory()); // Array of state snapshots
+store.undo(); // Go back one step
+store.redo(); // Go forward one step
 ```
 
 ## Transactions
@@ -92,18 +93,21 @@ store.redo() // Go forward one step
 Batch multiple state updates into a single atomic change:
 
 ```js
-import { create } from 'bruin'
+import { create } from 'bruin';
 
 const useStore = create((set) => ({
   count: 0,
   name: 'Alice',
   updateBoth: () => {
-    set.transaction(() => {
-      set({ count: 10 })
-      set({ name: 'Bob' })
-    }, { name: 'Update both' })
-  }
-}))
+    set.transaction(
+      () => {
+        set({ count: 10 });
+        set({ name: 'Bob' });
+      },
+      { name: 'Update both' },
+    );
+  },
+}));
 ```
 
 ## 100% Zustand Compatible

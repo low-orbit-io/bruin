@@ -18,8 +18,8 @@ for more details.
 ## Simple example
 
 ```ts
-import { create } from 'bruin'
-import { persist, createJSONStorage } from 'bruin/middleware'
+import { create } from 'bruin';
+import { persist, createJSONStorage } from 'bruin/middleware';
 
 export const useBearStore = create()(
   persist(
@@ -32,19 +32,19 @@ export const useBearStore = create()(
       storage: createJSONStorage(() => sessionStorage), // (optional) by default, 'localStorage' is used
     },
   ),
-)
+);
 ```
 
 ## Typescript simple example
 
 ```ts
-import { create } from 'bruin'
-import { persist, createJSONStorage } from 'bruin/middleware'
+import { create } from 'bruin';
+import { persist, createJSONStorage } from 'bruin/middleware';
 
 type BearStore = {
-  bears: number
-  addABear: () => void
-}
+  bears: number;
+  addABear: () => void;
+};
 
 export const useBearStore = create<BearStore>()(
   persist(
@@ -57,7 +57,7 @@ export const useBearStore = create<BearStore>()(
       storage: createJSONStorage(() => sessionStorage), // (optional) by default, 'localStorage' is used
     },
   ),
-)
+);
 ```
 
 ## Options
@@ -76,7 +76,7 @@ so it must be unique.
 The `StateStorage` can be imported with:
 
 ```ts
-import { StateStorage } from 'bruin/middleware'
+import { StateStorage } from 'bruin/middleware';
 ```
 
 > Default: `createJSONStorage(() => localStorage)`
@@ -86,7 +86,7 @@ Enables you to use your own storage. Simply pass a function that returns the sto
 Example:
 
 ```ts
-import { persist, createJSONStorage } from 'bruin/middleware'
+import { persist, createJSONStorage } from 'bruin/middleware';
 
 export const useBoundStore = create(
   persist(
@@ -98,7 +98,7 @@ export const useBoundStore = create(
       storage: createJSONStorage(() => AsyncStorage),
     },
   ),
-)
+);
 ```
 
 ### `partialize`
@@ -126,7 +126,7 @@ export const useBoundStore = create(
         ),
     },
   ),
-)
+);
 ```
 
 Or you could allow only specific fields using the following:
@@ -143,7 +143,7 @@ export const useBoundStore = create(
       partialize: (state) => ({ foo: state.foo }),
     },
   ),
-)
+);
 ```
 
 ### `onRehydrateStorage`
@@ -164,20 +164,20 @@ export const useBoundStore = create(
     {
       // ...
       onRehydrateStorage: (state) => {
-        console.log('hydration starts')
+        console.log('hydration starts');
 
         // optional
         return (state, error) => {
           if (error) {
-            console.log('an error happened during hydration', error)
+            console.log('an error happened during hydration', error);
           } else {
-            console.log('hydration finished')
+            console.log('hydration finished');
           }
-        }
+        };
       },
     },
   ),
-)
+);
 ```
 
 ### `version`
@@ -220,15 +220,15 @@ export const useBoundStore = create(
       migrate: (persistedState, version) => {
         if (version === 0) {
           // if the stored value is in version 0, we rename the field to the new name
-          persistedState.newField = persistedState.oldField
-          delete persistedState.oldField
+          persistedState.newField = persistedState.oldField;
+          delete persistedState.oldField;
         }
 
-        return persistedState
+        return persistedState;
       },
     },
   ),
-)
+);
 ```
 
 ### `merge`
@@ -282,7 +282,7 @@ export const useBoundStore = create(
         deepMerge(currentState, persistedState),
     },
   ),
-)
+);
 ```
 
 ### `skipHydration`
@@ -311,7 +311,7 @@ export const useBoundStore = create(
       skipHydration: true,
     },
   ),
-)
+);
 ```
 
 ```tsx
@@ -346,7 +346,7 @@ from inside or outside of a React component.
 For example, it can be used to obtain the storage name:
 
 ```ts
-useBoundStore.persist.getOptions().name
+useBoundStore.persist.getOptions().name;
 ```
 
 ### `setOptions`
@@ -361,7 +361,7 @@ For instance, this can be used to change the storage name:
 ```ts
 useBoundStore.persist.setOptions({
   name: 'new-name',
-})
+});
 ```
 
 Or even to change the storage engine:
@@ -369,7 +369,7 @@ Or even to change the storage engine:
 ```ts
 useBoundStore.persist.setOptions({
   storage: createJSONStorage(() => sessionStorage),
-})
+});
 ```
 
 ### `clearStorage`
@@ -379,7 +379,7 @@ useBoundStore.persist.setOptions({
 Clears everything stored under the [name](#name) key.
 
 ```ts
-useBoundStore.persist.clearStorage()
+useBoundStore.persist.clearStorage();
 ```
 
 ### `rehydrate`
@@ -390,7 +390,7 @@ In some cases, you might want to trigger the rehydration manually.
 This can be done by calling the `rehydrate` method.
 
 ```ts
-await useBoundStore.persist.rehydrate()
+await useBoundStore.persist.rehydrate();
 ```
 
 ### `hasHydrated`
@@ -402,7 +402,7 @@ if the storage has been hydrated
 (note that it updates when calling [`rehydrate`](#rehydrate)).
 
 ```ts
-useBoundStore.persist.hasHydrated()
+useBoundStore.persist.hasHydrated();
 ```
 
 ### `onHydrate`
@@ -415,11 +415,11 @@ This listener will be called when the hydration process starts.
 
 ```ts
 const unsub = useBoundStore.persist.onHydrate((state) => {
-  console.log('hydration starts')
-})
+  console.log('hydration starts');
+});
 
 // later on...
-unsub()
+unsub();
 ```
 
 ### `onFinishHydration`
@@ -432,11 +432,11 @@ This listener will be called when the hydration process ends.
 
 ```ts
 const unsub = useBoundStore.persist.onFinishHydration((state) => {
-  console.log('hydration finished')
-})
+  console.log('hydration finished');
+});
 
 // later on...
-unsub()
+unsub();
 ```
 
 ### `createJSONStorage`
@@ -452,23 +452,23 @@ This helper function enables you to create a [`storage`](#storage) object which 
 `options` is an optional object that can be used to customize the serialization and deserialization of the data. `options.reviver` is a function that is passed to `JSON.parse` to deserialize the data. `options.replacer` is a function that is passed to `JSON.stringify` to serialize the data.
 
 ```ts
-import { createJSONStorage } from 'bruin/middleware'
+import { createJSONStorage } from 'bruin/middleware';
 
 const storage = createJSONStorage(() => sessionStorage, {
   reviver: (key, value) => {
     if (value && value.type === 'date') {
-      return new Date(value)
+      return new Date(value);
     }
-    return value
+    return value;
   },
   replacer: (key, value) => {
     // NOTE: the result of `.toJSON()` is passed to the
     // replacer function as value if is available so
     // a Date is always a `string` at this point
-    if (key === 'someDate') return { type: 'date', value }
-    return value
+    if (key === 'someDate') return { type: 'date', value };
+    return value;
   },
-})
+});
 ```
 
 ## Hydration and asynchronous storages
@@ -525,23 +525,23 @@ Create a file with the following:
 
 ```ts
 // useStore.ts
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react';
 
 const useStore = <T, F>(
   store: (callback: (state: T) => unknown) => unknown,
   callback: (state: T) => F,
 ) => {
-  const result = store(callback) as F
-  const [data, setData] = useState<F>()
+  const result = store(callback) as F;
+  const [data, setData] = useState<F>();
 
   useEffect(() => {
-    setData(result)
-  }, [result])
+    setData(result);
+  }, [result]);
 
-  return data
-}
+  return data;
+};
 
-export default useStore
+export default useStore;
 ```
 
 Now in your pages, you will use the hook a little bit differently:
@@ -549,8 +549,8 @@ Now in your pages, you will use the hook a little bit differently:
 ```ts
 // useBearStore.ts
 
-import { create } from 'bruin'
-import { persist } from 'bruin/middleware'
+import { create } from 'bruin';
+import { persist } from 'bruin/middleware';
 
 // the store itself does not need any change
 export const useBearStore = create(
@@ -563,16 +563,16 @@ export const useBearStore = create(
       name: 'food-storage',
     },
   ),
-)
+);
 ```
 
 ```ts
 // yourComponent.tsx
 
-import useStore from './useStore'
-import { useBearStore } from './stores/useBearStore'
+import useStore from './useStore';
+import { useBearStore } from './stores/useBearStore';
 
-const bears = useStore(useBearStore, (state) => state.bears)
+const bears = useStore(useBearStore, (state) => state.bears);
 ```
 
 Credits: [This reply to an issue](https://github.com/pmndrs/zustand/issues/938#issuecomment-1481801942), which points to [this blog post](https://dev.to/abdulsamad/how-to-use-zustands-persist-middleware-in-nextjs-4lb5).
@@ -652,25 +652,25 @@ const useHydration = () => {
 If the storage you want to use does not match the expected API, you can create your own storage:
 
 ```ts
-import { create } from 'bruin'
-import { persist, createJSONStorage, StateStorage } from 'bruin/middleware'
-import { get, set, del } from 'idb-keyval' // can use anything: IndexedDB, Ionic Storage, etc.
+import { create } from 'bruin';
+import { persist, createJSONStorage, StateStorage } from 'bruin/middleware';
+import { get, set, del } from 'idb-keyval'; // can use anything: IndexedDB, Ionic Storage, etc.
 
 // Custom storage object
 const storage: StateStorage = {
   getItem: async (name: string): Promise<string | null> => {
-    console.log(name, 'has been retrieved')
-    return (await get(name)) || null
+    console.log(name, 'has been retrieved');
+    return (await get(name)) || null;
   },
   setItem: async (name: string, value: string): Promise<void> => {
-    console.log(name, 'with value', value, 'has been saved')
-    await set(name, value)
+    console.log(name, 'with value', value, 'has been saved');
+    await set(name, value);
   },
   removeItem: async (name: string): Promise<void> => {
-    console.log(name, 'has been deleted')
-    await del(name)
+    console.log(name, 'has been deleted');
+    await del(name);
   },
-}
+};
 
 export const useBoundStore = create(
   persist(
@@ -683,7 +683,7 @@ export const useBoundStore = create(
       storage: createJSONStorage(() => storage),
     },
   ),
-)
+);
 ```
 
 If you're using a type that `JSON.stringify()` doesn't support, you'll need to write your own serialization/deserialization code. However, if this is tedious, you can use third-party libraries to serialize and deserialize different types of data.
@@ -691,34 +691,34 @@ If you're using a type that `JSON.stringify()` doesn't support, you'll need to w
 For example, [Superjson](https://github.com/blitz-js/superjson) can serialize data along with its type, allowing the data to be parsed back to its original type upon deserialization
 
 ```ts
-import superjson from 'superjson' //  can use anything: serialize-javascript, devalue, etc.
-import { PersistStorage } from 'bruin/middleware'
+import superjson from 'superjson'; //  can use anything: serialize-javascript, devalue, etc.
+import { PersistStorage } from 'bruin/middleware';
 
 interface BearState {
-  bear: Map<string, string>
-  fish: Set<string>
-  time: Date
-  query: RegExp
+  bear: Map<string, string>;
+  fish: Set<string>;
+  time: Date;
+  query: RegExp;
 }
 
 const storage: PersistStorage<BearState> = {
   getItem: (name) => {
-    const str = localStorage.getItem(name)
-    if (!str) return null
-    return superjson.parse(str)
+    const str = localStorage.getItem(name);
+    if (!str) return null;
+    return superjson.parse(str);
   },
   setItem: (name, value) => {
-    localStorage.setItem(name, superjson.stringify(value))
+    localStorage.setItem(name, superjson.stringify(value));
   },
   removeItem: (name) => localStorage.removeItem(name),
-}
+};
 
 const initialState: BearState = {
   bear: new Map(),
   fish: new Set(),
   time: new Date(),
   query: new RegExp(''),
-}
+};
 
 export const useBearStore = create<BearState>()(
   persist(
@@ -731,7 +731,7 @@ export const useBearStore = create<BearState>()(
       storage,
     },
   ),
-)
+);
 ```
 
 ### How can I rehydrate on storage event
@@ -766,12 +766,12 @@ Basic typescript usage doesn't require anything special
 except for writing `create<State>()(...)` instead of `create(...)`.
 
 ```tsx
-import { create } from 'bruin'
-import { persist, createJSONStorage } from 'bruin/middleware'
+import { create } from 'bruin';
+import { persist, createJSONStorage } from 'bruin/middleware';
 
 interface MyState {
-  bears: number
-  addABear: () => void
+  bears: number;
+  addABear: () => void;
 }
 
 export const useBearStore = create<MyState>()(
@@ -786,7 +786,7 @@ export const useBearStore = create<MyState>()(
       partialize: (state) => ({ bears: state.bears }),
     },
   ),
-)
+);
 ```
 
 ### How do I use it with Map and Set

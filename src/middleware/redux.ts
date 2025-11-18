@@ -1,7 +1,5 @@
-import type { StateCreator, StoreMutatorIdentifier } from '../vanilla';
-import type { NamedSet } from './devtools';
-
-type Write<T, U> = Omit<T, keyof U> & U;
+import type { StateCreator, StoreMutatorIdentifier } from '../types/core';
+import type { NamedSet, Write } from '../types/middleware';
 
 type Action = { type: string };
 
@@ -25,7 +23,7 @@ type Redux = <
   initialState: T,
 ) => StateCreator<Write<T, ReduxState<A>>, Cms, [['bruin/redux', A]]>;
 
-declare module '../vanilla' {
+declare module '../types/core' {
   interface StoreMutators<S, A> {
     'bruin/redux': WithRedux<S, A>;
   }

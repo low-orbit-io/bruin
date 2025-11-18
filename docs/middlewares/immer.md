@@ -13,7 +13,7 @@ nav: 206
 > `immer` library.
 
 ```js
-const nextStateCreatorFn = immer(stateCreatorFn)
+const nextStateCreatorFn = immer(stateCreatorFn);
 ```
 
 - [Types](#types)
@@ -60,21 +60,21 @@ In the next example, we're going to update the `person` object. Since it's a nes
 to create a copy of the entire object before making the update.
 
 ```ts
-import { createStore } from 'bruin/vanilla'
+import { createStore } from 'bruin/vanilla';
 
 type PersonStoreState = {
-  person: { firstName: string; lastName: string; email: string }
-}
+  person: { firstName: string; lastName: string; email: string };
+};
 
 type PersonStoreActions = {
   setPerson: (
     nextPerson: (
       person: PersonStoreState['person'],
     ) => PersonStoreState['person'] | PersonStoreState['person'],
-  ) => void
-}
+  ) => void;
+};
 
-type PersonStore = PersonStoreState & PersonStoreActions
+type PersonStore = PersonStoreState & PersonStoreActions;
 
 const personStore = createStore<PersonStore>()((set) => ({
   person: {
@@ -89,51 +89,51 @@ const personStore = createStore<PersonStore>()((set) => ({
           ? nextPerson(state.person)
           : nextPerson,
     })),
-}))
+}));
 
 const $firstNameInput = document.getElementById(
   'first-name',
-) as HTMLInputElement
-const $lastNameInput = document.getElementById('last-name') as HTMLInputElement
-const $emailInput = document.getElementById('email') as HTMLInputElement
-const $result = document.getElementById('result') as HTMLDivElement
+) as HTMLInputElement;
+const $lastNameInput = document.getElementById('last-name') as HTMLInputElement;
+const $emailInput = document.getElementById('email') as HTMLInputElement;
+const $result = document.getElementById('result') as HTMLDivElement;
 
 function handleFirstNameChange(event: Event) {
   personStore.getState().setPerson((person) => ({
     ...person,
     firstName: (event.target as any).value,
-  }))
+  }));
 }
 
 function handleLastNameChange(event: Event) {
   personStore.getState().setPerson((person) => ({
     ...person,
     lastName: (event.target as any).value,
-  }))
+  }));
 }
 
 function handleEmailChange(event: Event) {
   personStore.getState().setPerson((person) => ({
     ...person,
     email: (event.target as any).value,
-  }))
+  }));
 }
 
-$firstNameInput.addEventListener('input', handleFirstNameChange)
-$lastNameInput.addEventListener('input', handleLastNameChange)
-$emailInput.addEventListener('input', handleEmailChange)
+$firstNameInput.addEventListener('input', handleFirstNameChange);
+$lastNameInput.addEventListener('input', handleLastNameChange);
+$emailInput.addEventListener('input', handleEmailChange);
 
 const render: Parameters<typeof personStore.subscribe>[0] = (state) => {
-  $firstNameInput.value = state.person.firstName
-  $lastNameInput.value = state.person.lastName
-  $emailInput.value = state.person.email
+  $firstNameInput.value = state.person.firstName;
+  $lastNameInput.value = state.person.lastName;
+  $emailInput.value = state.person.email;
 
-  $result.innerHTML = `${state.person.firstName} ${state.person.lastName} (${state.person.email})`
-}
+  $result.innerHTML = `${state.person.firstName} ${state.person.lastName} (${state.person.email})`;
+};
 
-render(personStore.getInitialState(), personStore.getInitialState())
+render(personStore.getInitialState(), personStore.getInitialState());
 
-personStore.subscribe(render)
+personStore.subscribe(render);
 ```
 
 Here's the `html` code
@@ -158,22 +158,22 @@ To avoid manually copying the entire object before making updates, we'll use the
 middleware.
 
 ```ts
-import { createStore } from 'bruin/vanilla'
-import { immer } from 'bruin/middleware/immer'
+import { createStore } from 'bruin/vanilla';
+import { immer } from 'bruin/middleware/immer';
 
 type PersonStoreState = {
-  person: { firstName: string; lastName: string; email: string }
-}
+  person: { firstName: string; lastName: string; email: string };
+};
 
 type PersonStoreActions = {
   setPerson: (
     nextPerson: (
       person: PersonStoreState['person'],
     ) => PersonStoreState['person'] | PersonStoreState['person'],
-  ) => void
-}
+  ) => void;
+};
 
-type PersonStore = PersonStoreState & PersonStoreActions
+type PersonStore = PersonStoreState & PersonStoreActions;
 
 const personStore = createStore<PersonStore>()(
   immer((set) => ({
@@ -187,51 +187,51 @@ const personStore = createStore<PersonStore>()(
         state.person =
           typeof nextPerson === 'function'
             ? nextPerson(state.person)
-            : nextPerson
+            : nextPerson;
       }),
   })),
-)
+);
 
 const $firstNameInput = document.getElementById(
   'first-name',
-) as HTMLInputElement
-const $lastNameInput = document.getElementById('last-name') as HTMLInputElement
-const $emailInput = document.getElementById('email') as HTMLInputElement
-const $result = document.getElementById('result') as HTMLDivElement
+) as HTMLInputElement;
+const $lastNameInput = document.getElementById('last-name') as HTMLInputElement;
+const $emailInput = document.getElementById('email') as HTMLInputElement;
+const $result = document.getElementById('result') as HTMLDivElement;
 
 function handleFirstNameChange(event: Event) {
   personStore.getState().setPerson((person) => {
-    person.firstName = (event.target as any).value
-  })
+    person.firstName = (event.target as any).value;
+  });
 }
 
 function handleLastNameChange(event: Event) {
   personStore.getState().setPerson((person) => {
-    person.lastName = (event.target as any).value
-  })
+    person.lastName = (event.target as any).value;
+  });
 }
 
 function handleEmailChange(event: Event) {
   personStore.getState().setPerson((person) => {
-    person.email = (event.target as any).value
-  })
+    person.email = (event.target as any).value;
+  });
 }
 
-$firstNameInput.addEventListener('input', handleFirstNameChange)
-$lastNameInput.addEventListener('input', handleLastNameChange)
-$emailInput.addEventListener('input', handleEmailChange)
+$firstNameInput.addEventListener('input', handleFirstNameChange);
+$lastNameInput.addEventListener('input', handleLastNameChange);
+$emailInput.addEventListener('input', handleEmailChange);
 
 const render: Parameters<typeof personStore.subscribe>[0] = (state) => {
-  $firstNameInput.value = state.person.firstName
-  $lastNameInput.value = state.person.lastName
-  $emailInput.value = state.person.email
+  $firstNameInput.value = state.person.firstName;
+  $lastNameInput.value = state.person.lastName;
+  $emailInput.value = state.person.email;
 
-  $result.innerHTML = `${state.person.firstName} ${state.person.lastName} (${state.person.email})`
-}
+  $result.innerHTML = `${state.person.firstName} ${state.person.lastName} (${state.person.email})`;
+};
 
-render(personStore.getInitialState(), personStore.getInitialState())
+render(personStore.getInitialState(), personStore.getInitialState());
 
-personStore.subscribe(render)
+personStore.subscribe(render);
 ```
 
 ## Troubleshooting

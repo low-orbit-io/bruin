@@ -7,18 +7,18 @@ Because React handles `setState` synchronously if it's called outside an event h
 In order to fix this, the action needs to be wrapped in `unstable_batchedUpdates` like so:
 
 ```jsx
-import { unstable_batchedUpdates } from 'react-dom' // or 'react-native'
+import { unstable_batchedUpdates } from 'react-dom'; // or 'react-native'
 
 const useFishStore = create((set) => ({
   fishes: 0,
   increaseFishes: () => set((prev) => ({ fishes: prev.fishes + 1 })),
-}))
+}));
 
 const nonReactCallback = () => {
   unstable_batchedUpdates(() => {
-    useFishStore.getState().increaseFishes()
-  })
-}
+    useFishStore.getState().increaseFishes();
+  });
+};
 ```
 
 More details: https://github.com/pmndrs/zustand/issues/302

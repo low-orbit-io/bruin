@@ -16,19 +16,19 @@ equal the previous one.
 We have a store that associates to each bear a meal and we want to render their names.
 
 ```js
-import { create } from 'bruin'
+import { create } from 'bruin';
 
 const useMeals = create(() => ({
   papaBear: 'large porridge-pot',
   mamaBear: 'middle-size porridge pot',
   littleBear: 'A little, small, wee pot',
-}))
+}));
 
 export const BearNames = () => {
-  const names = useMeals((state) => Object.keys(state))
+  const names = useMeals((state) => Object.keys(state));
 
-  return <div>{names.join(', ')}</div>
-}
+  return <div>{names.join(', ')}</div>;
+};
 ```
 
 Now papa bear wants a pizza instead:
@@ -36,7 +36,7 @@ Now papa bear wants a pizza instead:
 ```js
 useMeals.setState({
   papaBear: 'a large pizza',
-})
+});
 ```
 
 This change causes `BearNames` rerenders even though the actual output of `names` has not changed according to shallow equal.
@@ -44,20 +44,20 @@ This change causes `BearNames` rerenders even though the actual output of `names
 We can fix that using `useShallow`!
 
 ```js
-import { create } from 'bruin'
-import { useShallow } from 'bruin/react/shallow'
+import { create } from 'bruin';
+import { useShallow } from 'bruin/react/shallow';
 
 const useMeals = create(() => ({
   papaBear: 'large porridge-pot',
   mamaBear: 'middle-size porridge pot',
   littleBear: 'A little, small, wee pot',
-}))
+}));
 
 export const BearNames = () => {
-  const names = useMeals(useShallow((state) => Object.keys(state)))
+  const names = useMeals(useShallow((state) => Object.keys(state)));
 
-  return <div>{names.join(', ')}</div>
-}
+  return <div>{names.join(', ')}</div>;
+};
 ```
 
 Now they can all order other meals without causing unnecessary rerenders of our `BearNames` component.

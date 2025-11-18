@@ -7,7 +7,7 @@ nav: 30
 `useStore` is a React Hook that lets you use a vanilla store in React.
 
 ```js
-const someState = useStore(store, selectorFn)
+const someState = useStore(store, selectorFn);
 ```
 
 - [Types](#types)
@@ -50,18 +50,18 @@ First, let's set up a store that will hold the position of the dot on the screen
 store to manage `x` and `y` coordinates and provide an action to update these coordinates.
 
 ```tsx
-type PositionStoreState = { position: { x: number; y: number } }
+type PositionStoreState = { position: { x: number; y: number } };
 
 type PositionStoreActions = {
-  setPosition: (nextPosition: PositionStoreState['position']) => void
-}
+  setPosition: (nextPosition: PositionStoreState['position']) => void;
+};
 
-type PositionStore = PositionStoreState & PositionStoreActions
+type PositionStore = PositionStoreState & PositionStoreActions;
 
 const positionStore = createStore<PositionStore>()((set) => ({
   position: { x: 0, y: 0 },
   setPosition: (position) => set({ position }),
-}))
+}));
 ```
 
 Next, we'll create a `MovingDot` component that renders a div representing the dot. This component
@@ -69,8 +69,8 @@ will use the store to track and update the dot's position.
 
 ```tsx
 function MovingDot() {
-  const position = useStore(positionStore, (state) => state.position)
-  const setPosition = useStore(positionStore, (state) => state.setPosition)
+  const position = useStore(positionStore, (state) => state.position);
+  const setPosition = useStore(positionStore, (state) => state.setPosition);
 
   return (
     <div
@@ -78,7 +78,7 @@ function MovingDot() {
         setPosition({
           x: e.clientX,
           y: e.clientY,
-        })
+        });
       }}
       style={{
         position: 'relative',
@@ -99,7 +99,7 @@ function MovingDot() {
         }}
       />
     </div>
-  )
+  );
 }
 ```
 
@@ -107,31 +107,31 @@ Finally, we’ll render the `MovingDot` component in our `App` component.
 
 ```tsx
 export default function App() {
-  return <MovingDot />
+  return <MovingDot />;
 }
 ```
 
 Here is what the code should look like:
 
 ```tsx
-import { createStore, useStore } from 'bruin'
+import { createStore, useStore } from 'bruin';
 
-type PositionStoreState = { position: { x: number; y: number } }
+type PositionStoreState = { position: { x: number; y: number } };
 
 type PositionStoreActions = {
-  setPosition: (nextPosition: PositionStoreState['position']) => void
-}
+  setPosition: (nextPosition: PositionStoreState['position']) => void;
+};
 
-type PositionStore = PositionStoreState & PositionStoreActions
+type PositionStore = PositionStoreState & PositionStoreActions;
 
 const positionStore = createStore<PositionStore>()((set) => ({
   position: { x: 0, y: 0 },
   setPosition: (position) => set({ position }),
-}))
+}));
 
 function MovingDot() {
-  const position = useStore(positionStore, (state) => state.position)
-  const setPosition = useStore(positionStore, (state) => state.setPosition)
+  const position = useStore(positionStore, (state) => state.position);
+  const setPosition = useStore(positionStore, (state) => state.setPosition);
 
   return (
     <div
@@ -139,7 +139,7 @@ function MovingDot() {
         setPosition({
           x: e.clientX,
           y: e.clientY,
-        })
+        });
       }}
       style={{
         position: 'relative',
@@ -160,11 +160,11 @@ function MovingDot() {
         }}
       />
     </div>
-  )
+  );
 }
 
 export default function App() {
-  return <MovingDot />
+  return <MovingDot />;
 }
 ```
 
@@ -175,21 +175,21 @@ Each tab will have its own instance of this store.
 
 ```ts
 type CounterState = {
-  count: number
-}
+  count: number;
+};
 
-type CounterActions = { increment: () => void }
+type CounterActions = { increment: () => void };
 
-type CounterStore = CounterState & CounterActions
+type CounterStore = CounterState & CounterActions;
 
 const createCounterStore = () => {
   return createStore<CounterStore>()((set) => ({
     count: 0,
     increment: () => {
-      set((state) => ({ count: state.count + 1 }))
+      set((state) => ({ count: state.count + 1 }));
     },
-  }))
-}
+  }));
+};
 ```
 
 Next, we'll create a factory function that manages the creation and retrieval of counter stores.
@@ -199,31 +199,31 @@ This allows each tab to have its own independent counter.
 const defaultCounterStores = new Map<
   string,
   ReturnType<typeof createCounterStore>
->()
+>();
 
 const createCounterStoreFactory = (
   counterStores: typeof defaultCounterStores,
 ) => {
   return (counterStoreKey: string) => {
     if (!counterStores.has(counterStoreKey)) {
-      counterStores.set(counterStoreKey, createCounterStore())
+      counterStores.set(counterStoreKey, createCounterStore());
     }
-    return counterStores.get(counterStoreKey)!
-  }
-}
+    return counterStores.get(counterStoreKey)!;
+  };
+};
 
 const getOrCreateCounterStoreByKey =
-  createCounterStoreFactory(defaultCounterStores)
+  createCounterStoreFactory(defaultCounterStores);
 ```
 
 Now, let’s build the Tabs component, where users can switch between tabs and increment each tab’s
 counter.
 
 ```tsx
-const [currentTabIndex, setCurrentTabIndex] = useState(0)
+const [currentTabIndex, setCurrentTabIndex] = useState(0);
 const counterState = useStore(
   getOrCreateCounterStoreByKey(`tab-${currentTabIndex}`),
-)
+);
 
 return (
   <div style={{ fontFamily: 'monospace' }}>
@@ -277,7 +277,7 @@ return (
       </button>
     </div>
   </div>
-)
+);
 ```
 
 Finally, we'll create the `App` component, which renders the tabs and their respective counters.
@@ -285,57 +285,57 @@ The counter state is managed independently for each tab.
 
 ```tsx
 export default function App() {
-  return <Tabs />
+  return <Tabs />;
 }
 ```
 
 Here is what the code should look like:
 
 ```tsx
-import { useState } from 'react'
-import { createStore, useStore } from 'bruin'
+import { useState } from 'react';
+import { createStore, useStore } from 'bruin';
 
 type CounterState = {
-  count: number
-}
+  count: number;
+};
 
-type CounterActions = { increment: () => void }
+type CounterActions = { increment: () => void };
 
-type CounterStore = CounterState & CounterActions
+type CounterStore = CounterState & CounterActions;
 
 const createCounterStore = () => {
   return createStore<CounterStore>()((set) => ({
     count: 0,
     increment: () => {
-      set((state) => ({ count: state.count + 1 }))
+      set((state) => ({ count: state.count + 1 }));
     },
-  }))
-}
+  }));
+};
 
 const defaultCounterStores = new Map<
   string,
   ReturnType<typeof createCounterStore>
->()
+>();
 
 const createCounterStoreFactory = (
   counterStores: typeof defaultCounterStores,
 ) => {
   return (counterStoreKey: string) => {
     if (!counterStores.has(counterStoreKey)) {
-      counterStores.set(counterStoreKey, createCounterStore())
+      counterStores.set(counterStoreKey, createCounterStore());
     }
-    return counterStores.get(counterStoreKey)!
-  }
-}
+    return counterStores.get(counterStoreKey)!;
+  };
+};
 
 const getOrCreateCounterStoreByKey =
-  createCounterStoreFactory(defaultCounterStores)
+  createCounterStoreFactory(defaultCounterStores);
 
 export default function App() {
-  const [currentTabIndex, setCurrentTabIndex] = useState(0)
+  const [currentTabIndex, setCurrentTabIndex] = useState(0);
   const counterState = useStore(
     getOrCreateCounterStoreByKey(`tab-${currentTabIndex}`),
-  )
+  );
 
   return (
     <div style={{ fontFamily: 'monospace' }}>
@@ -389,7 +389,7 @@ export default function App() {
         </button>
       </div>
     </div>
-  )
+  );
 }
 ```
 
@@ -399,20 +399,20 @@ First, let's set up a store that will hold the position of the dot on the screen
 store to manage `x` and `y` coordinates and provide an action to update these coordinates.
 
 ```tsx
-type PositionStoreState = { position: { x: number; y: number } }
+type PositionStoreState = { position: { x: number; y: number } };
 
 type PositionStoreActions = {
-  setPosition: (nextPosition: PositionStoreState['position']) => void
-}
+  setPosition: (nextPosition: PositionStoreState['position']) => void;
+};
 
-type PositionStore = PositionStoreState & PositionStoreActions
+type PositionStore = PositionStoreState & PositionStoreActions;
 
 const createPositionStore = () => {
   return createStore<PositionStore>()((set) => ({
     position: { x: 0, y: 0 },
     setPosition: (position) => set({ position }),
-  }))
-}
+  }));
+};
 ```
 
 Next, we'll create a context and a provider component to pass down the store through the React
@@ -421,16 +421,16 @@ component tree. This allows each `MovingDot` component to have its own independe
 ```tsx
 const PositionStoreContext = createContext<ReturnType<
   typeof createPositionStore
-> | null>(null)
+> | null>(null);
 
 function PositionStoreProvider({ children }: { children: ReactNode }) {
-  const [positionStore] = useState(createPositionStore)
+  const [positionStore] = useState(createPositionStore);
 
   return (
     <PositionStoreContext.Provider value={positionStore}>
       {children}
     </PositionStoreContext.Provider>
-  )
+  );
 }
 ```
 
@@ -439,15 +439,15 @@ will read the store from the context and allow us to select specific parts of th
 
 ```ts
 function usePositionStore<U>(selector: (state: PositionStore) => U) {
-  const store = useContext(PositionStoreContext)
+  const store = useContext(PositionStoreContext);
 
   if (store === null) {
     throw new Error(
       'usePositionStore must be used within PositionStoreProvider',
-    )
+    );
   }
 
-  return useStore(store, selector)
+  return useStore(store, selector);
 }
 ```
 
@@ -456,8 +456,8 @@ within its container.
 
 ```tsx
 function MovingDot({ color }: { color: string }) {
-  const position = usePositionStore((state) => state.position)
-  const setPosition = usePositionStore((state) => state.setPosition)
+  const position = usePositionStore((state) => state.position);
+  const setPosition = usePositionStore((state) => state.setPosition);
 
   return (
     <div
@@ -468,7 +468,7 @@ function MovingDot({ color }: { color: string }) {
               ? e.clientX - e.currentTarget.clientWidth
               : e.clientX,
           y: e.clientY,
-        })
+        });
       }}
       style={{
         position: 'relative',
@@ -489,7 +489,7 @@ function MovingDot({ color }: { color: string }) {
         }}
       />
     </div>
-  )
+  );
 }
 ```
 
@@ -507,60 +507,60 @@ export default function App() {
         <MovingDot color="blue" />
       </PositionStoreProvider>
     </div>
-  )
+  );
 }
 ```
 
 Here is what the code should look like:
 
 ```tsx
-import { type ReactNode, useState, createContext, useContext } from 'react'
-import { createStore, useStore } from 'bruin'
+import { type ReactNode, useState, createContext, useContext } from 'react';
+import { createStore, useStore } from 'bruin';
 
-type PositionStoreState = { position: { x: number; y: number } }
+type PositionStoreState = { position: { x: number; y: number } };
 
 type PositionStoreActions = {
-  setPosition: (nextPosition: PositionStoreState['position']) => void
-}
+  setPosition: (nextPosition: PositionStoreState['position']) => void;
+};
 
-type PositionStore = PositionStoreState & PositionStoreActions
+type PositionStore = PositionStoreState & PositionStoreActions;
 
 const createPositionStore = () => {
   return createStore<PositionStore>()((set) => ({
     position: { x: 0, y: 0 },
     setPosition: (position) => set({ position }),
-  }))
-}
+  }));
+};
 
 const PositionStoreContext = createContext<ReturnType<
   typeof createPositionStore
-> | null>(null)
+> | null>(null);
 
 function PositionStoreProvider({ children }: { children: ReactNode }) {
-  const [positionStore] = useState(createPositionStore)
+  const [positionStore] = useState(createPositionStore);
 
   return (
     <PositionStoreContext.Provider value={positionStore}>
       {children}
     </PositionStoreContext.Provider>
-  )
+  );
 }
 
 function usePositionStore<U>(selector: (state: PositionStore) => U) {
-  const store = useContext(PositionStoreContext)
+  const store = useContext(PositionStoreContext);
 
   if (store === null) {
     throw new Error(
       'usePositionStore must be used within PositionStoreProvider',
-    )
+    );
   }
 
-  return useStore(store, selector)
+  return useStore(store, selector);
 }
 
 function MovingDot({ color }: { color: string }) {
-  const position = usePositionStore((state) => state.position)
-  const setPosition = usePositionStore((state) => state.setPosition)
+  const position = usePositionStore((state) => state.position);
+  const setPosition = usePositionStore((state) => state.setPosition);
 
   return (
     <div
@@ -571,7 +571,7 @@ function MovingDot({ color }: { color: string }) {
               ? e.clientX - e.currentTarget.clientWidth
               : e.clientX,
           y: e.clientY,
-        })
+        });
       }}
       style={{
         position: 'relative',
@@ -592,7 +592,7 @@ function MovingDot({ color }: { color: string }) {
         }}
       />
     </div>
-  )
+  );
 }
 
 export default function App() {
@@ -605,7 +605,7 @@ export default function App() {
         <MovingDot color="blue" />
       </PositionStoreProvider>
     </div>
-  )
+  );
 }
 ```
 
@@ -615,24 +615,24 @@ First, we'll create a factory function that generates a store for managing the c
 Each tab will have its own instance of this store.
 
 ```ts
-import { createStore } from 'bruin'
+import { createStore } from 'bruin';
 
 type CounterState = {
-  count: number
-}
+  count: number;
+};
 
-type CounterActions = { increment: () => void }
+type CounterActions = { increment: () => void };
 
-type CounterStore = CounterState & CounterActions
+type CounterStore = CounterState & CounterActions;
 
 const createCounterStore = () => {
   return createStore<CounterStore>()((set) => ({
     count: 0,
     increment: () => {
-      set((state) => ({ count: state.count + 1 }))
+      set((state) => ({ count: state.count + 1 }));
     },
-  }))
-}
+  }));
+};
 ```
 
 Next, we'll create a factory function that manages the creation and retrieval of counter stores.
@@ -644,30 +644,30 @@ const createCounterStoreFactory = (
 ) => {
   return (counterStoreKey: string) => {
     if (!counterStores.has(counterStoreKey)) {
-      counterStores.set(counterStoreKey, createCounterStore())
+      counterStores.set(counterStoreKey, createCounterStore());
     }
-    return counterStores.get(counterStoreKey)!
-  }
-}
+    return counterStores.get(counterStoreKey)!;
+  };
+};
 ```
 
 Next, we need a way to manage and access these stores throughout our app. We’ll use React’s context
 for this.
 
 ```tsx
-const CounterStoresContext = createContext(null)
+const CounterStoresContext = createContext(null);
 
 const CounterStoresProvider = ({ children }) => {
   const [stores] = useState(
     () => new Map<string, ReturnType<typeof createCounterStore>>(),
-  )
+  );
 
   return (
     <CounterStoresContext.Provider value={stores}>
       {children}
     </CounterStoresContext.Provider>
-  )
-}
+  );
+};
 ```
 
 Now, we’ll create a custom hook, `useCounterStore`, that lets us access the correct store for a
@@ -698,11 +698,11 @@ counter.
 
 ```tsx
 function Tabs() {
-  const [currentTabIndex, setCurrentTabIndex] = useState(0)
+  const [currentTabIndex, setCurrentTabIndex] = useState(0);
   const counterState = useCounterStore(
     `tab-${currentTabIndex}`,
     (state) => state,
-  )
+  );
 
   return (
     <div style={{ fontFamily: 'monospace' }}>
@@ -756,7 +756,7 @@ function Tabs() {
         </button>
       </div>
     </div>
-  )
+  );
 }
 ```
 
@@ -769,7 +769,7 @@ export default function App() {
     <CounterStoresProvider>
       <Tabs />
     </CounterStoresProvider>
-  )
+  );
 }
 ```
 
@@ -782,78 +782,80 @@ import {
   useCallback,
   useContext,
   createContext,
-} from 'react'
-import { createStore, useStore } from 'bruin'
+} from 'react';
+import { createStore, useStore } from 'bruin';
 
 type CounterState = {
-  count: number
-}
+  count: number;
+};
 
-type CounterActions = { increment: () => void }
+type CounterActions = { increment: () => void };
 
-type CounterStore = CounterState & CounterActions
+type CounterStore = CounterState & CounterActions;
 
 const createCounterStore = () => {
   return createStore<CounterStore>()((set) => ({
     count: 0,
     increment: () => {
-      set((state) => ({ count: state.count + 1 }))
+      set((state) => ({ count: state.count + 1 }));
     },
-  }))
-}
+  }));
+};
 
 const createCounterStoreFactory = (
   counterStores: Map<string, ReturnType<typeof createCounterStore>>,
 ) => {
   return (counterStoreKey: string) => {
     if (!counterStores.has(counterStoreKey)) {
-      counterStores.set(counterStoreKey, createCounterStore())
+      counterStores.set(counterStoreKey, createCounterStore());
     }
-    return counterStores.get(counterStoreKey)!
-  }
-}
+    return counterStores.get(counterStoreKey)!;
+  };
+};
 
 const CounterStoresContext = createContext<Map<
   string,
   ReturnType<typeof createCounterStore>
-> | null>(null)
+> | null>(null);
 
 const CounterStoresProvider = ({ children }: { children: ReactNode }) => {
   const [stores] = useState(
     () => new Map<string, ReturnType<typeof createCounterStore>>(),
-  )
+  );
 
   return (
     <CounterStoresContext.Provider value={stores}>
       {children}
     </CounterStoresContext.Provider>
-  )
-}
+  );
+};
 
 const useCounterStore = <U,>(
   key: string,
   selector: (state: CounterStore) => U,
 ) => {
-  const stores = useContext(CounterStoresContext)
+  const stores = useContext(CounterStoresContext);
 
   if (stores === undefined) {
-    throw new Error('useCounterStore must be used within CounterStoresProvider')
+    throw new Error(
+      'useCounterStore must be used within CounterStoresProvider',
+    );
   }
 
   const getOrCreateCounterStoreByKey = useCallback(
     (key: string) => createCounterStoreFactory(stores!)(key),
     [stores],
-  )
+  );
 
-  return useStore(getOrCreateCounterStoreByKey(key), selector)
-}
+  return useStore(getOrCreateCounterStoreByKey(key), selector);
+};
 
 function Tabs() {
-  const [currentTabIndex, setCurrentTabIndex] = useState(0)
+  const [currentTabIndex, setCurrentTabIndex] = useState(0);
   const counterState = useCounterStore(
     `tab-${currentTabIndex}`,
     (state) => state,
-  )
+  );
 
   return (
     <div style={{ fontFamily: 'monospace' }}>
@@ -907,7 +909,7 @@ function Tabs() {
         </button>
       </div>
     </div>
-  )
+  );
 }
 
 export default function App() {
@@ -915,7 +917,7 @@ export default function App() {
     <CounterStoresProvider>
       <Tabs />
     </CounterStoresProvider>
-  )
+  );
 }
 ```
 

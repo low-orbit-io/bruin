@@ -18,4 +18,4 @@ function Counter() {
       <button onClick={inc}>one up</button>
     </div>
   )
-}`;
+}`

@@ -6,9 +6,9 @@ import mascot from './assets/bruin-mascot.svg';
 import './index.css';
 
 type Store = {
-  count: number
-  inc: () => void
-}
+  count: number;
+  inc: () => void;
+};
 
 const useStore = create<Store>((set) => ({
   count: 0,

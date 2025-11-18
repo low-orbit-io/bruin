@@ -53,6 +53,15 @@ export function shallow<A, B>(valueA: A, valueB: B): boolean {
   }
 
   if (
+    typeof valueA === 'number' &&
+    typeof valueB === 'number' &&
+    Number(valueA) === Number(valueB) &&
+    (Number(valueA) === 0 || Number(valueB) === 0)
+  ) {
+    return true;
+  }
+
+  if (
     typeof valueA !== 'object' ||
     valueA === null ||
     typeof valueB !== 'object' ||
@@ -62,6 +71,13 @@ export function shallow<A, B>(valueA: A, valueB: B): boolean {
   }
 
   if (Object.getPrototypeOf(valueA) !== Object.getPrototypeOf(valueB)) {
+    return false;
+  }
+
+  if (
+    (valueA instanceof Date && valueB instanceof Date) ||
+    (valueA instanceof RegExp && valueB instanceof RegExp)
+  ) {
     return false;
   }
 

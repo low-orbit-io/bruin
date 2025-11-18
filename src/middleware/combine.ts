@@ -1,6 +1,5 @@
-import type { StateCreator, StoreMutatorIdentifier } from '../vanilla';
-
-type Write<T, U> = Omit<T, keyof U> & U;
+import type { StateCreator, StoreMutatorIdentifier } from '../types/core';
+import type { Write } from '../types/middleware';
 
 export function combine<
   T extends object,

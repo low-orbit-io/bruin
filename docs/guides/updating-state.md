@@ -10,17 +10,17 @@ the new state, and it will be shallowly merged with the existing state in the
 store. **Note** See next section for nested state.
 
 ```tsx
-import { create } from 'bruin'
+import { create } from 'bruin';
 
 type State = {
-  firstName: string
-  lastName: string
-}
+  firstName: string;
+  lastName: string;
+};
 
 type Action = {
-  updateFirstName: (firstName: State['firstName']) => void
-  updateLastName: (lastName: State['lastName']) => void
-}
+  updateFirstName: (firstName: State['firstName']) => void;
+  updateLastName: (lastName: State['lastName']) => void;
+};
 
 // Create your store, which includes both state and (optionally) actions
 const usePersonStore = create<State & Action>((set) => ({
@@ -28,14 +28,14 @@ const usePersonStore = create<State & Action>((set) => ({
   lastName: '',
   updateFirstName: (firstName) => set(() => ({ firstName: firstName })),
   updateLastName: (lastName) => set(() => ({ lastName: lastName })),
-}))
+}));
 
 // In consuming app
 function App() {
   // "select" the needed state and actions, in this case, the firstName value
   // and the action updateFirstName
-  const firstName = usePersonStore((state) => state.firstName)
-  const updateFirstName = usePersonStore((state) => state.updateFirstName)
+  const firstName = usePersonStore((state) => state.firstName);
+  const updateFirstName = usePersonStore((state) => state.updateFirstName);
 
   return (
     <main>
@@ -52,7 +52,7 @@ function App() {
         Hello, <strong>{firstName}!</strong>
       </p>
     </main>
-  )
+  );
 }
 ```
 
@@ -64,10 +64,10 @@ If you have a deep state object like this:
 type State = {
   deep: {
     nested: {
-      obj: { count: number }
-    }
-  }
-}
+      obj: { count: number };
+    };
+  };
+};
 ```
 
 Updating nested state requires some effort to ensure the process is completed

@@ -3,7 +3,8 @@ import type {
   StateCreator,
   StoreApi,
   StoreMutatorIdentifier,
-} from '../vanilla';
+} from '../types/core';
+import type { Write } from '../types/middleware';
 
 export interface StateStorage<R = unknown> {
   getItem: (name: string) => string | null | Promise<string | null>;
@@ -77,11 +78,9 @@ type StorePersist<S, Ps, Pr> = S extends {
     }
   : never;
 
-type Write<T, U> = Omit<T, keyof U> & U;
-
 type WithPersist<S, A> = Write<S, StorePersist<S, A, unknown>>;
 
-declare module '../vanilla' {
+declare module '../types/core' {
   interface StoreMutators<S, A> {
     'bruin/persist': WithPersist<S, A>;
   }
@@ -89,17 +88,13 @@ declare module '../vanilla' {
 
 type Persist = <
   T,
-  PersistedState = T,
   Mps extends [StoreMutatorIdentifier, unknown][] = [],
   Mcs extends [StoreMutatorIdentifier, unknown][] = [],
+  U = T,
 >(
-  initializer: StateCreator<
-    T,
-    [...Mps, ['bruin/persist', PersistedState]],
-    Mcs
-  >,
-  options: PersistOptions<T, PersistedState>,
-) => StateCreator<T, Mps, [['bruin/persist', PersistedState], ...Mcs]>;
+  initializer: StateCreator<T, [...Mps, ['bruin/persist', unknown]], Mcs>,
+  options: PersistOptions<T, U>,
+) => StateCreator<T, Mps, [['bruin/persist', U], ...Mcs]>;
 
 type PersistImpl = <T>(
   storeInitializer: StateCreator<T, [], []>,

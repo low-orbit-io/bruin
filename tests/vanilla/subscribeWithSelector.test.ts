@@ -34,7 +34,8 @@ describe('Vanilla subscribeWithSelector Middleware', () => {
       subscribeWithSelector((set) => ({
         count: 0,
         text: 'hello',
-        inc: () => set((s) => ({ count: s.count + 1 })),
+        inc: () =>
+          set((s: { count: number; text: string }) => ({ count: s.count + 1 })),
       })),
     );
 
@@ -43,11 +44,15 @@ describe('Vanilla subscribeWithSelector Middleware', () => {
 
     expect(listener).not.toHaveBeenCalled();
 
-    store.getState().inc();
+    (
+      store.getState() as { count: number; text: string; inc: () => void }
+    ).inc();
     expect(listener).toHaveBeenCalledTimes(1);
 
     unsubscribe();
-    store.getState().inc();
+    (
+      store.getState() as { count: number; text: string; inc: () => void }
+    ).inc();
     expect(listener).toHaveBeenCalledTimes(1); // Should not be called after unsubscribe
   });
 
@@ -61,27 +66,57 @@ describe('Vanilla subscribeWithSelector Middleware', () => {
       subscribeWithSelector((set) => ({
         count: 0,
         text: 'hello',
-        inc: () => set((s) => ({ count: s.count + 1 })),
+        inc: () =>
+          set((s: { count: number; text: string }) => ({ count: s.count + 1 })),
         setText: (text: string) => set({ text }),
       })),
     );
 
     const listener = vi.fn();
-    const unsubscribe = store.subscribe((s) => s.count, listener);
+    const unsubscribe = store.subscribe(
+      (s: {
+        count: number;
+        text: string;
+        inc: () => void;
+        setText: (text: string) => void;
+      }) => s.count,
+      listener,
+    );
 
     expect(listener).not.toHaveBeenCalled();
 
     // Update count - should trigger
-    store.getState().inc();
+    (
+      store.getState() as {
+        count: number;
+        text: string;
+        inc: () => void;
+        setText: (text: string) => void;
+      }
+    ).inc();
     expect(listener).toHaveBeenCalledTimes(1);
     expect(listener).toHaveBeenCalledWith(1, 0);
 
     // Update text - should NOT trigger (different selector)
-    store.getState().setText('world');
+    (
+      store.getState() as {
+        count: number;
+        text: string;
+        inc: () => void;
+        setText: (text: string) => void;
+      }
+    ).setText('world');
     expect(listener).toHaveBeenCalledTimes(1);
 
     // Update count again - should trigger
-    store.getState().inc();
+    (
+      store.getState() as {
+        count: number;
+        text: string;
+        inc: () => void;
+        setText: (text: string) => void;
+      }
+    ).inc();
     expect(listener).toHaveBeenCalledTimes(2);
     expect(listener).toHaveBeenCalledWith(2, 1);
 
@@ -105,7 +140,11 @@ describe('Vanilla subscribeWithSelector Middleware', () => {
     const equalityFn = (a: number[], b: number[]) => a.length === b.length;
 
     const listener = vi.fn();
-    store.subscribe((s) => s.items, listener, { equalityFn });
+    store.subscribe(
+      (s: { items: number[]; addItem: (item: number) => void }) => s.items,
+      listener,
+      { equalityFn },
+    );
 
     // Add item - length changes from 3 to 4, should trigger
     store.getState().addItem(4);
@@ -282,7 +321,10 @@ describe('Vanilla subscribeWithSelector Middleware', () => {
     );
 
     const listener = vi.fn();
-    store.subscribe((s) => s.count, listener);
+    store.subscribe(
+      (s: { count: number; inc: () => void }) => s.count,
+      listener,
+    );
 
     store.getState().inc();
     expect(listener).toHaveBeenCalledWith(1, 0);
@@ -335,10 +377,14 @@ describe('Vanilla subscribeWithSelector Middleware', () => {
     const listener = vi.fn();
     const equalityFn = (a: number[], b: number[]) => a.length === b.length;
 
-    store.subscribe((s) => s.items, listener, {
-      equalityFn,
-      fireImmediately: true,
-    });
+    store.subscribe(
+      (s: { items: number[]; addItem: (item: number) => void }) => s.items,
+      listener,
+      {
+        equalityFn,
+        fireImmediately: true,
+      },
+    );
 
     // Should fire immediately
     expect(listener).toHaveBeenCalledTimes(1);

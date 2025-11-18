@@ -12,7 +12,7 @@ arrays within them.
 > Shallow lets you perform quick comparisons, but keep its limitations in mind.
 
 ```js
-const equal = shallow(a, b)
+const equal = shallow(a, b);
 ```
 
 - [Types](#types)
@@ -58,29 +58,29 @@ When comparing primitive values like `string`s, `number`s, `boolean`s, and `BigI
 primitive values are compared by their actual value rather than by reference.
 
 ```ts
-const stringLeft = 'John Doe'
-const stringRight = 'John Doe'
+const stringLeft = 'John Doe';
+const stringRight = 'John Doe';
 
-Object.is(stringLeft, stringRight) // -> true
-shallow(stringLeft, stringRight) // -> true
+Object.is(stringLeft, stringRight); // -> true
+shallow(stringLeft, stringRight); // -> true
 
-const numberLeft = 10
-const numberRight = 10
+const numberLeft = 10;
+const numberRight = 10;
 
-Object.is(numberLeft, numberRight) // -> true
-shallow(numberLeft, numberRight) // -> true
+Object.is(numberLeft, numberRight); // -> true
+shallow(numberLeft, numberRight); // -> true
 
-const booleanLeft = true
-const booleanRight = true
+const booleanLeft = true;
+const booleanRight = true;
 
-Object.is(booleanLeft, booleanRight) // -> true
-shallow(booleanLeft, booleanRight) // -> true
+Object.is(booleanLeft, booleanRight); // -> true
+shallow(booleanLeft, booleanRight); // -> true
 
-const bigIntLeft = 1n
-const bigIntRight = 1n
+const bigIntLeft = 1n;
+const bigIntRight = 1n;
 
-Object.is(bigIntLeft, bigIntRight) // -> true
-shallow(bigIntLeft, bigIntRight) // -> true
+Object.is(bigIntLeft, bigIntRight); // -> true
+shallow(bigIntLeft, bigIntRight); // -> true
 ```
 
 ### Comparing Objects
@@ -98,15 +98,15 @@ const objectLeft = {
   firstName: 'John',
   lastName: 'Doe',
   age: 30,
-}
+};
 const objectRight = {
   firstName: 'John',
   lastName: 'Doe',
   age: 30,
-}
+};
 
-Object.is(objectLeft, objectRight) // -> false
-shallow(objectLeft, objectRight) // -> true
+Object.is(objectLeft, objectRight); // -> false
+shallow(objectLeft, objectRight); // -> true
 ```
 
 ### Comparing Sets
@@ -120,11 +120,11 @@ and `setRight` are both instances of the Set object and contain the same element
 them equal.
 
 ```ts
-const setLeft = new Set([1, 2, 3])
-const setRight = new Set([1, 2, 3])
+const setLeft = new Set([1, 2, 3]);
+const setRight = new Set([1, 2, 3]);
 
-Object.is(setLeft, setRight) // -> false
-shallow(setLeft, setRight) // -> true
+Object.is(setLeft, setRight); // -> false
+shallow(setLeft, setRight); // -> true
 ```
 
 ### Comparing Maps
@@ -142,15 +142,15 @@ const mapLeft = new Map([
   [1, 'one'],
   [2, 'two'],
   [3, 'three'],
-])
+]);
 const mapRight = new Map([
   [1, 'one'],
   [2, 'two'],
   [3, 'three'],
-])
+]);
 
-Object.is(mapLeft, mapRight) // -> false
-shallow(mapLeft, mapRight) // -> true
+Object.is(mapLeft, mapRight); // -> false
+shallow(mapLeft, mapRight); // -> true
 ```
 
 ## Troubleshooting
@@ -181,7 +181,7 @@ const objectLeft = {
       lng: '81.1496',
     },
   },
-}
+};
 const objectRight = {
   firstName: 'John',
   lastName: 'Doe',
@@ -196,10 +196,10 @@ const objectRight = {
       lng: '81.1496',
     },
   },
-}
+};
 
-Object.is(objectLeft, objectRight) // -> false
-shallow(objectLeft, objectRight) // -> false
+Object.is(objectLeft, objectRight); // -> false
+shallow(objectLeft, objectRight); // -> false
 ```
 
 If we remove the `address` property, the shallow comparison would work as expected because all
@@ -210,15 +210,15 @@ const objectLeft = {
   firstName: 'John',
   lastName: 'Doe',
   age: 30,
-}
+};
 const objectRight = {
   firstName: 'John',
   lastName: 'Doe',
   age: 30,
-}
+};
 
-Object.is(objectLeft, objectRight) // -> false
-shallow(objectLeft, objectRight) // -> true
+Object.is(objectLeft, objectRight); // -> false
+shallow(objectLeft, objectRight); // -> true
 ```
 
 In this modified example, `objectLeft` and `objectRight` have the same top-level properties and
@@ -232,7 +232,7 @@ The `shallow` function checks whether the two objects have the same prototype. I
 are referentially different, shallow will return `false`. This comparison is done using:
 
 ```ts
-Object.getPrototypeOf(a) === Object.getPrototypeOf(b)
+Object.getPrototypeOf(a) === Object.getPrototypeOf(b);
 ```
 
 > [!IMPORTANT]
@@ -241,8 +241,8 @@ Object.getPrototypeOf(a) === Object.getPrototypeOf(b)
 > the proto you pass in—which may not be `Object.prototype.`
 
 ```ts
-const a = Object.create({}) // -> prototype is `{}`
-const b = {} // -> prototype is `Object.prototype`
+const a = Object.create({}); // -> prototype is `{}`
+const b = {}; // -> prototype is `Object.prototype`
 
-shallow(a, b) // -> false
+shallow(a, b); // -> false
 ```

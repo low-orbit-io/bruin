@@ -8,26 +8,26 @@ nav: 11
 If you want to connect state of a store to URL hash, you can create your own hash storage.
 
 ```ts
-import { create } from 'bruin'
-import { persist, StateStorage, createJSONStorage } from 'bruin/middleware'
+import { create } from 'bruin';
+import { persist, StateStorage, createJSONStorage } from 'bruin/middleware';
 
 const hashStorage: StateStorage = {
   getItem: (key): string => {
-    const searchParams = new URLSearchParams(location.hash.slice(1))
-    const storedValue = searchParams.get(key) ?? ''
-    return JSON.parse(storedValue)
+    const searchParams = new URLSearchParams(location.hash.slice(1));
+    const storedValue = searchParams.get(key) ?? '';
+    return JSON.parse(storedValue);
   },
   setItem: (key, newValue): void => {
-    const searchParams = new URLSearchParams(location.hash.slice(1))
-    searchParams.set(key, JSON.stringify(newValue))
-    location.hash = searchParams.toString()
+    const searchParams = new URLSearchParams(location.hash.slice(1));
+    searchParams.set(key, JSON.stringify(newValue));
+    location.hash = searchParams.toString();
   },
   removeItem: (key): void => {
-    const searchParams = new URLSearchParams(location.hash.slice(1))
-    searchParams.delete(key)
-    location.hash = searchParams.toString()
+    const searchParams = new URLSearchParams(location.hash.slice(1));
+    searchParams.delete(key);
+    location.hash = searchParams.toString();
   },
-}
+};
 
 export const useBoundStore = create()(
   persist(
@@ -40,7 +40,7 @@ export const useBoundStore = create()(
       storage: createJSONStorage(() => hashStorage),
     },
   ),
-)
+);
 ```
 
 ## Persist and Connect State with URL Parameters (Example: URL Query Parameters)
@@ -54,53 +54,53 @@ If you want the URL params to always populate, the conditional check on `getUrlS
 The implementation below will update the URL in place, without refresh, as the relevant states change.
 
 ```ts
-import { create } from 'bruin'
-import { persist, StateStorage, createJSONStorage } from 'bruin/middleware'
+import { create } from 'bruin';
+import { persist, StateStorage, createJSONStorage } from 'bruin/middleware';
 
 const getUrlSearch = () => {
-  return window.location.search.slice(1)
-}
+  return window.location.search.slice(1);
+};
 
 const persistentStorage: StateStorage = {
   getItem: (key): string => {
     // Check URL first
     if (getUrlSearch()) {
-      const searchParams = new URLSearchParams(getUrlSearch())
-      const storedValue = searchParams.get(key)
-      return JSON.parse(storedValue as string)
+      const searchParams = new URLSearchParams(getUrlSearch());
+      const storedValue = searchParams.get(key);
+      return JSON.parse(storedValue as string);
     } else {
       // Otherwise, we should load from localstorage or alternative storage
-      return JSON.parse(localStorage.getItem(key) as string)
+      return JSON.parse(localStorage.getItem(key) as string);
     }
   },
   setItem: (key, newValue): void => {
     // Check if query params exist at all, can remove check if always want to set URL
     if (getUrlSearch()) {
-      const searchParams = new URLSearchParams(getUrlSearch())
-      searchParams.set(key, JSON.stringify(newValue))
-      window.history.replaceState(null, '', `?${searchParams.toString()}`)
+      const searchParams = new URLSearchParams(getUrlSearch());
+      searchParams.set(key, JSON.stringify(newValue));
+      window.history.replaceState(null, '', `?${searchParams.toString()}`);
     }
 
-    localStorage.setItem(key, JSON.stringify(newValue))
+    localStorage.setItem(key, JSON.stringify(newValue));
   },
   removeItem: (key): void => {
-    const searchParams = new URLSearchParams(getUrlSearch())
-    searchParams.delete(key)
-    window.location.search = searchParams.toString()
+    const searchParams = new URLSearchParams(getUrlSearch());
+    searchParams.delete(key);
+    window.location.search = searchParams.toString();
   },
-}
+};
 
 type LocalAndUrlStore = {
-  typesOfFish: string[]
-  addTypeOfFish: (fishType: string) => void
-  numberOfBears: number
-  setNumberOfBears: (newNumber: number) => void
-}
+  typesOfFish: string[];
+  addTypeOfFish: (fishType: string) => void;
+  numberOfBears: number;
+  setNumberOfBears: (newNumber: number) => void;
+};
 
 const storageOptions = {
   name: 'fishAndBearsStore',
   storage: createJSONStorage<LocalAndUrlStore>(() => persistentStorage),
-}
+};
 
 const useLocalAndUrlStore = create()(
   persist<LocalAndUrlStore>(
@@ -114,16 +114,16 @@ const useLocalAndUrlStore = create()(
     }),
     storageOptions,
   ),
-)
+);
 
-export default useLocalAndUrlStore
+export default useLocalAndUrlStore;
 ```
 
 When generating the URL from a component, you can call buildShareableUrl:
 
 ```ts
 const buildURLSuffix = (params, version = 0) => {
-  const searchParams = new URLSearchParams()
+  const searchParams = new URLSearchParams();
 
   const zustandStoreParams = {
     state: {
@@ -131,16 +131,16 @@ const buildURLSuffix = (params, version = 0) => {
       numberOfBears: params.numberOfBears,
     },
     version: version, // version is here because that is included with how Bruin sets the state
-  }
+  };
 
   // The URL param key should match the name of the store, as specified as in storageOptions above
-  searchParams.set('fishAndBearsStore', JSON.stringify(zustandStoreParams))
-  return searchParams.toString()
-}
+  searchParams.set('fishAndBearsStore', JSON.stringify(zustandStoreParams));
+  return searchParams.toString();
+};
 
 export const buildShareableUrl = (params, version) => {
-  return `${window.location.origin}?${buildURLSuffix(params, version)}`
-}
+  return `${window.location.origin}?${buildURLSuffix(params, version)}`;
+};
 ```
 
 The generated URL would look like (here without any encoding, for readability):
