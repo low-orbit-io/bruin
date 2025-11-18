@@ -1,0 +1,7 @@
+{
+  "packages": ["dist"],
+  "sandboxes": [
+    "new"
+  ],
+  "node": "18"
+}
