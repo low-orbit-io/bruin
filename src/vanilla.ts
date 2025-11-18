@@ -7,17 +7,39 @@ type StoreTransaction<T> = (
   options?: { name?: string; skipHistory?: boolean },
 ) => void;
 
-type StoreSetState<T> = (
-  partial: T | Partial<T> | ((state: T) => T | Partial<T>),
-  replace?: boolean,
-  options?: { skipHistory?: boolean },
-) => void;
+type StoreSetState<T> = {
+  (
+    partial: T | Partial<T> | ((state: T) => T | Partial<T>),
+    replace?: false,
+    options?: { skipHistory?: boolean },
+  ): void;
+  (
+    state: T | ((state: T) => T),
+    replace: true,
+    options?: { skipHistory?: boolean },
+  ): void;
+  (
+    state: T | Partial<T> | ((state: T) => T | Partial<T>),
+    replace?: boolean,
+    options?: { skipHistory?: boolean },
+  ): void;
+};
 
 type Get<T, K, F> = K extends keyof T ? T[K] : F;
 
 export interface StoreMutators<S, A> {}
 
 export type StoreMutatorIdentifier = keyof StoreMutators<unknown, unknown>;
+
+type StoreSubscriber<T> = {
+  (
+    listener: (state: T, prevState: T) => void,
+  ): () => void;
+  (
+    path: (string | number)[],
+    listener: (state: T, prevState: T) => void,
+  ): () => void;
+};
 
 export type Mutate<
   S,
@@ -54,10 +76,7 @@ export type StoreApi<T> = {
   setState: StoreSetState<T>;
   getState: () => T;
   getInitialState: () => T;
-  subscribe: (
-    listenerOrPath: ((state: T, prevState: T) => void) | (string | number)[],
-    listener?: (state: T, prevState: T) => void,
-  ) => () => void;
+  subscribe: StoreSubscriber<T>;
   undo: () => void;
   redo: () => void;
   canUndo: () => boolean;
@@ -74,7 +93,7 @@ export type SetStateWithTransaction<T> = StoreSetState<T> & {
 
 export type ExtractState<S> = S extends { getState: () => infer T } ? T : never;
 
-type ExtractStateCreatorMutators<
+export type ExtractStateCreatorMutators<
   SC,
 > = SC extends { $$storeMutators?: infer Mutators }
   ? Mutators extends [StoreMutatorIdentifier, unknown][]
@@ -94,6 +113,22 @@ type CreateStoreOptions = {
   debounce?: number;
 };
 
+export function createStore<
+  TCreator extends StateCreator<any, [], any>,
+>(
+  initializer: TCreator,
+  options?: CreateStoreOptions,
+): Mutate<
+  StoreApi<ReturnType<TCreator>>,
+  ExtractStateCreatorMutators<TCreator>
+>;
+export function createStore<
+  T,
+  TCreator extends StateCreator<T, [], any> = StateCreator<T, [], any>,
+>(
+  initializer: TCreator,
+  options?: CreateStoreOptions,
+): Mutate<StoreApi<T>, ExtractStateCreatorMutators<TCreator>>;
 export function createStore<
   T,
   Mos extends [StoreMutatorIdentifier, unknown][] = [],
@@ -301,15 +336,14 @@ export function createStore<
     notifyListeners(pendingState, pendingPrevState);
   };
 
-  const api: StoreApi<T> = {
-    setState: (
-      partial:
-        | T
-        | Partial<T>
-        | ((state: T) => T | Partial<T>),
-      replace = false,
-      setOptions?: { skipHistory?: boolean },
-    ) => {
+  const setStateImpl: StoreSetState<T> = (
+    partial:
+      | T
+      | Partial<T>
+      | ((state: T) => T | Partial<T>),
+    replace = false,
+    setOptions?: { skipHistory?: boolean },
+  ) => {
       const prevState = state;
 
       if (partial === prevState) {
@@ -499,29 +533,39 @@ export function createStore<
           }
         }
       }
-    },
+  };
+
+  const subscribeImpl: StoreSubscriber<T> = ((
+    listenerOrPath: ((state: T, prevState: T) => void) | (string | number)[],
+    listenerArg?: (state: T, prevState: T) => void,
+  ) => {
+    if (typeof listenerOrPath === 'function') {
+      listeners.add(listenerOrPath);
+
+      return () => listeners.delete(listenerOrPath);
+    }
+
+    if (Array.isArray(listenerOrPath) && listenerArg) {
+      const pathListener: PathListener = {
+        listener: listenerArg,
+        path: listenerOrPath,
+      };
+
+      pathListeners.add(pathListener);
+
+      return () => pathListeners.delete(pathListener);
+    }
+
+    throw new Error(
+      'subscribe requires either a listener function or a path array and listener function',
+    );
+  }) as StoreSubscriber<T>;
+
+  const api: StoreApi<T> = {
+    setState: setStateImpl,
     getState: () => state,
     getInitialState: () => initialState,
-    subscribe: (listenerOrPath, listenerArg?) => {
-      if (typeof listenerOrPath === 'function') {
-        listeners.add(listenerOrPath);
-
-        return () => listeners.delete(listenerOrPath);
-      } else if (Array.isArray(listenerOrPath) && listenerArg) {
-        const pathListener: PathListener = {
-          listener: listenerArg,
-          path: listenerOrPath,
-        };
-
-        pathListeners.add(pathListener);
-
-        return () => pathListeners.delete(pathListener);
-      } else {
-        throw new Error(
-          'subscribe requires either a listener function or a path array and listener function',
-        );
-      }
-    },
+    subscribe: subscribeImpl,
     undo: () => {
       if (debounceTimer) {
         flushDebouncedHistory();
@@ -652,6 +696,8 @@ export function createStore<
       historyIndex = 0;
     },
   };
+
+  (api.setState as SetStateWithTransaction<T>).transaction = api.transaction;
 
   const setStateWithTransaction = Object.assign(api.setState, {
     transaction: api.transaction,

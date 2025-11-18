@@ -1,79 +1,80 @@
-export function shallow<T>(objA: T, objB: T): boolean {
-  // Same reference - always equal (use === to treat -0 and +0 as equal)
-  if (objA === objB) {
-    return true;
-  }
+const isIterable = (value: unknown): value is Iterable<unknown> =>
+  !!value && typeof value === 'object' && Symbol.iterator in value;
 
-  // Handle primitives and null/undefined
-  if (
-    typeof objA !== 'object' ||
-    objA === null ||
-    typeof objB !== 'object' ||
-    objB === null
-  ) {
-    return Object.is(objA, objB);
-  }
+const hasEntries = (
+  value: Iterable<unknown>,
+): value is Iterable<unknown> & { entries(): Iterable<[unknown, unknown]> } =>
+  typeof (value as any)?.entries === 'function';
 
-  // Different prototypes - not equal
-  const protoA = Object.getPrototypeOf(objA);
-  const protoB = Object.getPrototypeOf(objB);
+const compareEntries = (
+  valueA: { entries(): Iterable<[unknown, unknown]> },
+  valueB: { entries(): Iterable<[unknown, unknown]> },
+) => {
+  const mapA = valueA instanceof Map ? valueA : new Map(valueA.entries());
+  const mapB = valueB instanceof Map ? valueB : new Map(valueB.entries());
 
-  if (protoA !== protoB) {
+  if (mapA.size !== mapB.size) {
     return false;
   }
 
-  // Handle iterables (Set, Map) before prototype restriction
-  if (objA instanceof Map && objB instanceof Map) {
-    if (objA.size !== objB.size) {
-      return false;
-    }
-
-    for (const [key, value] of objA) {
-      if (!Object.is(value, objB.get(key))) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  if (objA instanceof Set && objB instanceof Set) {
-    if (objA.size !== objB.size) {
-      return false;
-    }
-
-    for (const value of objA) {
-      if (!objB.has(value)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  // For Date, RegExp, and other built-in objects with non-Object/Array prototypes,
-  // return false if they're not the same reference (already checked above)
-  if (protoA !== Object.prototype && protoA !== Array.prototype) {
-    return false;
-  }
-
-  // Handle objects and arrays
-  const keysA = Object.keys(objA);
-  const keysB = Object.keys(objB);
-
-  if (keysA.length !== keysB.length) {
-    return false;
-  }
-
-  for (const keyA of keysA) {
-    if (
-      !Object.prototype.hasOwnProperty.call(objB, keyA) ||
-      !Object.is(
-        (objA as Record<string, unknown>)[keyA],
-        (objB as Record<string, unknown>)[keyA],
-      )
-    ) {
+  for (const [key, value] of mapA) {
+    if (!mapB.has(key) || !Object.is(value, mapB.get(key))) {
       return false;
     }
   }
 
   return true;
+};
+
+const compareIterables = (
+  valueA: Iterable<unknown>,
+  valueB: Iterable<unknown>,
+) => {
+  const iteratorA = valueA[Symbol.iterator]();
+  const iteratorB = valueB[Symbol.iterator]();
+
+  while (true) {
+    const nextA = iteratorA.next();
+    const nextB = iteratorB.next();
+
+    if (nextA.done || nextB.done) {
+      return !!nextA.done && !!nextB.done;
+    }
+
+    if (!Object.is(nextA.value, nextB.value)) {
+      return false;
+    }
+  }
+};
+
+export function shallow<A, B>(valueA: A, valueB: B): boolean {
+  if (Object.is(valueA, valueB)) {
+    return true;
+  }
+
+  if (
+    typeof valueA !== 'object' ||
+    valueA === null ||
+    typeof valueB !== 'object' ||
+    valueB === null
+  ) {
+    return false;
+  }
+
+  if (Object.getPrototypeOf(valueA) !== Object.getPrototypeOf(valueB)) {
+    return false;
+  }
+
+  if (isIterable(valueA) && isIterable(valueB)) {
+    if (hasEntries(valueA) && hasEntries(valueB)) {
+      return compareEntries(valueA, valueB);
+    }
+
+    return compareIterables(valueA, valueB);
+  }
+
+  return compareEntries(
+    { entries: () => Object.entries(valueA) },
+    { entries: () => Object.entries(valueB) },
+  );
 }

@@ -2,6 +2,7 @@ import React from 'react';
 import { createStore as createVanillaStore } from './vanilla';
 import type {
   ExtractState,
+  ExtractStateCreatorMutators,
   Mutate,
   StateCreator,
   StoreApi,
@@ -59,9 +60,23 @@ const createImpl = <
 };
 
 export function create<
+  TCreator extends StateCreator<any, [], any>,
+>(
+  createState: TCreator,
+): UseBoundStore<
+  Mutate<
+    StoreApi<ReturnType<TCreator>>,
+    ExtractStateCreatorMutators<TCreator>
+  >
+>;
+export function create<
   T,
-  Mcs extends [StoreMutatorIdentifier, unknown][] = [],
->(createState: StateCreator<T, [], Mcs>): UseBoundStore<Mutate<StoreApi<T>, Mcs>>;
+  TCreator extends StateCreator<T, [], any> = StateCreator<T, [], any>,
+>(
+  createState: TCreator,
+): UseBoundStore<
+  Mutate<StoreApi<T>, ExtractStateCreatorMutators<TCreator>>
+>;
 export function create<
   T,
   Mcs extends [StoreMutatorIdentifier, unknown][] = [],

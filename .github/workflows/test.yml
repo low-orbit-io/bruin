@@ -22,3 +22,15 @@ jobs:
       - run: pnpm run test:lint
       - run: pnpm run test:spec
       - run: pnpm run build # we don't have any other workflows to test build
+
+  check:
+    runs-on: ubuntu-latest
+    needs: test
+    if: always()
+    steps:
+      - name: Check test results
+        run: |
+          if [ "${{ needs.test.result }}" != "success" ]; then
+            echo "Test job failed"
+            exit 1
+          fi

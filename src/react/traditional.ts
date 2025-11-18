@@ -2,6 +2,7 @@ import { useSyncExternalStoreWithSelector } from 'use-sync-external-store/with-s
 import type { UseBoundStore } from '../react';
 import type {
   ExtractState,
+  ExtractStateCreatorMutators,
   Mutate,
   StateCreator,
   StoreApi,
@@ -74,11 +75,23 @@ const createWithEqualityFnImpl = <
 };
 
 export function createWithEqualityFn<
-  T,
-  Mcs extends [StoreMutatorIdentifier, unknown][] = [],
+  TCreator extends StateCreator<any, [], any>,
 >(
-  createState: StateCreator<T, [], Mcs>,
-): UseBoundStoreWithEqualityFn<Mutate<StoreApi<T>, Mcs>>;
+  createState: TCreator,
+): UseBoundStoreWithEqualityFn<
+  Mutate<
+    StoreApi<ReturnType<TCreator>>,
+    ExtractStateCreatorMutators<TCreator>
+  >
+>;
+export function createWithEqualityFn<
+  T,
+  TCreator extends StateCreator<T, [], any> = StateCreator<T, [], any>,
+>(
+  createState: TCreator,
+): UseBoundStoreWithEqualityFn<
+  Mutate<StoreApi<T>, ExtractStateCreatorMutators<TCreator>>
+>;
 export function createWithEqualityFn<
   T,
   Mcs extends [StoreMutatorIdentifier, unknown][] = [],
