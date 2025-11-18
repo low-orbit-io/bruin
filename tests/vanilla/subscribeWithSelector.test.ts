@@ -79,10 +79,12 @@ describe('Vanilla subscribeWithSelector Middleware', () => {
       inc: () => void;
       setText: (text: string) => void;
     };
-    const unsubscribe = (store.subscribe as <U>(
-      selector: (state: StoreState) => U,
-      listener: (selectedState: U, previousSelectedState: U) => void,
-    ) => () => void)((s: StoreState) => s.count, listener);
+    const unsubscribe = (
+      store.subscribe as <U>(
+        selector: (state: StoreState) => U,
+        listener: (selectedState: U, previousSelectedState: U) => void,
+      ) => () => void
+    )((s: StoreState) => s.count, listener);
 
     expect(listener).not.toHaveBeenCalled();
 
@@ -133,7 +135,10 @@ describe('Vanilla subscribeWithSelector Middleware', () => {
     const store = createStore(
       subscribeWithSelector((set) => ({
         items: [1, 2, 3],
-        addItem: (item: number) => set((s: { items: number[]; addItem: (item: number) => void }) => ({ items: [...s.items, item] })),
+        addItem: (item: number) =>
+          set((s: { items: number[]; addItem: (item: number) => void }) => ({
+            items: [...s.items, item],
+          })),
       })),
     );
 
@@ -142,15 +147,16 @@ describe('Vanilla subscribeWithSelector Middleware', () => {
 
     const listener = vi.fn();
     type StoreState = { items: number[]; addItem: (item: number) => void };
-    (store.subscribe as <U>(
-      selector: (state: StoreState) => U,
-      listener: (selectedState: U, previousSelectedState: U) => void,
-      options?: { equalityFn?: (a: U, b: U) => boolean; fireImmediately?: boolean },
-    ) => () => void)(
-      (s: StoreState) => s.items,
-      listener,
-      { equalityFn },
-    );
+    (
+      store.subscribe as <U>(
+        selector: (state: StoreState) => U,
+        listener: (selectedState: U, previousSelectedState: U) => void,
+        options?: {
+          equalityFn?: (a: U, b: U) => boolean;
+          fireImmediately?: boolean;
+        },
+      ) => () => void
+    )((s: StoreState) => s.items, listener, { equalityFn });
 
     // Add item - length changes from 3 to 4, should trigger
     (store.getState() as StoreState).addItem(4);
@@ -180,11 +186,16 @@ describe('Vanilla subscribeWithSelector Middleware', () => {
 
     const listener = vi.fn();
     type StoreState = { count: number; inc: () => void };
-    (store.subscribe as <U>(
-      selector: (state: StoreState) => U,
-      listener: (selectedState: U, previousSelectedState: U) => void,
-      options?: { equalityFn?: (a: U, b: U) => boolean; fireImmediately?: boolean },
-    ) => () => void)((s: StoreState) => s.count, listener, { fireImmediately: true });
+    (
+      store.subscribe as <U>(
+        selector: (state: StoreState) => U,
+        listener: (selectedState: U, previousSelectedState: U) => void,
+        options?: {
+          equalityFn?: (a: U, b: U) => boolean;
+          fireImmediately?: boolean;
+        },
+      ) => () => void
+    )((s: StoreState) => s.count, listener, { fireImmediately: true });
 
     // Should be called immediately with current state
     expect(listener).toHaveBeenCalledTimes(1);
@@ -206,7 +217,8 @@ describe('Vanilla subscribeWithSelector Middleware', () => {
       subscribeWithSelector((set) => ({
         count: 0,
         text: 'hello',
-        inc: () => set((s: { count: number; text: string }) => ({ count: s.count + 1 })),
+        inc: () =>
+          set((s: { count: number; text: string }) => ({ count: s.count + 1 })),
         setText: (text: string) => set({ text }),
       })),
     );
@@ -215,15 +227,26 @@ describe('Vanilla subscribeWithSelector Middleware', () => {
     const textListener = vi.fn();
     const bothListener = vi.fn();
 
-    type StoreState = { count: number; text: string; inc: () => void; setText: (text: string) => void };
+    type StoreState = {
+      count: number;
+      text: string;
+      inc: () => void;
+      setText: (text: string) => void;
+    };
     const subscribe = store.subscribe as <U>(
       selector: (state: StoreState) => U,
       listener: (selectedState: U, previousSelectedState: U) => void,
-      options?: { equalityFn?: (a: U, b: U) => boolean; fireImmediately?: boolean },
+      options?: {
+        equalityFn?: (a: U, b: U) => boolean;
+        fireImmediately?: boolean;
+      },
     ) => () => void;
     subscribe((s: StoreState) => s.count, countListener);
     subscribe((s: StoreState) => s.text, textListener);
-    subscribe((s: StoreState) => ({ count: s.count, text: s.text }), bothListener);
+    subscribe(
+      (s: StoreState) => ({ count: s.count, text: s.text }),
+      bothListener,
+    );
 
     // Update count
     (store.getState() as StoreState).inc();
@@ -248,17 +271,30 @@ describe('Vanilla subscribeWithSelector Middleware', () => {
       subscribeWithSelector((set) => ({
         user: { name: 'John', age: 30 },
         updateName: (name: string) =>
-          set((s: { user: { name: string; age: number }; updateName: (name: string) => void }) => ({ user: { ...s.user, name } })),
+          set(
+            (s: {
+              user: { name: string; age: number };
+              updateName: (name: string) => void;
+            }) => ({ user: { ...s.user, name } }),
+          ),
       })),
     );
 
     const listener = vi.fn();
-    type StoreState = { user: { name: string; age: number }; updateName: (name: string) => void };
-    (store.subscribe as <U>(
-      selector: (state: StoreState) => U,
-      listener: (selectedState: U, previousSelectedState: U) => void,
-      options?: { equalityFn?: (a: U, b: U) => boolean; fireImmediately?: boolean },
-    ) => () => void)((s: StoreState) => s.user, listener);
+    type StoreState = {
+      user: { name: string; age: number };
+      updateName: (name: string) => void;
+    };
+    (
+      store.subscribe as <U>(
+        selector: (state: StoreState) => U,
+        listener: (selectedState: U, previousSelectedState: U) => void,
+        options?: {
+          equalityFn?: (a: U, b: U) => boolean;
+          fireImmediately?: boolean;
+        },
+      ) => () => void
+    )((s: StoreState) => s.user, listener);
 
     // Update user - new object reference, should trigger
     (store.getState() as StoreState).updateName('Jane');
@@ -280,17 +316,31 @@ describe('Vanilla subscribeWithSelector Middleware', () => {
     const store = createStore(
       subscribeWithSelector((set) => ({
         user: { name: 'John', age: 30 },
-        updateAge: (age: number) => set((s: { user: { name: string; age: number }; updateAge: (age: number) => void }) => ({ user: { ...s.user, age } })),
+        updateAge: (age: number) =>
+          set(
+            (s: {
+              user: { name: string; age: number };
+              updateAge: (age: number) => void;
+            }) => ({ user: { ...s.user, age } }),
+          ),
       })),
     );
 
     const listener = vi.fn();
-    type StoreState = { user: { name: string; age: number }; updateAge: (age: number) => void };
-    (store.subscribe as <U>(
-      selector: (state: StoreState) => U,
-      listener: (selectedState: U, previousSelectedState: U) => void,
-      options?: { equalityFn?: (a: U, b: U) => boolean; fireImmediately?: boolean },
-    ) => () => void)((s: StoreState) => s.user, listener, { equalityFn: shallow });
+    type StoreState = {
+      user: { name: string; age: number };
+      updateAge: (age: number) => void;
+    };
+    (
+      store.subscribe as <U>(
+        selector: (state: StoreState) => U,
+        listener: (selectedState: U, previousSelectedState: U) => void,
+        options?: {
+          equalityFn?: (a: U, b: U) => boolean;
+          fireImmediately?: boolean;
+        },
+      ) => () => void
+    )((s: StoreState) => s.user, listener, { equalityFn: shallow });
 
     // Update with shallow-equal object - should NOT trigger
     store.setState({ user: { name: 'John', age: 30 } });
@@ -321,7 +371,10 @@ describe('Vanilla subscribeWithSelector Middleware', () => {
     const subscribe = store.subscribe as <U>(
       selector: (state: StoreState) => U,
       listener: (selectedState: U, previousSelectedState: U) => void,
-      options?: { equalityFn?: (a: U, b: U) => boolean; fireImmediately?: boolean },
+      options?: {
+        equalityFn?: (a: U, b: U) => boolean;
+        fireImmediately?: boolean;
+      },
     ) => () => void;
     const unsub1 = subscribe((s: StoreState) => s.count, listener1);
     const unsub2 = subscribe((s: StoreState) => s.count, listener2);
@@ -355,14 +408,16 @@ describe('Vanilla subscribeWithSelector Middleware', () => {
 
     const listener = vi.fn();
     type StoreState = { count: number; inc: () => void };
-    (store.subscribe as <U>(
-      selector: (state: StoreState) => U,
-      listener: (selectedState: U, previousSelectedState: U) => void,
-      options?: { equalityFn?: (a: U, b: U) => boolean; fireImmediately?: boolean },
-    ) => () => void)(
-      (s: StoreState) => s.count,
-      listener,
-    );
+    (
+      store.subscribe as <U>(
+        selector: (state: StoreState) => U,
+        listener: (selectedState: U, previousSelectedState: U) => void,
+        options?: {
+          equalityFn?: (a: U, b: U) => boolean;
+          fireImmediately?: boolean;
+        },
+      ) => () => void
+    )((s: StoreState) => s.count, listener);
 
     (store.getState() as StoreState).inc();
     expect(listener).toHaveBeenCalledWith(1, 0);
@@ -388,12 +443,22 @@ describe('Vanilla subscribeWithSelector Middleware', () => {
 
     const listener = vi.fn();
     // Subscribe to computed full name
-    type StoreState = { firstName: string; lastName: string; setFirstName: (firstName: string) => void; setLastName: (lastName: string) => void };
-    (store.subscribe as <U>(
-      selector: (state: StoreState) => U,
-      listener: (selectedState: U, previousSelectedState: U) => void,
-      options?: { equalityFn?: (a: U, b: U) => boolean; fireImmediately?: boolean },
-    ) => () => void)((s: StoreState) => `${s.firstName} ${s.lastName}`, listener);
+    type StoreState = {
+      firstName: string;
+      lastName: string;
+      setFirstName: (firstName: string) => void;
+      setLastName: (lastName: string) => void;
+    };
+    (
+      store.subscribe as <U>(
+        selector: (state: StoreState) => U,
+        listener: (selectedState: U, previousSelectedState: U) => void,
+        options?: {
+          equalityFn?: (a: U, b: U) => boolean;
+          fireImmediately?: boolean;
+        },
+      ) => () => void
+    )((s: StoreState) => `${s.firstName} ${s.lastName}`, listener);
 
     (store.getState() as StoreState).setFirstName('Jane');
     expect(listener).toHaveBeenCalledTimes(1);
@@ -413,7 +478,10 @@ describe('Vanilla subscribeWithSelector Middleware', () => {
     const store = createStore(
       subscribeWithSelector((set) => ({
         items: [1, 2, 3],
-        addItem: (item: number) => set((s: { items: number[]; addItem: (item: number) => void }) => ({ items: [...s.items, item] })),
+        addItem: (item: number) =>
+          set((s: { items: number[]; addItem: (item: number) => void }) => ({
+            items: [...s.items, item],
+          })),
       })),
     );
 
@@ -421,18 +489,19 @@ describe('Vanilla subscribeWithSelector Middleware', () => {
     const equalityFn = (a: number[], b: number[]) => a.length === b.length;
 
     type StoreState = { items: number[]; addItem: (item: number) => void };
-    (store.subscribe as <U>(
-      selector: (state: StoreState) => U,
-      listener: (selectedState: U, previousSelectedState: U) => void,
-      options?: { equalityFn?: (a: U, b: U) => boolean; fireImmediately?: boolean },
-    ) => () => void)(
-      (s: StoreState) => s.items,
-      listener,
-      {
-        equalityFn,
-        fireImmediately: true,
-      },
-    );
+    (
+      store.subscribe as <U>(
+        selector: (state: StoreState) => U,
+        listener: (selectedState: U, previousSelectedState: U) => void,
+        options?: {
+          equalityFn?: (a: U, b: U) => boolean;
+          fireImmediately?: boolean;
+        },
+      ) => () => void
+    )((s: StoreState) => s.items, listener, {
+      equalityFn,
+      fireImmediately: true,
+    });
 
     // Should fire immediately
     expect(listener).toHaveBeenCalledTimes(1);

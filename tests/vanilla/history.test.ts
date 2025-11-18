@@ -264,16 +264,18 @@ describe('Transaction API', () => {
   });
 
   it('supports set.transaction with options', () => {
-    const store = createStore<{ value: number; update: (val: number) => void }>((set) => ({
-      value: 0,
-      update: (val: number) =>
-        set.transaction(
-          () => {
-            set({ value: val });
-          },
-          { name: 'Custom Update' },
-        ),
-    }));
+    const store = createStore<{ value: number; update: (val: number) => void }>(
+      (set) => ({
+        value: 0,
+        update: (val: number) =>
+          set.transaction(
+            () => {
+              set({ value: val });
+            },
+            { name: 'Custom Update' },
+          ),
+      }),
+    );
 
     store.getState().update(42);
 

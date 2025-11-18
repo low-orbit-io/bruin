@@ -313,7 +313,10 @@ describe('React useShallow Hook', () => {
     const { create } = await import('../../src/react');
     const { useShallow } = await import('../../src/react/shallow');
 
-    const useStore = create<{ user: { name: string; age: number }; settings: { theme: string; lang: string } }>()(() => ({
+    const useStore = create<{
+      user: { name: string; age: number };
+      settings: { theme: string; lang: string };
+    }>()(() => ({
       user: { name: 'John', age: 30 },
       settings: { theme: 'dark', lang: 'en' },
     }));
@@ -525,10 +528,12 @@ describe('React useShallow Hook', () => {
     const { create } = await import('../../src/react');
     const { useShallow } = await import('../../src/react/shallow');
 
-    const useStore = create<{ items: number[]; config: Record<string, any> }>()(() => ({
-      items: [] as number[],
-      config: {} as Record<string, any>,
-    }));
+    const useStore = create<{ items: number[]; config: Record<string, any> }>()(
+      () => ({
+        items: [] as number[],
+        config: {} as Record<string, any>,
+      }),
+    );
 
     const renderCount = vi.fn();
 
