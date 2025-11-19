@@ -1,7 +1,9 @@
 import * as React from 'react';
 import { act } from 'react';
 
-(React as any).act = act;
+if (!React.act) {
+  (React as any).act = act;
+}
 (globalThis as any).React = React;
 
 if (typeof require !== 'undefined') {
@@ -12,8 +14,10 @@ if (typeof require !== 'undefined') {
     const module = originalRequire.apply(this, [id] as any);
 
     if (id === 'react' && module) {
-      module.act = act;
-      if (module.default) {
+      if (!module.act) {
+        module.act = act;
+      }
+      if (module.default && !module.default.act) {
         module.default.act = act;
       }
     }
@@ -23,9 +27,11 @@ if (typeof require !== 'undefined') {
 
   const reactModule = require('react');
 
-  reactModule.act = act;
+  if (!reactModule.act) {
+    reactModule.act = act;
+  }
 
-  if (reactModule.default) {
+  if (reactModule.default && !reactModule.default.act) {
     reactModule.default.act = act;
   }
 

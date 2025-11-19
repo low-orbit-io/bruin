@@ -9,18 +9,26 @@ on:
 
 permissions:
   contents: read
-  id-token: write # Required for npm provenance
+  id-token: write # Required for npm provenance AND Trusted Publishing (OIDC)
 
 jobs:
   publish:
     name: Publish to npm
     runs-on: ubuntu-latest
+
+    # Optional: Use GitHub environment for additional protection
+    # Uncomment and create "npm-publish" environment in repo settings
+    # environment: npm-publish
+
     # Only publish stable releases (not drafts or prereleases)
     # Remove this condition when using workflow_dispatch
     if: ${{ github.event_name == 'workflow_dispatch' || (!github.event.release.draft && !github.event.release.prerelease) }}
+
     steps:
       - uses: actions/checkout@v5
+
       - uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v6
         with:
           node-version: 'lts/*'
@@ -33,6 +41,9 @@ jobs:
       - name: Build
         run: pnpm run build
 
+      - name: Verify build output
+        run: pnpm run verify-build
+
       - name: Verify package.json
         run: |
           if [ ! -f "dist/package.json" ]; then
@@ -41,10 +52,9 @@ jobs:
           fi
           cat dist/package.json
 
-      - name: Publish to npm
+      - name: Publish to npm (Trusted Publishing)
         run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        # NO NODE_AUTH_TOKEN needed - npm uses OIDC automatically
         working-directory: dist
 
       - name: Upload build artifacts
