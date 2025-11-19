@@ -375,20 +375,37 @@ describe('Named Snapshots', () => {
       // Should have unique values, not all the same
       const uniqueCounts = new Set(allCounts);
       expect(uniqueCounts.size).toBeGreaterThan(1); // Not all entries should be the same
-      
+
       // CRITICAL: Verify that history entries are truly independent objects
+      // This is what the original test missed - it only checked VALUES, not OBJECT IDENTITY
+      // If all entries share the same object reference, mutating one affects all
+      const historyEntries = store.getHistory();
+      const firstHistoryEntry = historyEntries[0];
+      const lastHistoryEntry = historyEntries[historyEntries.length - 1];
+
+      // These should be different object instances (not just equal values)
+      expect(firstHistoryEntry.state).not.toBe(lastHistoryEntry.state);
+
       // Mutate one entry's state and verify others are not affected
-      const firstEntry = store.getHistory()[0];
-      const lastEntry = store.getHistory()[store.getHistory().length - 1];
-      
-      // These should be different objects
-      expect(firstEntry.state).not.toBe(lastEntry.state);
-      
-      // Mutate the first entry's state (if possible) and verify last entry is unchanged
-      if (firstEntry && firstEntry.state && typeof firstEntry.state === 'object') {
-        const originalLastCount = (lastEntry.state as any).count;
-        (firstEntry.state as any).count = 999; // Mutate first entry
-        expect((lastEntry.state as any).count).toBe(originalLastCount); // Last entry should be unchanged
+      if (
+        firstHistoryEntry &&
+        firstHistoryEntry.state &&
+        typeof firstHistoryEntry.state === 'object'
+      ) {
+        const originalLastCount = (lastHistoryEntry.state as any).count;
+        const originalFirstCount = (firstHistoryEntry.state as any).count;
+
+        // Mutate first entry
+        (firstHistoryEntry.state as any).count = 999;
+
+        // Last entry should be unchanged (proving independence)
+        expect((lastHistoryEntry.state as any).count).toBe(originalLastCount);
+
+        // First entry should be mutated
+        expect((firstHistoryEntry.state as any).count).toBe(999);
+
+        // Restore for cleanup
+        (firstHistoryEntry.state as any).count = originalFirstCount;
       }
     });
   });
