@@ -683,6 +683,13 @@ function createStoreImpl<
 
       return history;
     },
+    saveHistory: () => {
+      if (history.length > maxHistorySize) {
+        return history.slice(-maxHistorySize);
+      }
+
+      return history;
+    },
     restoreHistory: (
       statesOrEntries: T[] | HistoryEntry<T>[],
       index: number,

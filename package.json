@@ -98,7 +98,7 @@
     "copy": "shx cp -r dist/src/* dist/esm && shx cp -r dist/src/* dist && shx rm -rf dist/src && shx rm -rf dist/{src,tests} && shx cp package.json README.md LICENSE dist && json -I -f dist/package.json -e \"this.private=false; this.devDependencies=undefined; this.optionalDependencies=undefined; this.scripts=undefined; this.prettier=undefined;\"",
     "patch-old-ts": "shx touch dist/ts_version_4.5_and_above_is_required.d.ts",
     "patch-esm-ts": "node -e \"require('shelljs').find('dist/esm/**/*.d.ts').forEach(f=>{var f2=f.replace(/\\.ts$/,'.mts');require('fs').renameSync(f,f2);require('shelljs').sed('-i',/ from '(\\.[^']+)';$/,' from \\'\\$1.mjs\\';',f2);require('shelljs').sed('-i',/^declare module '(\\.[^']+)'/,'declare module \\'\\$1.mjs\\'',f2)})\"",
-    "build:tsup": "tsup --no-watch",
+    "build:tsup": "tsup",
     "build:tsup:watch": "tsup --watch",
     "verify-build": "./scripts/verify-build.sh",
     "prepublishOnly": "pnpm run build && pnpm run test && pnpm run test:lint",

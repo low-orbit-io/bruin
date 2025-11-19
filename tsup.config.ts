@@ -23,10 +23,11 @@ export default defineConfig({
   splitting: false,
   sourcemap: true,
   clean: true,
+  watch: false,
   external: ['react', 'immer', 'use-sync-external-store'],
   treeshake: true,
   minify: process.env.NODE_ENV === 'production',
-  outDir: 'dist-tsup', // Using separate output directory for testing
+  outDir: 'dist-tsup',
   esbuildOptions(options) {
     options.define = {
       'process.env.NODE_ENV': JSON.stringify(
@@ -34,6 +35,5 @@ export default defineConfig({
       ),
     };
   },
-  // Add compilerOptions for dts generation
   tsconfig: 'tsconfig.tsup.json',
 });
