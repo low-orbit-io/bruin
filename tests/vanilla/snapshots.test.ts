@@ -159,10 +159,10 @@ describe('Named Snapshots', () => {
       const snapshots = store.listSnapshots();
 
       expect(snapshots.length).toBe(2);
-      expect(snapshots[0].id).toBe(id1);
-      expect(snapshots[0].name).toBe('first');
-      expect(snapshots[1].id).toBe(id2);
-      expect(snapshots[1].name).toBe('second');
+      expect(snapshots[0]!.id).toBe(id1);
+      expect(snapshots[0]!.name).toBe('first');
+      expect(snapshots[1]!.id).toBe(id2);
+      expect(snapshots[1]!.name).toBe('second');
     });
 
     it('should include metadata in listing', () => {
@@ -173,7 +173,7 @@ describe('Named Snapshots', () => {
 
       const snapshots = store.listSnapshots();
 
-      expect(snapshots[0].metadata).toEqual(metadata);
+      expect(snapshots[0]!.metadata).toEqual(metadata);
     });
   });
 

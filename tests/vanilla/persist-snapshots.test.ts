@@ -186,13 +186,13 @@ describe('Persist Middleware - Named Snapshots Integration', () => {
       const snapshots = store.listSnapshots();
       expect(snapshots.length).toBe(2);
 
-      expect(snapshots[0].id).toBe('snap-1');
-      expect(snapshots[0].name).toBe('checkpoint-1');
+      expect(snapshots[0]!.id).toBe('snap-1');
+      expect(snapshots[0]!.name).toBe('checkpoint-1');
 
-      expect(snapshots[1].id).toBe('snap-2');
-      expect(snapshots[1].name).toBe('checkpoint-2');
-      expect(snapshots[1].description).toBe('Second checkpoint');
-      expect(snapshots[1].metadata).toEqual({ important: true });
+      expect(snapshots[1]!.id).toBe('snap-2');
+      expect(snapshots[1]!.name).toBe('checkpoint-2');
+      expect(snapshots[1]!.description).toBe('Second checkpoint');
+      expect(snapshots[1]!.metadata).toEqual({ important: true });
 
       // Verify we can load a restored snapshot
       const success = store.loadSnapshot('snap-1');
@@ -268,8 +268,8 @@ describe('Persist Middleware - Named Snapshots Integration', () => {
       // Verify only valid snapshots were restored
       const snapshots = store.listSnapshots();
       expect(snapshots.length).toBe(2);
-      expect(snapshots[0].id).toBe('valid-1');
-      expect(snapshots[1].id).toBe('valid-2');
+      expect(snapshots[0]!.id).toBe('valid-1');
+      expect(snapshots[1]!.id).toBe('valid-2');
 
       // Verify warnings were logged
       expect(warnSpy).toHaveBeenCalledTimes(4); // 3 invalid + 1 null

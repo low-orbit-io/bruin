@@ -118,9 +118,9 @@ describe('React Hooks - Named Snapshots Integration', () => {
       // List snapshots
       const snapshots = result.current.listSnapshots();
       expect(snapshots.length).toBe(3);
-      expect(snapshots[0].name).toBe('first');
-      expect(snapshots[1].name).toBe('second');
-      expect(snapshots[2].name).toBe('third');
+      expect(snapshots[0]!.name).toBe('first');
+      expect(snapshots[1]!.name).toBe('second');
+      expect(snapshots[2]!.name).toBe('third');
     });
 
     it('should handle snapshot options with metadata', () => {
