@@ -85,8 +85,8 @@ jobs:
 
       - name: Test CommonJS build
         run: |
-          node -e "const bruin = require('./dist-tsup/index.js'); console.log('CJS import successful:', typeof bruin.create === 'function');"
+          node -e "const bruin = require('./dist-tsup/index.js'); console.log('CJS import successful:', typeof bruin.createStore === 'function');"
 
       - name: Test ESM build
         run: |
-          node --input-type=module -e "import { create } from './dist-tsup/index.mjs'; console.log('ESM import successful:', typeof create === 'function');"
+          node --input-type=module -e "import { createStore } from './dist-tsup/index.mjs'; console.log('ESM import successful:', typeof createStore === 'function');"
