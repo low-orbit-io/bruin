@@ -902,10 +902,11 @@ function createStoreImpl<
       const addToHistory = options?.addToHistory !== false; // Default true
 
       if (addToHistory) {
-        // Use transaction to ensure history is updated
+        // Use transaction to ensure history is updated properly
+        // Use setState instead of direct assignment to maintain proper state flow
         api.transaction(
           () => {
-            state = restoreHistoryState(snapshot.state, state);
+            api.setState(restoreHistoryState(snapshot.state, state), true);
           },
           { name: `Restored snapshot: ${snapshot.name}` },
         );
