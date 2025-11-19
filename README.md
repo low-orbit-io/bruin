@@ -1,3 +1,5 @@
+![Bear](./docs/bear.jpg)
+
 # Bruin 🐻
 
 [![npm version](https://img.shields.io/npm/v/@low-orbit/bruin.svg)](https://www.npmjs.com/package/@low-orbit/bruin)
