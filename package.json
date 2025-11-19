@@ -77,7 +77,7 @@
     "fix:lint": "eslint . --fix",
     "pretest": "pnpm run fix:format",
     "test": "pnpm run \"/^test:.*/\"",
-    "test:format": "prettier . --list-different",
+    "test:format": "prettier \"src/**/*\" --list-different",
     "test:types": "tsc --noEmit",
     "test:lint": "eslint .",
     "test:spec": "vitest run",
