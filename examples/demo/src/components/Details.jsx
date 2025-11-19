@@ -12,12 +12,6 @@ export default function Details() {
         >
           {'<Source />'}
         </a>
-        <a
-          href="https://www.instagram.com/tina.henschel/"
-          className="bottom-left"
-        >
-          Illustrations @ Tina Henschel
-        </a>
       </div>
       <span className="header-left">Bruin</span>
     </>
