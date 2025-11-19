@@ -171,7 +171,7 @@ jobs:
         if: ${{ matrix.build == 'esm' }}
         run: |
           sed -i "s/resolve('\.\/src\(.*\)\.ts')/resolve('\.\/dist\/esm\1.mjs')/" vitest.config.mts
-          find tests -name "*.tsx" -exec sed -i "1s/^/import.meta.env=import.meta.env||{};import.meta.env.MODE='${NODE_ENV}';/" {} +
+          find tests -name "*.tsx" -exec sh -c "sed -i \"1s|^|import.meta.env=import.meta.env||{};import.meta.env.MODE='${NODE_ENV}';|\" \"\$1\"" _ {} \;
         env:
           NODE_ENV: ${{ matrix.env }}
 

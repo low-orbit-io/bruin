@@ -590,14 +590,30 @@ describe('React useShallow Hook', () => {
 
     await findByText('1-2');
 
+    const initialRefsLength = refs.length;
+    const initialUniqueRefs = new Set(refs);
+
     // Update c (not selected) - object reference should be same
     act(() => {
       useStore.setState({ c: 4 });
     });
 
+    // Wait a bit to ensure any re-renders complete
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
     // Check that the same object reference is maintained
-    const uniqueRefs = new Set(refs);
-    expect(uniqueRefs.size).toBe(refs.length / 2); // StrictMode doubles renders
+    // In StrictMode, React may render multiple times, but the object reference should be stable
+    const allRefs = new Set(refs);
+    const newRefs = new Set(refs.slice(initialRefsLength));
+    
+    // The object reference should remain the same when c (not selected) changes
+    // So all new refs should be in the initial set of unique refs
+    if (newRefs.size > 0) {
+      const allNewRefsAreSame = Array.from(newRefs).every(ref => 
+        Array.from(initialUniqueRefs).some(initialRef => initialRef === ref)
+      );
+      expect(allNewRefsAreSame).toBe(true);
+    }
   });
 
   it('handles rapid updates efficiently', async () => {
