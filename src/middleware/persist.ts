@@ -1,4 +1,5 @@
 import type {
+  HistoryEntry,
   SetStateWithTransaction,
   StateCreator,
   StoreApi,
@@ -16,7 +17,7 @@ export type StorageValue<S> = {
   state: S;
   version?: number;
   persistHistory?: boolean;
-  history?: S[];
+  history?: S[] | Array<{ state: S; timestamp: number; name?: string }>;
   historyIndex?: number;
 };
 
@@ -229,13 +230,15 @@ const persistImpl: PersistImpl =
 
       if (options.persistHistory && api.getHistory) {
         const history = api.getHistory();
-        const historyStates = history.map((entry: any) =>
-          options.partialize({ ...entry.state }),
-        );
+        const historyEntries = history.map((entry: any) => ({
+          state: options.partialize({ ...entry.state }),
+          timestamp: entry.timestamp,
+          ...(entry.name !== undefined && { name: entry.name }),
+        }));
         const currentIndex = history.length - 1;
 
         storageValue.persistHistory = true;
-        storageValue.history = historyStates;
+        storageValue.history = historyEntries;
         storageValue.historyIndex = currentIndex;
       }
 
@@ -338,13 +341,49 @@ const persistImpl: PersistImpl =
                 api.restoreHistory;
 
               if (shouldRestoreHistory) {
-                const mergedHistory = storageValue.history!.map(
-                  (historyState: any) => {
-                    return options.merge(historyState, configResult);
-                  },
-                );
+                // Handle both formats: array of states (old) or array of history entries (new)
+                const historyArray = storageValue.history!;
 
-                api.restoreHistory!(mergedHistory, storageValue.historyIndex!);
+                // Type guard to check if item is a history entry
+                const isHistoryEntryFormat = (
+                  item: S | HistoryEntry<S>,
+                ): item is HistoryEntry<S> => {
+                  return (
+                    typeof item === 'object' &&
+                    item !== null &&
+                    'state' in item &&
+                    'timestamp' in item
+                  );
+                };
+
+                const firstItem = historyArray[0];
+                const isEntryFormat =
+                  firstItem !== undefined && isHistoryEntryFormat(firstItem);
+
+                if (isEntryFormat) {
+                  // New format: full history entry with state, timestamp, name
+                  const mergedHistoryEntries: HistoryEntry<S>[] =
+                    historyArray.map((item) => {
+                      const entry = item as HistoryEntry<S>;
+                      return {
+                        state: options.merge(entry.state, configResult),
+                        timestamp: entry.timestamp,
+                        ...(entry.name !== undefined && { name: entry.name }),
+                      };
+                    });
+
+                  api.restoreHistory!(
+                    mergedHistoryEntries,
+                    storageValue.historyIndex!,
+                  );
+                } else {
+                  // Old format: just state object
+                  const mergedStates: S[] = historyArray.map((item) =>
+                    options.merge(item as S, configResult),
+                  );
+
+                  api.restoreHistory!(mergedStates, storageValue.historyIndex!);
+                }
               } else {
                 set(stateFromStorage as S, true);
               }

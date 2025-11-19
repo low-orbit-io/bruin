@@ -747,7 +747,211 @@ describe('Persist Middleware - History Persistence (Bruin Feature)', () => {
 
     expect(stored.history).toBeDefined();
     expect(stored.history.length).toBe(1);
-    expect(stored.history[0].count).toBe(2);
+    // History entries now include state, timestamp, and optionally name
+    expect(stored.history[0].state).toBeDefined();
+    expect(stored.history[0].state.count).toBe(2);
+    expect(stored.history[0].timestamp).toBeDefined();
     expect(stored.historyIndex).toBe(0);
+  });
+
+  it('applies partialize to history entries when persistHistory: true', async () => {
+    const { create } = await import('../../src/react');
+    const { persist, createJSONStorage } = await import(
+      '../../src/middleware/persist'
+    );
+
+    const { storage, setItemSpy } = createPersistentStore(null);
+
+    const useStore = create<{
+      count: number;
+      temp: string;
+      inc: () => void;
+    }>()(
+      persist(
+        (set) => ({
+          count: 0,
+          temp: 'temporary',
+          inc: () => set((s) => ({ count: s.count + 1 })),
+        }),
+        {
+          name: 'test-storage',
+          storage: createJSONStorage(() => storage),
+          persistHistory: true,
+          partialize: (state) => ({ count: state.count }),
+        },
+      ),
+    );
+
+    useStore.getState().inc();
+    useStore.getState().inc();
+
+    const lastCall = setItemSpy.mock.calls[setItemSpy.mock.calls.length - 1];
+    if (!lastCall) throw new Error('No storage call found');
+    const stored = JSON.parse(lastCall[1]);
+
+    expect(stored.persistHistory).toBe(true);
+    expect(stored.history).toBeDefined();
+    expect(Array.isArray(stored.history)).toBe(true);
+
+    stored.history.forEach((entry: any) => {
+      // History entries now include state, timestamp, and optionally name
+      expect(entry.state).toBeDefined();
+      expect(entry.state.count).toBeDefined();
+      expect(entry.state.temp).toBeUndefined();
+      expect(entry.timestamp).toBeDefined();
+    });
+
+    expect(stored.state.count).toBeDefined();
+    expect(stored.state.temp).toBeUndefined();
+  });
+
+  it('uses merge function for history restoration when persistHistory: true', async () => {
+    const { create } = await import('../../src/react');
+    const { persist, createJSONStorage } = await import(
+      '../../src/middleware/persist'
+    );
+
+    const mergeSpy = vi.fn((persisted, current) => ({
+      ...current,
+      ...persisted,
+    }));
+
+    const storage = {
+      getItem: () =>
+        JSON.stringify({
+          state: { count: 2 },
+          version: 0,
+          persistHistory: true,
+          history: [{ count: 0 }, { count: 1 }, { count: 2 }],
+          historyIndex: 2,
+        }),
+      setItem: () => {},
+      removeItem: () => {},
+    };
+
+    const useStore = create<{ count: number; name: string; inc: () => void }>()(
+      persist(
+        (set) => ({
+          count: 0,
+          name: 'initial',
+          inc: () => set((s: { count: number }) => ({ count: s.count + 1 })),
+        }),
+        {
+          name: 'test-storage',
+          storage: createJSONStorage(() => storage),
+          persistHistory: true,
+          merge: mergeSpy,
+        },
+      ),
+    );
+
+    expect(useStore.getState().count).toBe(2);
+    expect(mergeSpy).toHaveBeenCalled();
+
+    const history = useStore.getHistory();
+    expect(history.length).toBeGreaterThan(0);
+
+    useStore.undo();
+    expect(useStore.getState().count).toBe(1);
+  });
+
+  it('persists transaction history correctly when persistHistory: true', async () => {
+    const { create } = await import('../../src/react');
+    const { persist, createJSONStorage } = await import(
+      '../../src/middleware/persist'
+    );
+
+    const { storage, setItemSpy } = createPersistentStore(null);
+
+    const useStore = create<{
+      count: number;
+      name: string;
+      updateBoth: () => void;
+    }>()(
+      persist(
+        (set) => ({
+          count: 0,
+          name: 'initial',
+          updateBoth: () =>
+            set.transaction(
+              () => {
+                set({ count: 10 });
+                set({ name: 'updated' });
+              },
+              { name: 'Update both' },
+            ),
+        }),
+        {
+          name: 'test-storage',
+          storage: createJSONStorage(() => storage),
+          persistHistory: true,
+        },
+      ),
+    );
+
+    useStore.getState().updateBoth();
+
+    const lastCall = setItemSpy.mock.calls[setItemSpy.mock.calls.length - 1];
+    if (!lastCall) throw new Error('No storage call found');
+    const stored = JSON.parse(lastCall[1]);
+
+    expect(stored.persistHistory).toBe(true);
+    expect(stored.history).toBeDefined();
+    expect(Array.isArray(stored.history)).toBe(true);
+
+    const history = useStore.getHistory();
+    expect(history.length).toBeGreaterThan(0);
+
+    const transactionEntry = history.find(
+      (entry: any) => entry.name === 'Update both',
+    );
+    expect(transactionEntry).toBeDefined();
+    expect(transactionEntry?.state.count).toBe(10);
+    expect(transactionEntry?.state.name).toBe('updated');
+  });
+
+  it('respects maxHistorySize in persisted history when persistHistory: true', async () => {
+    const { createStore } = await import('../../src/vanilla');
+    const { persist, createJSONStorage } = await import(
+      '../../src/middleware/persist'
+    );
+
+    const { storage, setItemSpy } = createPersistentStore(null);
+
+    const store = createStore<{ count: number; inc: () => void }>()(
+      persist(
+        (set) => ({
+          count: 0,
+          inc: () => set((s) => ({ count: s.count + 1 })),
+        }),
+        {
+          name: 'test-storage',
+          storage: createJSONStorage(() => storage),
+          persistHistory: true,
+        },
+      ),
+      {
+        maxHistorySize: 3,
+      },
+    );
+
+    for (let i = 0; i < 10; i++) {
+      store.getState().inc();
+    }
+
+    const lastCall = setItemSpy.mock.calls[setItemSpy.mock.calls.length - 1];
+    if (!lastCall) throw new Error('No storage call found');
+    const stored = JSON.parse(lastCall[1]);
+
+    expect(stored.persistHistory).toBe(true);
+    expect(stored.history).toBeDefined();
+    expect(Array.isArray(stored.history)).toBe(true);
+
+    const inMemoryHistory = store.getHistory();
+    expect(inMemoryHistory.length).toBeLessThanOrEqual(3);
+
+    expect(stored.history.length).toBeLessThanOrEqual(3);
+    expect(stored.historyIndex).toBeLessThan(3);
+    expect(stored.historyIndex).toBe(inMemoryHistory.length - 1);
   });
 });

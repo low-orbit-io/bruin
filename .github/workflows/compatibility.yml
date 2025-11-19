@@ -1,0 +1,181 @@
+name: Compatibility
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    types: [opened, synchronize]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # Test TypeScript version compatibility
+  typescript-versions:
+    name: TypeScript ${{ matrix.typescript }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        typescript:
+          - 5.9.2
+          - 5.8.3
+          - 5.7.3
+          - 5.6.3
+          - 5.5.4
+          - 5.4.5
+          - 5.3.3
+          - 5.2.2
+          - 5.1.6
+          - 5.0.4
+          - 4.9.5
+          - 4.8.4
+          - 4.7.4
+          - 4.6.4
+          - 4.5.5
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+      - run: pnpm install
+
+      # Download build artifact from CI workflow
+      - name: Download build
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+        continue-on-error: true
+
+      # Build if artifact not available (e.g., running standalone)
+      - name: Build if needed
+        run: |
+          if [ ! -d "dist" ]; then
+            pnpm run build
+          fi
+
+      - name: Patch for all TS versions
+        run: |
+          sed -i '' 's/"isolatedDeclarations": true,//' tsconfig.json
+
+      - name: Patch for v4/v3 TS
+        if: ${{ startsWith(matrix.typescript, '4.') || startsWith(matrix.typescript, '3.') }}
+        run: |
+          sed -i '' 's/"verbatimModuleSyntax": true,//' tsconfig.json
+
+      - name: Patch for old TS
+        run: |
+          sed -i '' 's/"moduleResolution": "bundler",/"moduleResolution": "node",/' tsconfig.json
+          sed -i '' 's/"allowImportingTsExtensions": true,//' tsconfig.json
+          sed -i '' 's/"bruin": \["\.\/src\/index\.ts"\],/"bruin": [".\/dist\/index.d.ts"],/' tsconfig.json
+          sed -i '' 's/"bruin\/\*": \["\.\/src\/\*\.ts"\]/"bruin\/*": [".\/dist\/*.d.ts"]/' tsconfig.json
+          sed -i '' 's/"include": .*/"include": ["src\/types.d.ts", "dist\/**\/*", "tests\/**\/*"],/' tsconfig.json
+          pnpm json -I -f package.json -e "this.resolutions={}; this.resolutions['@types/node']='18.13.0';"
+          pnpm add -D @types/node@18.13.0
+
+      - name: Install TypeScript ${{ matrix.typescript }}
+        run: pnpm add -D typescript@${{ matrix.typescript }}
+
+      - name: Type check
+        run: pnpm run test:types
+
+  # Test React version compatibility
+  react-versions:
+    name: React ${{ matrix.react }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        react:
+          - 18.0.0
+          - 18.1.0
+          - 18.2.0
+          - 18.3.1
+          - 19.0.0
+          - 19.1.0
+          - 19.2.0-canary-0bdb9206-20250818
+          - 0.0.0-experimental-0bdb9206-20250818
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+      - run: pnpm install
+
+      - name: Install React ${{ matrix.react }}
+        run: pnpm add -D react@${{ matrix.react }} react-dom@${{ matrix.react }}
+
+      - name: Run tests
+        run: pnpm run test:spec
+
+  # Test built artifacts (CJS/ESM, dev/prod)
+  build-variants:
+    name: Build ${{ matrix.build }} (${{ matrix.env }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        build: [cjs, esm]
+        env: [development, production]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+      - run: pnpm install
+
+      # Download build artifact from CI workflow
+      - name: Download build
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+        continue-on-error: true
+
+      # Build if artifact not available (e.g., running standalone)
+      - name: Build if needed
+        run: |
+          if [ ! -d "dist" ]; then
+            pnpm run build
+          fi
+
+      - name: Patch for DEV-ONLY
+        if: ${{ matrix.env == 'development' }}
+        run: |
+          find tests -name "*.tsx" -exec sed -i '' "s/it[.a-zA-Z]*('\[DEV-ONLY\]/it('/" {} +
+          find tests -name "*.tsx" -exec sed -i '' "s/it[.a-zA-Z]*('\[PRD-ONLY\]/it.skip('/" {} +
+
+      - name: Patch for PRD-ONLY
+        if: ${{ matrix.env == 'production' }}
+        run: |
+          find tests -name "*.tsx" -exec sed -i '' "s/it[.a-zA-Z]*('\[PRD-ONLY\]/it('/" {} +
+          find tests -name "*.tsx" -exec sed -i '' "s/it[.a-zA-Z]*('\[DEV-ONLY\]/it.skip('/" {} +
+
+      - name: Patch for CJS
+        if: ${{ matrix.build == 'cjs' }}
+        run: |
+          sed -i '' "s/resolve('\.\/src\(.*\)\.ts')/resolve('\.\/dist\1.js')/" vitest.config.mts
+
+      - name: Patch for ESM
+        if: ${{ matrix.build == 'esm' }}
+        run: |
+          sed -i '' "s/resolve('\.\/src\(.*\)\.ts')/resolve('\.\/dist\/esm\1.mjs')/" vitest.config.mts
+          find tests -name "*.tsx" -exec sed -i '' "1s/^/import.meta.env=import.meta.env||{};import.meta.env.MODE='${NODE_ENV}';/" {} +
+        env:
+          NODE_ENV: ${{ matrix.env }}
+
+      - name: Run tests
+        run: pnpm run test:spec
+        env:
+          NODE_ENV: ${{ matrix.env }}

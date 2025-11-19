@@ -1,12 +1,23 @@
 name: Publish
 
+# DISABLED: Change to 'release' trigger when ready to publish
 on:
-  release:
-    types: [published]
+  workflow_dispatch:
+  # Uncomment when ready to enable automatic publishing:
+  # release:
+  #   types: [published]
+
+permissions:
+  contents: read
+  id-token: write # Required for npm provenance
 
 jobs:
   publish:
+    name: Publish to npm
     runs-on: ubuntu-latest
+    # Only publish stable releases (not drafts or prereleases)
+    # Remove this condition when using workflow_dispatch
+    if: ${{ github.event_name == 'workflow_dispatch' || (!github.event.release.draft && !github.event.release.prerelease) }}
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
@@ -15,9 +26,31 @@ jobs:
           node-version: 'lts/*'
           registry-url: 'https://registry.npmjs.org'
           cache: 'pnpm'
-      - run: pnpm install
-      - run: pnpm run build
-      - run: npm publish
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Verify package.json
+        run: |
+          if [ ! -f "dist/package.json" ]; then
+            echo "Error: dist/package.json not found"
+            exit 1
+          fi
+          cat dist/package.json
+
+      - name: Publish to npm
+        run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         working-directory: dist
+
+      - name: Upload build artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: publish-dist
+          path: dist/
+          retention-days: 30

@@ -75,6 +75,7 @@
     "fix": "pnpm run fix:lint && pnpm run fix:format",
     "fix:format": "prettier . --write",
     "fix:lint": "eslint . --fix",
+    "pretest": "pnpm run fix:format",
     "test": "pnpm run \"/^test:.*/\"",
     "test:format": "prettier . --list-different",
     "test:types": "tsc --noEmit",
@@ -118,7 +119,7 @@
   "homepage": "https://github.com/low-orbit-io/bruin",
   "packageManager": "pnpm@10.22.0",
   "devDependencies": {
-    "happy-dom": "^16.7.1",
+    "happy-dom": "^20.0.10",
     "@eslint/js": "^9.39.1",
     "@redux-devtools/extension": "^3.3.0",
     "@rollup/plugin-alias": "^6.0.0",

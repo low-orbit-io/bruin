@@ -565,12 +565,33 @@ function createStoreImpl<
 
       return history;
     },
-    restoreHistory: (states: T[], index: number) => {
+    restoreHistory: (
+      statesOrEntries: T[] | HistoryEntry<T>[],
+      index: number,
+    ) => {
       // Restore history from persist middleware
-      history = states.map((s) => ({
-        state: s,
-        timestamp: Date.now(),
-      }));
+      // Support both formats: array of states or array of history entries
+      const isEntryFormat =
+        statesOrEntries.length > 0 &&
+        typeof statesOrEntries[0] === 'object' &&
+        statesOrEntries[0] !== null &&
+        'state' in statesOrEntries[0];
+
+      if (isEntryFormat) {
+        // New format: full history entries with metadata
+        history = (statesOrEntries as HistoryEntry<T>[]).map((entry) => ({
+          state: entry.state,
+          timestamp: entry.timestamp ?? Date.now(),
+          ...(entry.name !== undefined && { name: entry.name }),
+        }));
+      } else {
+        // Old format: just states
+        history = (statesOrEntries as T[]).map((s) => ({
+          state: s,
+          timestamp: Date.now(),
+        }));
+      }
+
       historyIndex = index;
 
       // Set current state to the state at the given index

@@ -80,7 +80,10 @@ export type StoreApi<T> = {
   canRedo: () => boolean;
   transaction: StoreTransaction<T>;
   getHistory: () => any[];
-  restoreHistory?: (states: T[], index: number) => void;
+  restoreHistory?: (
+    statesOrEntries: T[] | HistoryEntry<T>[],
+    index: number,
+  ) => void;
   clearHistory?: () => void;
 };
 
