@@ -30,7 +30,10 @@ Bruin is a fast, scalable state management library for React and JavaScript that
   - `store.undo()` - Go back one state
   - `store.redo()` - Go forward one state
   - `store.getHistory()` - View all state changes
+  - `store.getHistoryMemoryUsage()` - Monitor memory usage
   - `store.clearHistory()` - Clear history
+  - Memory-based limits to prevent unbounded growth
+  - Custom size estimation for complex data structures
   - Action naming for better debugging
 
 - **Transactions**: Batch multiple updates into one atomic change

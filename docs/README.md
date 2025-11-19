@@ -67,6 +67,19 @@ const store = useStore.getState();
 store.undo(); // Go back
 store.redo(); // Go forward
 store.getHistory(); // View all states
+store.getHistoryMemoryUsage(); // Monitor memory usage
+```
+
+Configure memory limits to prevent unbounded growth:
+
+```ts
+const useStore = create(
+  (set) => ({ count: 0 }),
+  {
+    maxHistorySize: 100, // Max 100 entries
+    maxHistoryMemory: 25 * 1024 * 1024, // OR max 25MB
+  },
+);
 ```
 
 ### Transactions
@@ -89,6 +102,7 @@ All Zustand middleware works, plus:
 
 - Persist middleware can save/restore history
 - Devtools middleware shows history timeline
+- Memory-based history limits to prevent unbounded growth
 - Full TypeScript support
 
 ## Contributing

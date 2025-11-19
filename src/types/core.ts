@@ -85,6 +85,7 @@ export type StoreApi<T> = {
     index: number,
   ) => void;
   clearHistory?: () => void;
+  getHistoryMemoryUsage: () => HistoryMemoryInfo;
 };
 
 export type SetStateWithTransaction<T> = StoreSetState<T> & {
@@ -111,4 +112,22 @@ export type CreateStoreOptions = {
   maxHistorySize?: number;
   computedFields?: string[];
   debounce?: number;
+  maxHistoryMemory?: number;
+  estimateSize?: <T>(state: T) => number;
+  onMemoryLimitReached?: (info: MemoryLimitInfo) => void;
 };
+
+export interface MemoryLimitInfo {
+  currentMemory: number;
+  maxMemory: number;
+  historyLength: number;
+  entriesRemoved: number;
+}
+
+export interface HistoryMemoryInfo {
+  totalBytes: number;
+  averageBytes: number;
+  entryCount: number;
+  maxBytes?: number;
+  utilizationPercent?: number;
+}

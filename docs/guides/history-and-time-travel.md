@@ -159,9 +159,12 @@ if (store.canRedo()) {
   store.redo();
 }
 
-// Jump to specific point in history
+// Get history
 const history = store.getHistory();
-store.jumpToHistoryIndex(2); // Go to third state
+
+// Check memory usage
+const memInfo = store.getHistoryMemoryUsage();
+console.log(`History using ${memInfo.totalBytes} bytes`);
 ```
 
 ## Clearing History
@@ -308,8 +311,80 @@ const useStore = create(
     increment: () => set((state) => ({ count: state.count + 1 })),
   }),
   {
-    historyLimit: 50, // Keep last 50 states (default: unlimited)
-    enableHistory: true, // Enable/disable history (default: true)
+    maxHistorySize: 50, // Keep last 50 states (default: 50)
+    maxHistoryMemory: 10 * 1024 * 1024, // Max 10MB of history (optional)
+    estimateSize: (state) => {
+      // Custom size estimator (optional)
+      return JSON.stringify(state).length;
+    },
+    onMemoryLimitReached: (info) => {
+      // Callback when memory limit is hit (optional)
+      console.warn(`History memory limit reached. Removed ${info.entriesRemoved} entries.`);
+    },
+  },
+);
+```
+
+### Memory Management
+
+Bruin includes built-in memory estimation to prevent unbounded memory growth in long-running applications. You can set both count-based and memory-based limits:
+
+```ts
+const useStore = create(
+  (set) => ({
+    data: [],
+    addItem: (item) => set((s) => ({ data: [...s.data, item] })),
+  }),
+  {
+    maxHistorySize: 100, // Max 100 entries
+    maxHistoryMemory: 25 * 1024 * 1024, // OR max 25MB
+    // Whichever limit is hit first removes old entries
+  },
+);
+```
+
+#### Monitoring Memory Usage
+
+Check current history memory usage:
+
+```ts
+const store = useStore.getState();
+const memInfo = store.getHistoryMemoryUsage();
+
+console.log(`Total: ${memInfo.totalBytes} bytes`);
+console.log(`Average: ${memInfo.averageBytes} bytes per entry`);
+console.log(`Entries: ${memInfo.entryCount}`);
+
+if (memInfo.maxBytes) {
+  console.log(`Limit: ${memInfo.maxBytes} bytes`);
+  console.log(`Usage: ${memInfo.utilizationPercent}%`);
+}
+```
+
+#### Custom Size Estimation
+
+For stores with complex data structures, provide a custom size estimator:
+
+```ts
+const useStore = create(
+  (set) => ({
+    images: [],
+    documents: [],
+  }),
+  {
+    maxHistoryMemory: 50 * 1024 * 1024, // 50MB
+    estimateSize: (state) => {
+      let size = 0;
+      // Images: base64 strings are ~1.33x original size
+      state.images.forEach(img => {
+        size += img.data.length * 0.75;
+      });
+      // Documents: already know their size
+      state.documents.forEach(doc => {
+        size += doc.sizeBytes;
+      });
+      return size;
+    },
   },
 );
 ```
@@ -319,12 +394,18 @@ const useStore = create(
 1. **Name your actions** - Makes debugging much easier
 2. **Skip trivial updates** - Use `skipHistory` for UI-only state
 3. **Set history limits** - Prevent memory issues in long-running apps
-4. **Clear history strategically** - After major workflows or user actions
-5. **Use with DevTools** - Visualize your state changes
-6. **Understand state restoration** - Remember that undo restores the entire
+   - Use `maxHistorySize` for count-based limits
+   - Use `maxHistoryMemory` for memory-based limits (recommended for large states)
+   - Both limits work together - whichever is hit first removes old entries
+4. **Monitor memory usage** - Use `getHistoryMemoryUsage()` to track memory consumption
+5. **Clear history strategically** - After major workflows or user actions
+6. **Use with DevTools** - Visualize your state changes
+7. **Understand state restoration** - Remember that undo restores the entire
    state, not just changed fields
-7. **Isolate concerns** - Use separate stores for independent domains to benefit
+8. **Isolate concerns** - Use separate stores for independent domains to benefit
    from per-store history isolation
+9. **Custom size estimation** - For stores with binary data or complex structures,
+   provide a custom `estimateSize` function for more accurate memory tracking
 
 ## TypeScript
 

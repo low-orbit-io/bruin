@@ -4,6 +4,7 @@ import type {
   ExtractStateCreatorMutators,
   Get,
   HistoryEntry,
+  HistoryMemoryInfo,
   Mutate,
   SetStateWithTransaction,
   StateCreator,
@@ -28,6 +29,84 @@ export type {
   SetStateWithTransaction,
 } from './types/core';
 
+function estimateObjectSize(obj: any, seen = new WeakSet()): number {
+  if (obj === null) {
+    return 4;
+  }
+
+  const type = typeof obj;
+
+  switch (type) {
+    case 'boolean':
+      return 4;
+    case 'number':
+      return 8;
+    case 'string':
+      return obj.length * 2;
+    case 'symbol':
+      return 8;
+    case 'undefined':
+      return 0;
+    case 'function':
+      return 0;
+  }
+
+  if (seen.has(obj)) {
+    return 0;
+  }
+  seen.add(obj);
+
+  let size = 0;
+
+  if (Array.isArray(obj)) {
+    size = 24;
+    for (let i = 0; i < obj.length; i++) {
+      size += estimateObjectSize(obj[i], seen);
+    }
+    return size;
+  }
+
+  if (obj instanceof Map) {
+    size = 24;
+    obj.forEach((value, key) => {
+      size += estimateObjectSize(key, seen);
+      size += estimateObjectSize(value, seen);
+    });
+    return size;
+  }
+
+  if (obj instanceof Set) {
+    size = 24;
+    obj.forEach((value) => {
+      size += estimateObjectSize(value, seen);
+    });
+    return size;
+  }
+
+  if (obj instanceof Date) {
+    return 24;
+  }
+
+  if (obj instanceof RegExp) {
+    return 24 + obj.source.length * 2;
+  }
+
+  if (type === 'object') {
+    size = 24;
+
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        size += key.length * 2;
+        size += estimateObjectSize(obj[key], seen);
+      }
+    }
+
+    return size;
+  }
+
+  return 0;
+}
+
 function createStoreImpl<
   T,
   Mos extends [StoreMutatorIdentifier, unknown][] = [],
@@ -44,8 +123,78 @@ function createStoreImpl<
   let transactionPrevState: T | null = null;
 
   const maxHistorySize = options?.maxHistorySize ?? 50;
+  const maxHistoryMemory = options?.maxHistoryMemory;
+  const customSizeEstimator = options?.estimateSize;
+  const onMemoryLimitReached = options?.onMemoryLimitReached;
   const debounceMs = options?.debounce;
   const listeners = new Set<(state: T, prevState: T) => void>();
+
+  let historyMemoryUsage = 0;
+  const historySizes: number[] = [];
+
+  const estimateEntrySize = (entry: HistoryEntry<T>): number => {
+    if (customSizeEstimator) {
+      return customSizeEstimator(entry.state);
+    }
+
+    const stateSize = estimateObjectSize(entry.state);
+    const metadataSize =
+      8 + (entry.name ? entry.name.length * 2 : 0);
+
+    return stateSize + metadataSize;
+  };
+
+  const addToHistory = (newEntry: HistoryEntry<T>) => {
+    const entrySize = estimateEntrySize(newEntry);
+
+    if (historyIndex < history.length - 1) {
+      const removedCount = history.length - historyIndex - 1;
+      for (let i = 0; i < removedCount; i++) {
+        const removedSize = historySizes.pop() || 0;
+        historyMemoryUsage -= removedSize;
+      }
+      history = history.slice(0, historyIndex + 1);
+    }
+
+    history.push(newEntry);
+    historySizes.push(entrySize);
+    historyMemoryUsage += entrySize;
+    historyIndex = history.length - 1;
+
+    let removedByCount = 0;
+    if (history.length > maxHistorySize + 1) {
+      const removeCount = history.length - (maxHistorySize + 1);
+      removedByCount = removeCount;
+
+      for (let i = 0; i < removeCount; i++) {
+        const removedSize = historySizes.shift() || 0;
+        historyMemoryUsage -= removedSize;
+      }
+
+      history = history.slice(removeCount);
+      historyIndex = history.length - 1;
+    }
+
+    let removedByMemory = 0;
+    if (maxHistoryMemory && historyMemoryUsage > maxHistoryMemory) {
+      while (historyMemoryUsage > maxHistoryMemory && history.length > 1) {
+        const removedSize = historySizes.shift() || 0;
+        historyMemoryUsage -= removedSize;
+        history.shift();
+        historyIndex--;
+        removedByMemory++;
+      }
+
+      if (onMemoryLimitReached && removedByMemory > 0) {
+        onMemoryLimitReached({
+          currentMemory: historyMemoryUsage,
+          maxMemory: maxHistoryMemory,
+          historyLength: history.length,
+          entriesRemoved: removedByMemory,
+        });
+      }
+    }
+  };
 
   type PathListener = {
     listener: (state: T, prevState: T) => void;
@@ -216,20 +365,10 @@ function createStoreImpl<
     debouncePendingSkipHistory = null;
 
     if (!skipHistory) {
-      if (historyIndex < history.length - 1) {
-        history = history.slice(0, historyIndex + 1);
-      }
-
-      history.push({
+      addToHistory({
         state: cloneStateForHistory(pendingState),
         timestamp: Date.now(),
       });
-
-      if (history.length > maxHistorySize + 1) {
-        history = history.slice(-(maxHistorySize + 1));
-      }
-
-      historyIndex = history.length - 1;
     }
 
     notifyListeners(pendingState, pendingPrevState);
@@ -352,20 +491,10 @@ function createStoreImpl<
             flushDebouncedHistory();
           }, debounceMs);
         } else {
-          if (historyIndex < history.length - 1) {
-            history = history.slice(0, historyIndex + 1);
-          }
-
-          history.push({
+          addToHistory({
             state: cloneStateForHistory(state),
             timestamp: Date.now(),
           });
-
-          if (history.length > maxHistorySize + 1) {
-            history = history.slice(-(maxHistorySize + 1));
-          }
-
-          historyIndex = history.length - 1;
 
           notifyListeners(state, prevState);
         }
@@ -522,10 +651,6 @@ function createStoreImpl<
 
         if (!Object.is(state, startState)) {
           if (!txOptions?.skipHistory) {
-            if (historyIndex < history.length - 1) {
-              history = history.slice(0, historyIndex + 1);
-            }
-
             const entry: HistoryEntry<T> = {
               state: cloneStateForHistory(state),
               timestamp: Date.now(),
@@ -535,13 +660,7 @@ function createStoreImpl<
               entry.name = txOptions.name;
             }
 
-            history.push(entry);
-
-            if (history.length > maxHistorySize + 1) {
-              history = history.slice(-(maxHistorySize + 1));
-            }
-
-            historyIndex = history.length - 1;
+            addToHistory(entry);
           }
 
           if (transactionPrevState !== null) {
@@ -569,8 +688,6 @@ function createStoreImpl<
       statesOrEntries: T[] | HistoryEntry<T>[],
       index: number,
     ) => {
-      // Restore history from persist middleware
-      // Support both formats: array of states or array of history entries
       const isEntryFormat =
         statesOrEntries.length > 0 &&
         typeof statesOrEntries[0] === 'object' &&
@@ -578,23 +695,31 @@ function createStoreImpl<
         'state' in statesOrEntries[0];
 
       if (isEntryFormat) {
-        // New format: full history entries with metadata
         history = (statesOrEntries as HistoryEntry<T>[]).map((entry) => ({
           state: entry.state,
           timestamp: entry.timestamp ?? Date.now(),
           ...(entry.name !== undefined && { name: entry.name }),
         }));
       } else {
-        // Old format: just states
         history = (statesOrEntries as T[]).map((s) => ({
           state: s,
           timestamp: Date.now(),
         }));
       }
 
+      historySizes.length = 0;
+      historyMemoryUsage = 0;
+      for (let i = 0; i < history.length; i++) {
+        const entry = history[i];
+        if (entry) {
+          const size = estimateEntrySize(entry);
+          historySizes.push(size);
+          historyMemoryUsage += size;
+        }
+      }
+
       historyIndex = index;
 
-      // Set current state to the state at the given index
       if (historyIndex >= 0 && historyIndex < history.length) {
         const historyEntry = history[historyIndex];
         if (historyEntry) {
@@ -603,14 +728,33 @@ function createStoreImpl<
       }
     },
     clearHistory: () => {
-      // Clear history and reset to current state only
-      history = [
-        {
-          state: cloneStateForHistory(state),
-          timestamp: Date.now(),
-        },
-      ];
-      historyIndex = 0;
+      history = [];
+      historySizes.length = 0;
+      historyMemoryUsage = 0;
+      historyIndex = -1;
+      addToHistory({
+        state: cloneStateForHistory(state),
+        timestamp: Date.now(),
+      });
+    },
+    getHistoryMemoryUsage: (): HistoryMemoryInfo => {
+      const entryCount = history.length;
+      const averageBytes = entryCount > 0 ? historyMemoryUsage / entryCount : 0;
+
+      const info: HistoryMemoryInfo = {
+        totalBytes: historyMemoryUsage,
+        averageBytes: Math.round(averageBytes),
+        entryCount,
+      };
+
+      if (maxHistoryMemory) {
+        info.maxBytes = maxHistoryMemory;
+        info.utilizationPercent = Math.round(
+          (historyMemoryUsage / maxHistoryMemory) * 100,
+        );
+      }
+
+      return info;
     },
   };
 
@@ -653,15 +797,11 @@ function createStoreImpl<
 
   const initialState: T = state;
 
-  // Only push initial state to history if history is empty
-  // (history may already be populated by persist middleware's restoreHistory)
   if (history.length === 0) {
-    history.push({
+    addToHistory({
       state: cloneStateForHistory(state),
       timestamp: Date.now(),
     });
-
-    historyIndex = 0;
   }
 
   return api as Mutate<StoreApi<T>, Mos>;
