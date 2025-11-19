@@ -307,11 +307,11 @@ describe('Named Snapshots', () => {
       const store = createTestStore();
 
       // Simulate user actions: +1, +10, +5, +1, -1
-      store.setState({ count: 1 });   // +1
-      store.setState({ count: 11 });   // +10
-      store.setState({ count: 16 });   // +5
-      store.setState({ count: 17 });   // +1
-      store.setState({ count: 16 });   // -1
+      store.setState({ count: 1 }); // +1
+      store.setState({ count: 11 }); // +10
+      store.setState({ count: 16 }); // +5
+      store.setState({ count: 17 }); // +1
+      store.setState({ count: 16 }); // -1
 
       // Verify history before snapshot
       const historyBeforeSnapshot = store.getHistory().map((entry: any) => ({
@@ -319,14 +319,14 @@ describe('Named Snapshots', () => {
         name: entry.name,
       }));
       expect(historyBeforeSnapshot.length).toBeGreaterThan(0);
-      
+
       // Save snapshot at count 16
       const snapshotId = store.saveSnapshot('test');
       expect(store.getSnapshotInfo(snapshotId)?.name).toBe('test');
 
       // Reset to 0 (adds new history entry)
       store.setState({ count: 0 });
-      
+
       // Verify history after reset
       const historyAfterReset = store.getHistory().map((entry: any) => ({
         count: entry.state?.count,
@@ -349,27 +349,27 @@ describe('Named Snapshots', () => {
         count: entry.state?.count,
         name: entry.name,
       }));
-      
+
       // History should have increased by 1
       expect(historyAfterLoad.length).toBe(historySizeBeforeLoad + 1);
-      
+
       // ALL previous entries should be preserved exactly
       for (let i = 0; i < historyBeforeLoad.length; i++) {
         expect(historyAfterLoad[i].count).toBe(historyBeforeLoad[i].count);
         expect(historyAfterLoad[i].name).toBe(historyBeforeLoad[i].name);
       }
-      
+
       // The new entry should be the restored snapshot
       const lastEntry = historyAfterLoad[historyAfterLoad.length - 1];
       expect(lastEntry).toBeDefined();
       expect(lastEntry!.count).toBe(16); // Snapshot was saved when count was 16
       expect(lastEntry!.name).toBe('Restored snapshot: test');
-      
+
       // Verify snapshot state was not mutated
       const snapshotAfterLoad = store.getSnapshot(snapshotId);
       expect(snapshotAfterLoad).toBeDefined();
       expect(snapshotAfterLoad!.state.count).toBe(16);
-      
+
       // Verify we can still access all history entries independently
       const allCounts = historyAfterLoad.map((e: any) => e.count);
       // Should have unique values, not all the same

@@ -245,7 +245,7 @@ function createStoreImpl<
         // Remove computed fields from clone if configured
         if (options?.computedFields) {
           for (const computedKey of options.computedFields) {
-            if (computedKey in clone) {
+            if (computedKey in (clone as object)) {
               delete (clone as any)[computedKey];
             }
           }
@@ -280,7 +280,7 @@ function createStoreImpl<
       // Remove computed fields from clone if configured
       if (options?.computedFields) {
         for (const computedKey of options.computedFields) {
-          if (computedKey in clone) {
+          if (computedKey in (clone as object)) {
             delete (clone as any)[computedKey];
           }
         }
@@ -421,7 +421,7 @@ function createStoreImpl<
       // Deep clone the historyState to ensure we don't mutate the original
       // This is critical for snapshots - we must never mutate the snapshot's state
       let newState: T;
-      
+
       if (typeof structuredClone !== 'undefined') {
         try {
           newState = structuredClone(historyState) as T;
@@ -451,7 +451,12 @@ function createStoreImpl<
       for (const key in descriptors) {
         const descriptor = descriptors[key];
         // Restore getters, setters, and function properties
-        if (descriptor && (descriptor.get || descriptor.set || typeof (currentState as any)[key] === 'function')) {
+        if (
+          descriptor &&
+          (descriptor.get ||
+            descriptor.set ||
+            typeof (currentState as any)[key] === 'function')
+        ) {
           Object.defineProperty(newState, key, descriptor);
         }
       }
