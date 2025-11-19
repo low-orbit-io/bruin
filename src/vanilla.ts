@@ -992,10 +992,14 @@ function createStoreImpl<
           { name: `Restored snapshot: ${snapshot.name}` },
         );
       } else {
-        // Directly restore without adding to history using setState to trigger React updates
-        api.setState(restoreHistoryState(snapshot.state, state), true, {
-          skipHistory: true,
-        });
+        // Directly restore without adding to history and WITHOUT updating existing history entries
+        // We need to bypass the skipHistory logic that updates all entries
+        const prevState = state;
+        const restoredState = restoreHistoryState(snapshot.state, state);
+        // Directly set state without going through setState's skipHistory path
+        // This prevents updating all history entries
+        state = restoredState;
+        notifyListeners(state, prevState);
       }
 
       return true;

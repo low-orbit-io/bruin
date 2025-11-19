@@ -291,16 +291,39 @@ describe('Named Snapshots', () => {
       const store = createTestStore();
 
       store.setState({ count: 5 });
+      store.setState({ count: 10 });
+      store.setState({ count: 15 });
 
       const id = store.saveSnapshot('no-history-test');
 
-      store.setState({ count: 10 });
+      store.setState({ count: 20 });
       const historySizeBefore = store.getHistory().length;
+      const historyBefore = store.getHistory().map((entry: any) => ({
+        count: entry.state?.count,
+        name: entry.name,
+      }));
 
       store.loadSnapshot(id, { addToHistory: false });
 
       const historySizeAfter = store.getHistory().length;
       expect(historySizeAfter).toBe(historySizeBefore);
+
+      // CRITICAL: Verify that existing history entries are NOT replaced
+      const historyAfter = store.getHistory().map((entry: any) => ({
+        count: entry.state?.count,
+        name: entry.name,
+      }));
+
+      // All previous entries should be preserved exactly
+      for (let i = 0; i < historyBefore.length; i++) {
+        expect(historyAfter[i]!.count).toBe(historyBefore[i]!.count);
+        expect(historyAfter[i]!.name).toBe(historyBefore[i]!.name);
+      }
+
+      // Verify entries are independent objects
+      const firstEntry = store.getHistory()[0];
+      const lastEntry = store.getHistory()[store.getHistory().length - 1];
+      expect(firstEntry.state).not.toBe(lastEntry.state);
     });
 
     it('should preserve all history entries when loading snapshot (reproduces bug)', () => {
@@ -333,7 +356,7 @@ describe('Named Snapshots', () => {
         name: entry.name,
       }));
       expect(historyAfterReset.length).toBe(historyBeforeSnapshot.length + 1);
-      expect(historyAfterReset[historyAfterReset.length - 1].count).toBe(0);
+      expect(historyAfterReset[historyAfterReset.length - 1]!.count).toBe(0);
 
       // Load snapshot - this should ADD a new entry, not replace all
       const historyBeforeLoad = store.getHistory().map((entry: any) => ({
@@ -355,8 +378,8 @@ describe('Named Snapshots', () => {
 
       // ALL previous entries should be preserved exactly
       for (let i = 0; i < historyBeforeLoad.length; i++) {
-        expect(historyAfterLoad[i].count).toBe(historyBeforeLoad[i].count);
-        expect(historyAfterLoad[i].name).toBe(historyBeforeLoad[i].name);
+        expect(historyAfterLoad[i]!.count).toBe(historyBeforeLoad[i]!.count);
+        expect(historyAfterLoad[i]!.name).toBe(historyBeforeLoad[i]!.name);
       }
 
       // The new entry should be the restored snapshot
@@ -366,7 +389,7 @@ describe('Named Snapshots', () => {
       expect(lastEntry!.name).toBe('Restored snapshot: test');
 
       // Verify snapshot state was not mutated
-      const snapshotAfterLoad = store.getSnapshot(snapshotId);
+      const snapshotAfterLoad = store.getSnapshot?.(snapshotId);
       expect(snapshotAfterLoad).toBeDefined();
       expect(snapshotAfterLoad!.state.count).toBe(16);
 
