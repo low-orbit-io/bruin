@@ -1,4 +1,4 @@
-import { create } from 'bruin'
+import { create } from '@low-orbit/bruin'
 import { Highlight } from 'prism-react-renderer'
 import CopyButton from './CopyButton'
 import SnippetLang from './SnippetLang'

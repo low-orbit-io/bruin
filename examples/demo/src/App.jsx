@@ -1,4 +1,4 @@
-import { create } from 'bruin'
+import { create } from '@low-orbit/bruin'
 import CodePreview from './components/CodePreview'
 import Details from './components/Details'
 import Scene from './components/Scene'

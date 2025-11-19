@@ -2,12 +2,12 @@ export default function Details() {
   return (
     <>
       <nav className="nav">
-        <a href="https://github.com/your-org/bruin">Documentation</a>
-        <a href="https://github.com/your-org/bruin">Github</a>
+        <a href="https://github.com/low-orbit-io/bruin">Documentation</a>
+        <a href="https://github.com/low-orbit-io/bruin">Github</a>
       </nav>
       <div className="bottom">
         <a
-          href="https://github.com/your-org/bruin/tree/main/examples/demo"
+          href="https://github.com/low-orbit-io/bruin/tree/main/examples/demo"
           className="bottom-right"
         >
           {'<Source />'}

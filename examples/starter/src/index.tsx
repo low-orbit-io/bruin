@@ -1,6 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { create } from 'bruin';
+import { create } from '@low-orbit/bruin';
 import mascot from './assets/bruin-mascot.svg';
 
 import './index.css';
@@ -35,10 +35,10 @@ const Counter = () => {
 function App() {
   return (
     <div className="grid place-items-center gap-6">
-      <a href="https://zustand-demo.pmnd.rs/" target="_blank" rel="noreferrer">
+      <a href="https://github.com/low-orbit-io/bruin" target="_blank" rel="noreferrer">
         <img
           src={mascot}
-          alt="Zustand mascot"
+          alt="Bruin mascot"
           className="w-36"
           style={{
             filter: 'drop-shadow(0 0 2em #582d3e)',
