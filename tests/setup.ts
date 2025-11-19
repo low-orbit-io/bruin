@@ -37,6 +37,23 @@ if (typeof require !== 'undefined') {
       } catch {
         // module.default.act may be non-configurable
       }
+
+      // Patch require cache to ensure React has act before react-dom/test-utils loads
+      if (require.cache) {
+        const cacheKey = Object.keys(require.cache).find(
+          (key) => require.cache[key]?.exports === module,
+        );
+        if (cacheKey && require.cache[cacheKey]?.exports) {
+          try {
+            const cachedExports = require.cache[cacheKey]?.exports;
+            if (cachedExports && typeof cachedExports.act !== 'function') {
+              cachedExports.act = act;
+            }
+          } catch {
+            // exports.act may be non-configurable
+          }
+        }
+      }
     }
 
     return module;
@@ -58,6 +75,36 @@ if (typeof require !== 'undefined') {
     }
   } catch {
     // reactModule.default.act may be non-configurable
+  }
+
+  // Patch require cache for React module
+  if (require.cache) {
+    for (const key in require.cache) {
+      const cached = require.cache[key];
+      if (
+        cached &&
+        cached.exports &&
+        (cached.exports === reactModule ||
+          cached.exports.default === reactModule ||
+          (cached.id &&
+            cached.id.includes('react') &&
+            !cached.id.includes('react-dom')))
+      ) {
+        try {
+          if (cached.exports && typeof cached.exports.act !== 'function') {
+            cached.exports.act = act;
+          }
+          if (
+            cached.exports.default &&
+            typeof cached.exports.default.act !== 'function'
+          ) {
+            cached.exports.default.act = act;
+          }
+        } catch {
+          // exports.act may be non-configurable
+        }
+      }
+    }
   }
 
   try {
