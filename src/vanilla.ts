@@ -991,15 +991,73 @@ function createStoreImpl<
       }
 
       // Always add to history to maintain the invariant that current state matches history[historyIndex]
-      // Use transaction to ensure history is updated properly
-      api.transaction(
-        () => {
-          const restoredState = restoreHistoryState(snapshot.state, state);
-          // Directly assign to state to ensure the transaction detects the change
-          state = restoredState;
-        },
-        { name: `Restored snapshot: ${snapshot.name}` },
-      );
+      // For snapshot loading, we don't truncate future entries - we keep all history and add the snapshot
+      // This allows users to undo back through the full history after loading a snapshot
+      const restoredState = restoreHistoryState(snapshot.state, state);
+      const prevState = state;
+      state = restoredState;
+
+      // Add to history - truncate future entries if we're not at the end
+      const entry: HistoryEntry<T> = {
+        state: cloneStateForHistory(state),
+        timestamp: Date.now(),
+        name: `Restored snapshot: ${snapshot.name}`,
+      };
+
+      const entrySize = estimateEntrySize(entry);
+
+      // Truncate future entries if we're not at the end of history
+      if (historyIndex < history.length - 1) {
+        const removedCount = history.length - historyIndex - 1;
+        for (let i = 0; i < removedCount; i++) {
+          const removedSize = historySizes.pop() || 0;
+          historyMemoryUsage -= removedSize;
+        }
+        history = history.slice(0, historyIndex + 1);
+      }
+
+      history.push(entry);
+      historySizes.push(entrySize);
+      historyMemoryUsage += entrySize;
+      historyIndex = history.length - 1;
+
+      // Apply maxHistorySize limit if needed (but don't truncate based on historyIndex)
+      let _removedByCount = 0;
+      if (history.length > maxHistorySize + 1) {
+        const removeCount = history.length - (maxHistorySize + 1);
+        _removedByCount = removeCount;
+
+        for (let i = 0; i < removeCount; i++) {
+          const removedSize = historySizes.shift() || 0;
+          historyMemoryUsage -= removedSize;
+        }
+
+        history = history.slice(removeCount);
+        historyIndex = history.length - 1;
+      }
+
+      // Apply memory limit if needed
+      let removedByMemory = 0;
+      if (maxHistoryMemory && historyMemoryUsage > maxHistoryMemory) {
+        while (historyMemoryUsage > maxHistoryMemory && history.length > 1) {
+          const removedSize = historySizes.shift() || 0;
+          historyMemoryUsage -= removedSize;
+          history.shift();
+          historyIndex--;
+          removedByMemory++;
+        }
+
+        if (onMemoryLimitReached && removedByMemory > 0) {
+          onMemoryLimitReached({
+            currentMemory: historyMemoryUsage,
+            maxMemory: maxHistoryMemory,
+            historyLength: history.length,
+            entriesRemoved: removedByMemory,
+          });
+        }
+      }
+
+      notifyListeners(state, prevState);
 
       return true;
     },

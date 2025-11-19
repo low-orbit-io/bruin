@@ -86,13 +86,13 @@ export type StoreApi<T> = {
     statesOrEntries: T[] | HistoryEntry<T>[],
     index: number,
   ) => void;
-  clearHistory?: () => void;
+  clearHistory: () => void;
   getHistoryMemoryUsage: () => MemoryInfo;
   // Named Snapshots API
   saveSnapshot: (name: string, options?: SnapshotOptions) => string;
   listSnapshots: () => SnapshotInfo[];
   getSnapshotInfo: (id: string) => SnapshotInfo | null;
-  getSnapshot?: (id: string) => Snapshot<T> | null; // Internal use for persist
+  getSnapshot: (id: string) => Snapshot<T> | null;
   loadSnapshot: (id: string) => boolean;
   deleteSnapshot: (id: string) => boolean;
   clearSnapshots: () => void;
