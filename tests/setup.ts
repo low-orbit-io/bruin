@@ -14,8 +14,13 @@ if (typeof (React as any).act !== 'function') {
       configurable: true,
     });
   } catch {
-    // If defineProperty fails, fallback to direct assignment
-    (React as any).act = act;
+    // If defineProperty fails, try direct assignment
+    try {
+      (React as any).act = act;
+    } catch {
+      // Both failed - React.act might be frozen/non-configurable
+      // This is okay as long as act is available globally
+    }
   }
 }
 
