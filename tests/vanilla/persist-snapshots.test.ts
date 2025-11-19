@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createJSONStorage, persist } from '../../src/middleware/persist';
 import { createStore } from '../../src/vanilla';
-import { persist, createJSONStorage } from '../../src/middleware/persist';
 
 /**
  * Persist Middleware with Named Snapshots Tests
@@ -299,7 +299,7 @@ describe('Persist Middleware - Named Snapshots Integration', () => {
             persistSnapshots: true,
             partialize: (state) => {
               // Exclude secret field
-              const { secret, ...rest } = state;
+              const { secret: _secret, ...rest } = state;
               return rest;
             },
           },

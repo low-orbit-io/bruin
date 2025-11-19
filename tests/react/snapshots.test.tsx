@@ -26,7 +26,6 @@ describe('React Hooks - Named Snapshots Integration', () => {
       }));
 
       // Check that snapshot methods exist on the store API
-      const api = useStore.getState;
       expect(typeof useStore.saveSnapshot).toBe('function');
       expect(typeof useStore.listSnapshots).toBe('function');
       expect(typeof useStore.getSnapshotInfo).toBe('function');

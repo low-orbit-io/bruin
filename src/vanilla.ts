@@ -899,7 +899,6 @@ function createStoreImpl<
         return false;
       }
 
-      const prevState = state;
       const addToHistory = options?.addToHistory !== false; // Default true
 
       if (addToHistory) {
