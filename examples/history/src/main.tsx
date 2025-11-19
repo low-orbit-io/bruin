@@ -1,11 +1,19 @@
 import { StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { MantineProvider } from '@mantine/core';
+import { ChakraProvider } from '@chakra-ui/react';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
 import { create } from '../../../src/react';
 import { MantineTimeline, MantineControls } from './integrations/WithMantine';
 import { RadixTimeline, RadixControls } from './integrations/WithRadixUI';
 import { TailwindTimeline, TailwindControls } from './integrations/WithTailwind';
+import { MUITimeline, MUIControls } from './integrations/WithMUI';
+import { ChakraTimeline, ChakraControls } from './integrations/WithChakraUI';
 import './index.css';
+
+// Create MUI theme
+const muiTheme = createTheme();
 
 // Create a simple counter store to demonstrate history
 type CounterStore = {
@@ -73,7 +81,7 @@ function Counter() {
 }
 
 // Tab navigation
-type IntegrationTab = 'tailwind' | 'mantine' | 'radix';
+type IntegrationTab = 'tailwind' | 'mantine' | 'radix' | 'mui' | 'chakra';
 
 function TabButton({
   active,
@@ -148,6 +156,18 @@ function App() {
                 onClick={() => setActiveTab('radix')}
               >
                 Radix UI
+              </TabButton>
+              <TabButton
+                active={activeTab === 'mui'}
+                onClick={() => setActiveTab('mui')}
+              >
+                Material-UI
+              </TabButton>
+              <TabButton
+                active={activeTab === 'chakra'}
+                onClick={() => setActiveTab('chakra')}
+              >
+                Chakra UI
               </TabButton>
             </div>
 
@@ -244,6 +264,68 @@ function App() {
                   </div>
                 </div>
               )}
+
+              {activeTab === 'mui' && (
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-2xl font-bold mb-2">Material-UI Integration</h3>
+                    <p className="text-gray-600 mb-6">
+                      Google's Material Design system - comprehensive component library
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <MUIControls
+                      store={useCounterStore}
+                      title="MUI Controls"
+                      description="Compact undo/redo with expandable timeline"
+                      renderEntryContent={renderEntryContent}
+                    />
+                    <MUITimeline
+                      store={useCounterStore}
+                      title="MUI Timeline"
+                      description="Full history list with all entries"
+                      renderEntryContent={renderEntryContent}
+                    />
+                  </div>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p className="text-sm text-blue-800">
+                      <strong>Key Features:</strong> Material Design, elevation system, comprehensive library,
+                      theming, enterprise-ready
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'chakra' && (
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-2xl font-bold mb-2">Chakra UI Integration</h3>
+                    <p className="text-gray-600 mb-6">
+                      Modern component library - style props and excellent DX
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <ChakraControls
+                      store={useCounterStore}
+                      title="Chakra Controls"
+                      description="Compact undo/redo with expandable timeline"
+                      renderEntryContent={renderEntryContent}
+                    />
+                    <ChakraTimeline
+                      store={useCounterStore}
+                      title="Chakra Timeline"
+                      description="Full history list with all entries"
+                      renderEntryContent={renderEntryContent}
+                    />
+                  </div>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p className="text-sm text-blue-800">
+                      <strong>Key Features:</strong> Style props, composition, accessibility, dark mode,
+                      framer-motion animations
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -259,6 +341,8 @@ function App() {
                   <th className="text-left py-3 px-4">Tailwind</th>
                   <th className="text-left py-3 px-4">Mantine</th>
                   <th className="text-left py-3 px-4">Radix</th>
+                  <th className="text-left py-3 px-4">MUI</th>
+                  <th className="text-left py-3 px-4">Chakra</th>
                 </tr>
               </thead>
               <tbody>
@@ -266,31 +350,41 @@ function App() {
                   <td className="py-3 px-4 font-medium">Styling</td>
                   <td className="py-3 px-4">Utility classes</td>
                   <td className="py-3 px-4">Pre-styled</td>
-                  <td className="py-3 px-4">Unstyled primitives</td>
+                  <td className="py-3 px-4">Unstyled</td>
+                  <td className="py-3 px-4">Material Design</td>
+                  <td className="py-3 px-4">Style props</td>
                 </tr>
                 <tr className="border-b border-gray-200">
                   <td className="py-3 px-4 font-medium">Customization</td>
-                  <td className="py-3 px-4">High (config + utilities)</td>
-                  <td className="py-3 px-4">Medium (theme API)</td>
-                  <td className="py-3 px-4">Maximum (full CSS)</td>
+                  <td className="py-3 px-4">High</td>
+                  <td className="py-3 px-4">Medium</td>
+                  <td className="py-3 px-4">Maximum</td>
+                  <td className="py-3 px-4">Medium</td>
+                  <td className="py-3 px-4">High</td>
                 </tr>
                 <tr className="border-b border-gray-200">
                   <td className="py-3 px-4 font-medium">Accessibility</td>
                   <td className="py-3 px-4">Manual</td>
-                  <td className="py-3 px-4">Built-in</td>
+                  <td className="py-3 px-4">Good</td>
+                  <td className="py-3 px-4">Excellent</td>
+                  <td className="py-3 px-4">Good</td>
                   <td className="py-3 px-4">Excellent</td>
                 </tr>
                 <tr className="border-b border-gray-200">
                   <td className="py-3 px-4 font-medium">Bundle Size</td>
-                  <td className="py-3 px-4">Small (purged)</td>
+                  <td className="py-3 px-4">Small</td>
                   <td className="py-3 px-4">Large</td>
                   <td className="py-3 px-4">Small</td>
+                  <td className="py-3 px-4">Large</td>
+                  <td className="py-3 px-4">Medium</td>
                 </tr>
                 <tr>
                   <td className="py-3 px-4 font-medium">Best For</td>
-                  <td className="py-3 px-4">Custom designs</td>
-                  <td className="py-3 px-4">Rapid prototypes</td>
-                  <td className="py-3 px-4">Accessible apps</td>
+                  <td className="py-3 px-4">Custom</td>
+                  <td className="py-3 px-4">Rapid dev</td>
+                  <td className="py-3 px-4">A11y apps</td>
+                  <td className="py-3 px-4">Material</td>
+                  <td className="py-3 px-4">Modern</td>
                 </tr>
               </tbody>
             </table>
@@ -299,7 +393,7 @@ function App() {
 
         <footer className="mt-12 text-center text-sm text-gray-600">
           <p>
-            All three integrations use the <strong>same headless components</strong> under the hood.
+            All five integrations use the <strong>same headless components</strong> under the hood.
           </p>
           <p className="mt-2">
             See <code className="bg-gray-200 px-2 py-1 rounded">src/headless/</code> for the
@@ -314,7 +408,12 @@ function App() {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <MantineProvider>
-      <App />
+      <ChakraProvider>
+        <ThemeProvider theme={muiTheme}>
+          <CssBaseline />
+          <App />
+        </ThemeProvider>
+      </ChakraProvider>
     </MantineProvider>
   </StrictMode>,
 );
