@@ -541,26 +541,35 @@ describe('Vanilla devtools Middleware', () => {
         .spyOn(console, 'warn')
         .mockImplementation(() => {});
 
-      const { createStore } = await import('../../src/vanilla');
-      const { redux } = await import('../../src/middleware/redux');
-      const { devtools } = await import('../../src/middleware/devtools');
+      // Save original NODE_ENV
+      const originalNodeEnv = process.env.NODE_ENV;
+      // Set to development to trigger the warning
+      process.env.NODE_ENV = 'development';
 
-      const reducer = (state: { count: number }, action: any) => {
-        if (action.type === '__setState') {
-          return { ...state, ...action.state };
-        }
-        return state;
-      };
+      try {
+        const { createStore } = await import('../../src/vanilla');
+        const { redux } = await import('../../src/middleware/redux');
+        const { devtools } = await import('../../src/middleware/devtools');
 
-      const store = createStore(devtools(redux(reducer, { count: 0 }))) as any;
+        const reducer = (state: { count: number }, action: any) => {
+          if (action.type === '__setState') {
+            return { ...state, ...action.state };
+          }
+          return state;
+        };
 
-      store.dispatch({ type: '__setState', state: { count: 1 } });
+        const store = createStore(devtools(redux(reducer, { count: 0 }))) as any;
 
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringContaining('__setState'),
-      );
+        store.dispatch({ type: '__setState', state: { count: 1 } });
 
-      consoleWarnSpy.mockRestore();
+        expect(consoleWarnSpy).toHaveBeenCalledWith(
+          expect.stringContaining('__setState'),
+        );
+      } finally {
+        // Restore original NODE_ENV
+        process.env.NODE_ENV = originalNodeEnv;
+        consoleWarnSpy.mockRestore();
+      }
     });
 
     it('handles ACTION message with custom action type', async () => {
