@@ -199,7 +199,7 @@ Here is what the code should look like:
 ```tsx
 import { useEffect } from 'react';
 import { create } from '@low-orbit/bruin';
-import { useShallow } from 'bruin/react/shallow';
+import { useShallow } from '@low-orbit/bruin/react/shallow';
 
 type BearFamilyMealsStore = {
   [key: string]: string;

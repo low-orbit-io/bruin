@@ -131,7 +131,7 @@ function CommonConsumer() {
 ```tsx
 // Allow custom equality function by using useStoreWithEqualityFn instead of useStore
 import { useContext } from 'react';
-import { useStoreWithEqualityFn } from 'bruin/traditional';
+import { useStoreWithEqualityFn } from '@low-orbit/bruin/traditional';
 
 function useBearContext<T>(
   selector: (state: BearState) => T,

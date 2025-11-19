@@ -131,8 +131,8 @@ Here is what the code should look like:
 
 ```tsx
 import { createStore } from '@low-orbit/bruin';
-import { useStoreWithEqualityFn } from 'bruin/traditional';
-import { shallow } from 'bruin/shallow';
+import { useStoreWithEqualityFn } from '@low-orbit/bruin/traditional';
+import { shallow } from '@low-orbit/bruin/shallow';
 
 type PositionStoreState = { position: { x: number; y: number } };
 
@@ -324,8 +324,8 @@ Here is what the code should look like:
 ```tsx
 import { useState } from 'react';
 import { createStore } from '@low-orbit/bruin';
-import { useStoreWithEqualityFn } from 'bruin/traditional';
-import { shallow } from 'bruin/shallow';
+import { useStoreWithEqualityFn } from '@low-orbit/bruin/traditional';
+import { shallow } from '@low-orbit/bruin/shallow';
 
 type CounterState = {
   count: number;
@@ -550,8 +550,8 @@ Here is what the code should look like:
 ```tsx
 import { type ReactNode, useState, createContext, useContext } from 'react';
 import { createStore } from '@low-orbit/bruin';
-import { useStoreWithEqualityFn } from 'bruin/traditional';
-import { shallow } from 'bruin/shallow';
+import { useStoreWithEqualityFn } from '@low-orbit/bruin/traditional';
+import { shallow } from '@low-orbit/bruin/shallow';
 
 type PositionStoreState = { position: { x: number; y: number } };
 

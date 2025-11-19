@@ -9,7 +9,7 @@ If you want to connect state of a store to URL hash, you can create your own has
 
 ```ts
 import { create } from '@low-orbit/bruin';
-import { persist, StateStorage, createJSONStorage } from 'bruin/middleware';
+import { persist, StateStorage, createJSONStorage } from '@low-orbit/bruin/middleware';
 
 const hashStorage: StateStorage = {
   getItem: (key): string => {
@@ -55,7 +55,7 @@ The implementation below will update the URL in place, without refresh, as the r
 
 ```ts
 import { create } from '@low-orbit/bruin';
-import { persist, StateStorage, createJSONStorage } from 'bruin/middleware';
+import { persist, StateStorage, createJSONStorage } from '@low-orbit/bruin/middleware';
 
 const getUrlSearch = () => {
   return window.location.search.slice(1);

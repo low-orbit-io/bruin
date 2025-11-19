@@ -33,7 +33,16 @@ const getAliases = () => {
   }
 
   return [
-    { find: /^bruin$/, replacement: resolve(`./${buildDir}/index${ext}`) },
+    {
+      find: 'bruin/vanilla',
+      replacement: resolve(`./${buildDir}/vanilla${ext}`),
+    },
+    {
+      find: 'bruin/middleware',
+      replacement: resolve(`./${buildDir}/middleware${ext}`),
+    },
+    { find: 'bruin/react', replacement: resolve(`./${buildDir}/react${ext}`) },
+    { find: 'bruin', replacement: resolve(`./${buildDir}/index${ext}`) },
     { find: /^bruin\/(.*)$/, replacement: resolve(`./${buildDir}/$1${ext}`) },
   ];
 };
@@ -70,6 +79,26 @@ export default defineConfig({
         test: {
           name: 'vanilla',
           include: ['tests/vanilla/**'],
+          environment: 'node',
+        },
+      },
+      {
+        resolve: {
+          alias: getAliases(),
+        },
+        test: {
+          name: 'sequences',
+          include: ['tests/sequences/**'],
+          environment: 'node',
+        },
+      },
+      {
+        resolve: {
+          alias: getAliases(),
+        },
+        test: {
+          name: 'middleware',
+          include: ['tests/middleware/**'],
           environment: 'node',
         },
       },

@@ -64,6 +64,8 @@ persist<T, U>(stateCreatorFn: StateCreator<T, [], []>, persistOptions?: PersistO
   - **optional** `skipHydration`: Defaults to `false`. If `true`, the middleware won't
     automatically rehydrate the state on initialization. Use `rehydrate` function manually in this
     case. This is useful for server-side rendering (SSR) applications.
+  - **optional** `persistHistory`: Defaults to `false`. If `true`, Bruin will persist the undo/redo
+    history to storage and restore it on page reload. This enables history persistence across sessions.
 
 #### Returns
 
@@ -82,8 +84,8 @@ coordinates) and an action to update it. We'll also use the `persist` middleware
 position in `localStorage`.
 
 ```ts
-import { createStore } from 'bruin/vanilla';
-import { persist } from 'bruin/middleware';
+import { createStore } from '@low-orbit/bruin/vanilla';
+import { persist } from '@low-orbit/bruin/middleware';
 
 type PositionStoreState = { position: { x: number; y: number } };
 
@@ -136,8 +138,8 @@ positionStore.subscribe(render);
 Here’s the complete code.
 
 ```ts
-import { createStore } from 'bruin/vanilla';
-import { persist } from 'bruin/middleware';
+import { createStore } from '@low-orbit/bruin/vanilla';
+import { persist } from '@low-orbit/bruin/middleware';
 
 type PositionStoreState = { position: { x: number; y: number } };
 
@@ -204,8 +206,8 @@ use the `persist` middleware to persist only the relevant part of the state (in 
 context containing the position).
 
 ```ts
-import { createStore } from 'bruin/vanilla';
-import { persist } from 'bruin/middleware';
+import { createStore } from '@low-orbit/bruin/vanilla';
+import { persist } from '@low-orbit/bruin/middleware';
 
 type PositionStoreState = {
   context: {
@@ -274,8 +276,8 @@ Here’s the full code to create a dot that follows your mouse movement inside a
 persists the `context` in `localStorage`.
 
 ```ts
-import { createStore } from 'bruin/vanilla';
-import { persist } from 'bruin/middleware';
+import { createStore } from '@low-orbit/bruin/vanilla';
+import { persist } from '@low-orbit/bruin/middleware';
 
 type PositionStoreState = {
   context: {
@@ -405,8 +407,8 @@ our custom storage. Instead of the default `localStorage` or `sessionStorage`, w
 position data in the URL search parameters.
 
 ```ts
-import { createStore } from 'bruin/vanilla';
-import { persist, createJSONStorage } from 'bruin/middleware';
+import { createStore } from '@low-orbit/bruin/vanilla';
+import { persist, createJSONStorage } from '@low-orbit/bruin/middleware';
 
 type PositionStoreState = { position: { x: number; y: number } };
 
@@ -463,8 +465,8 @@ Here’s the full code to create a dot that follows your mouse movement inside a
 persists the position in URL's search parameters.
 
 ```ts
-import { createStore } from 'bruin/vanilla';
-import { persist, createJSONStorage } from 'bruin/middleware';
+import { createStore } from '@low-orbit/bruin/vanilla';
+import { persist, createJSONStorage } from '@low-orbit/bruin/middleware';
 
 type PositionStoreState = { position: { x: number; y: number } };
 
@@ -630,8 +632,8 @@ positionStore.subscribe(render);
 Here’s the complete code.
 
 ```ts
-import { createStore } from 'bruin/vanilla';
-import { persist } from 'bruin/middleware';
+import { createStore } from '@low-orbit/bruin/vanilla';
+import { persist } from '@low-orbit/bruin/middleware';
 
 // For tutorial purposes only
 if (!localStorage.getItem('position-storage')) {
@@ -733,8 +735,8 @@ if (!localStorage.getItem('position-storage')) {
 Now, we will create the store and configure it to use persistence and deep merging.
 
 ```ts
-import { createStore } from 'bruin/vanilla';
-import { persist } from 'bruin/middleware';
+import { createStore } from '@low-orbit/bruin/vanilla';
+import { persist } from '@low-orbit/bruin/middleware';
 import createDeepMerge from '@fastify/deepmerge';
 
 const deepMerge = createDeepMerge({ all: true });
@@ -793,8 +795,8 @@ positionStore.subscribe(render);
 Here’s the complete code.
 
 ```ts
-import { createStore } from 'bruin/vanilla';
-import { persist } from 'bruin/middleware';
+import { createStore } from '@low-orbit/bruin/vanilla';
+import { persist } from '@low-orbit/bruin/middleware';
 import createDeepMerge from '@fastify/deepmerge';
 
 const deepMerge = createDeepMerge({ all: true });
@@ -878,8 +880,8 @@ coordinates) and an action to update it. Furthermore, we'll also use the `persis
 store the position in `localStorage` but skipping hydration.
 
 ```ts
-import { createStore } from 'bruin/vanilla';
-import { persist } from 'bruin/middleware';
+import { createStore } from '@low-orbit/bruin/vanilla';
+import { persist } from '@low-orbit/bruin/middleware';
 
 type PositionStoreState = { position: { x: number; y: number } };
 
@@ -944,8 +946,8 @@ positionStore.subscribe(render);
 Here’s the complete code.
 
 ```ts
-import { createStore } from 'bruin/vanilla';
-import { persist } from 'bruin/middleware';
+import { createStore } from '@low-orbit/bruin/vanilla';
+import { persist } from '@low-orbit/bruin/middleware';
 
 type PositionStoreState = { position: { x: number; y: number } };
 
@@ -1006,6 +1008,43 @@ Here's the `html` code
   ></div>
 </div>
 ```
+
+### Persisting history across sessions
+
+Bruin's `persist` middleware supports persisting undo/redo history. When `persistHistory: true` is set, the entire history state is saved to storage and restored on page reload.
+
+```tsx
+import { create } from '@low-orbit/bruin';
+import { persist, createJSONStorage } from '@low-orbit/bruin/middleware';
+
+interface CounterState {
+  count: number;
+  increment: () => void;
+  decrement: () => void;
+}
+
+const useCounterStore = create<CounterState>()(
+  persist(
+    (set) => ({
+      count: 0,
+      increment: () => set((state) => ({ count: state.count + 1 })),
+      decrement: () => set((state) => ({ count: state.count - 1 })),
+    }),
+    {
+      name: 'counter-storage',
+      persistHistory: true, // Enable history persistence
+      storage: createJSONStorage(() => localStorage),
+    },
+  ),
+);
+```
+
+With `persistHistory: true`, users can:
+- Undo/redo changes even after page reload
+- Maintain history across browser sessions
+- Time-travel through state changes persisted in storage
+
+**Note:** History persistence increases storage usage. Consider setting `maxHistorySize` or `maxHistoryMemory` when creating stores to limit history growth.
 
 ## Troubleshooting
 

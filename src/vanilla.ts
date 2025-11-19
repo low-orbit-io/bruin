@@ -4,9 +4,12 @@ import type {
   ExtractStateCreatorMutators,
   Get,
   HistoryEntry,
-  HistoryMemoryInfo,
+  MemoryInfo,
   Mutate,
   SetStateWithTransaction,
+  Snapshot,
+  SnapshotInfo,
+  SnapshotOptions,
   StateCreator,
   StateCreatorSet,
   StoreApi,
@@ -27,6 +30,11 @@ export type {
   StoreMutators,
   StoreSetState,
   SetStateWithTransaction,
+  // Named Snapshots Types
+  Snapshot,
+  SnapshotInfo,
+  SnapshotOptions,
+  MemoryInfo,
 } from './types/core';
 
 function estimateObjectSize(obj: any, seen = new WeakSet()): number {
@@ -122,7 +130,12 @@ function createStoreImpl<
   let transactionStartIndex = -1;
   let transactionPrevState: T | null = null;
 
+  // Named snapshots storage
+  const snapshots = new Map<string, Snapshot<T>>();
+  let snapshotCounter = 0;
+
   const maxHistorySize = options?.maxHistorySize ?? 50;
+  const maxSnapshotsSize = options?.maxSnapshotsSize;
   const maxHistoryMemory = options?.maxHistoryMemory;
   const customSizeEstimator = options?.estimateSize;
   const onMemoryLimitReached = options?.onMemoryLimitReached;
@@ -218,22 +231,100 @@ function createStoreImpl<
       return s;
     }
 
-    const clone = {} as T;
-    const descriptors = Object.getOwnPropertyDescriptors(s);
+    // Use structuredClone for deep cloning if available (modern browsers/Node 17+)
+    // Falls back to JSON parse/stringify for deep cloning, then restores getters/prototype
+    if (typeof structuredClone !== 'undefined') {
+      try {
+        const deepClone = structuredClone(s);
+        // Restore getters and prototype after deep clone, but exclude computed fields
+        const descriptors = Object.getOwnPropertyDescriptors(s);
+        const clone = deepClone as T;
 
-    for (const key in descriptors) {
-      const descriptor = descriptors[key];
+        // Remove computed fields from clone if configured
+        if (options?.computedFields) {
+          for (const computedKey of options.computedFields) {
+            if (computedKey in (clone as object)) {
+              delete (clone as any)[computedKey];
+            }
+          }
+        }
 
-      if (
-        descriptor &&
-        !descriptor.get &&
-        (!options?.computedFields || !options.computedFields.includes(key))
-      ) {
-        clone[key as keyof T] = s[key as keyof T];
+        // Restore non-computed getters
+        for (const key in descriptors) {
+          const descriptor = descriptors[key];
+          if (
+            descriptor &&
+            descriptor.get &&
+            (!options?.computedFields || !options.computedFields.includes(key))
+          ) {
+            Object.defineProperty(clone, key, descriptor);
+          }
+        }
+
+        Object.setPrototypeOf(clone, Object.getPrototypeOf(s));
+        return clone;
+      } catch {
+        // structuredClone failed (e.g., contains functions), fall through to manual clone
       }
     }
 
-    return clone;
+    // Manual deep clone using JSON parse/stringify for serializable data
+    // This ensures complete independence of state objects
+    try {
+      const jsonClone = JSON.parse(JSON.stringify(s)) as T;
+      const descriptors = Object.getOwnPropertyDescriptors(s);
+      const clone = jsonClone;
+
+      // Remove computed fields from clone if configured
+      if (options?.computedFields) {
+        for (const computedKey of options.computedFields) {
+          if (computedKey in (clone as object)) {
+            delete (clone as any)[computedKey];
+          }
+        }
+      }
+
+      // Restore non-computed getters and prototype
+      for (const key in descriptors) {
+        const descriptor = descriptors[key];
+        if (
+          descriptor &&
+          descriptor.get &&
+          (!options?.computedFields || !options.computedFields.includes(key))
+        ) {
+          Object.defineProperty(clone, key, descriptor);
+        }
+      }
+
+      Object.setPrototypeOf(clone, Object.getPrototypeOf(s));
+      return clone;
+    } catch {
+      // JSON cloning failed (e.g., contains functions, circular refs), use shallow clone
+      const clone = {} as T;
+      const descriptors = Object.getOwnPropertyDescriptors(s);
+
+      for (const key in descriptors) {
+        const descriptor = descriptors[key];
+
+        if (
+          descriptor &&
+          !descriptor.get &&
+          (!options?.computedFields || !options.computedFields.includes(key))
+        ) {
+          clone[key as keyof T] = s[key as keyof T];
+        }
+      }
+
+      return clone;
+    }
+  };
+
+  // Helper to generate unique snapshot IDs
+  const generateSnapshotId = (name: string): string => {
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 6);
+    const counter = ++snapshotCounter;
+    return `${name}-${timestamp}-${counter}-${random}`;
   };
 
   const applyGetters = (newState: T): T => {
@@ -325,15 +416,23 @@ function createStoreImpl<
 
   const restoreHistoryState = (historyState: T, currentState: T): T => {
     if (isImmerable(historyState) && isImmerable(currentState)) {
+      // Deep clone the historyState to ensure we don't mutate the original
+      // This is critical for snapshots - we must never mutate the snapshot's state
+      // Use cloneStateForHistory to ensure consistent deep cloning behavior
+      const newState: T = cloneStateForHistory(historyState);
+
+      // Restore getters, setters, and function properties from currentState
+      // This ensures functions and computed properties are preserved
       const descriptors = Object.getOwnPropertyDescriptors(currentState);
-      const newState = {} as T;
-
-      Object.assign(newState as any, historyState);
-
       for (const key in descriptors) {
         const descriptor = descriptors[key];
-
-        if (descriptor && descriptor.get) {
+        // Restore getters, setters, and function properties
+        if (
+          descriptor &&
+          (descriptor.get ||
+            descriptor.set ||
+            typeof (currentState as any)[key] === 'function')
+        ) {
           Object.defineProperty(newState, key, descriptor);
         }
       }
@@ -342,6 +441,7 @@ function createStoreImpl<
 
       return newState;
     }
+    // For non-objects, return as-is (primitives don't need cloning)
     return historyState;
   };
 
@@ -529,7 +629,9 @@ function createStoreImpl<
                 const historyState = historyEntry.state;
 
                 if (isImmerable(historyState)) {
-                  const updatedState = { ...historyState };
+                  // Deep clone the history state before updating to prevent mutation
+                  const clonedState = cloneStateForHistory(historyState);
+                  const updatedState = { ...clonedState };
 
                   for (const key of changedKeys) {
                     (updatedState as any)[key] = (state as any)[key];
@@ -628,6 +730,13 @@ function createStoreImpl<
     },
     canUndo: () => historyIndex > 0,
     canRedo: () => historyIndex < history.length - 1,
+    getCurrentHistoryIndex: () => {
+      if (history.length > maxHistorySize) {
+        const offset = history.length - maxHistorySize;
+        return historyIndex - offset;
+      }
+      return historyIndex;
+    },
     transaction: (fn, txOptions) => {
       if (inTransaction) {
         fn();
@@ -662,8 +771,13 @@ function createStoreImpl<
             addToHistory(entry);
           }
 
+          // Notify listeners if transactionPrevState was set (from setState calls)
+          // or if state was directly modified (from direct assignment)
           if (transactionPrevState !== null) {
             notifyListeners(state, transactionPrevState as T);
+          } else {
+            // State was directly modified, notify with startState as prevState
+            notifyListeners(state, startState);
           }
         }
       } catch (error) {
@@ -702,13 +816,13 @@ function createStoreImpl<
 
       if (isEntryFormat) {
         history = (statesOrEntries as HistoryEntry<T>[]).map((entry) => ({
-          state: entry.state,
+          state: cloneStateForHistory(entry.state), // Deep clone to prevent reference sharing
           timestamp: entry.timestamp ?? Date.now(),
           ...(entry.name !== undefined && { name: entry.name }),
         }));
       } else {
         history = (statesOrEntries as T[]).map((s) => ({
-          state: s,
+          state: cloneStateForHistory(s), // Deep clone to prevent reference sharing
           timestamp: Date.now(),
         }));
       }
@@ -743,24 +857,228 @@ function createStoreImpl<
         timestamp: Date.now(),
       });
     },
-    getHistoryMemoryUsage: (): HistoryMemoryInfo => {
-      const entryCount = history.length;
-      const averageBytes = entryCount > 0 ? historyMemoryUsage / entryCount : 0;
+    getHistoryMemoryUsage: (): MemoryInfo => {
+      const estimator = customSizeEstimator || estimateObjectSize;
 
-      const info: HistoryMemoryInfo = {
-        totalBytes: historyMemoryUsage,
-        averageBytes: Math.round(averageBytes),
+      // Calculate history memory (already tracked)
+      const historyBytes = historyMemoryUsage;
+
+      // Calculate snapshot memory
+      let snapshotBytes = 0;
+      for (const snapshot of snapshots.values()) {
+        snapshotBytes += estimator(snapshot.state);
+      }
+
+      const totalBytes = historyBytes + snapshotBytes;
+      const entryCount = history.length;
+      const averageBytes = entryCount > 0 ? historyBytes / entryCount : 0;
+
+      const info: MemoryInfo = {
+        totalBytes,
+        historyBytes,
+        snapshotBytes,
         entryCount,
+        snapshotCount: snapshots.size,
+        averageBytes: Math.round(averageBytes),
       };
 
       if (maxHistoryMemory) {
         info.maxBytes = maxHistoryMemory;
         info.utilizationPercent = Math.round(
-          (historyMemoryUsage / maxHistoryMemory) * 100,
+          (totalBytes / maxHistoryMemory) * 100,
         );
       }
 
       return info;
+    },
+    // Named Snapshots API
+    saveSnapshot: (name: string, options?: SnapshotOptions): string => {
+      const id = options?.id || generateSnapshotId(name);
+
+      const snapshot: Snapshot<T> = {
+        id,
+        name,
+        state: cloneStateForHistory(state),
+        timestamp: Date.now(),
+      };
+
+      if (options?.description) {
+        snapshot.description = options.description;
+      }
+
+      if (options?.metadata) {
+        snapshot.metadata = options.metadata;
+      }
+
+      snapshots.set(id, snapshot);
+
+      // FIFO cleanup: auto-delete oldest snapshot if maxSnapshotsSize exceeded
+      if (maxSnapshotsSize && snapshots.size > maxSnapshotsSize) {
+        let oldestId: string | null = null;
+        let oldestTimestamp = Infinity;
+
+        // Find oldest snapshot by timestamp
+        for (const [snapshotId, snap] of snapshots.entries()) {
+          if (snap.timestamp < oldestTimestamp) {
+            oldestTimestamp = snap.timestamp;
+            oldestId = snapshotId;
+          }
+        }
+
+        // Delete oldest snapshot
+        if (oldestId) {
+          snapshots.delete(oldestId);
+        }
+      }
+
+      return id;
+    },
+    listSnapshots: (): SnapshotInfo[] => {
+      const list: SnapshotInfo[] = [];
+
+      for (const snapshot of snapshots.values()) {
+        const info: SnapshotInfo = {
+          id: snapshot.id,
+          name: snapshot.name,
+          timestamp: snapshot.timestamp,
+        };
+
+        if (snapshot.description !== undefined) {
+          info.description = snapshot.description;
+        }
+
+        if (snapshot.metadata !== undefined) {
+          info.metadata = snapshot.metadata;
+        }
+
+        list.push(info);
+      }
+
+      return list;
+    },
+    getSnapshotInfo: (id: string): SnapshotInfo | null => {
+      const snapshot = snapshots.get(id);
+
+      if (!snapshot) {
+        return null;
+      }
+
+      const info: SnapshotInfo = {
+        id: snapshot.id,
+        name: snapshot.name,
+        timestamp: snapshot.timestamp,
+      };
+
+      if (snapshot.description !== undefined) {
+        info.description = snapshot.description;
+      }
+
+      if (snapshot.metadata !== undefined) {
+        info.metadata = snapshot.metadata;
+      }
+
+      return info;
+    },
+    // Get full snapshot data (internal use for persist middleware)
+    getSnapshot: (id: string): Snapshot<T> | null => {
+      return snapshots.get(id) || null;
+    },
+    loadSnapshot: (id: string): boolean => {
+      const snapshot = snapshots.get(id);
+
+      if (!snapshot) {
+        return false;
+      }
+
+      // Always add to history to maintain the invariant that current state matches history[historyIndex]
+      // For snapshot loading, we don't truncate future entries - we keep all history and add the snapshot
+      // This allows users to undo back through the full history after loading a snapshot
+      const restoredState = restoreHistoryState(snapshot.state, state);
+      const prevState = state;
+      state = restoredState;
+
+      // Add to history - truncate future entries if we're not at the end
+      const entry: HistoryEntry<T> = {
+        state: cloneStateForHistory(state),
+        timestamp: Date.now(),
+        name: `Restored snapshot: ${snapshot.name}`,
+      };
+
+      const entrySize = estimateEntrySize(entry);
+
+      // Truncate future entries if we're not at the end of history
+      if (historyIndex < history.length - 1) {
+        const removedCount = history.length - historyIndex - 1;
+        for (let i = 0; i < removedCount; i++) {
+          const removedSize = historySizes.pop() || 0;
+          historyMemoryUsage -= removedSize;
+        }
+        history = history.slice(0, historyIndex + 1);
+      }
+
+      history.push(entry);
+      historySizes.push(entrySize);
+      historyMemoryUsage += entrySize;
+      historyIndex = history.length - 1;
+
+      // Apply maxHistorySize limit if needed (but don't truncate based on historyIndex)
+      let _removedByCount = 0;
+      if (history.length > maxHistorySize + 1) {
+        const removeCount = history.length - (maxHistorySize + 1);
+        _removedByCount = removeCount;
+
+        for (let i = 0; i < removeCount; i++) {
+          const removedSize = historySizes.shift() || 0;
+          historyMemoryUsage -= removedSize;
+        }
+
+        history = history.slice(removeCount);
+        historyIndex = history.length - 1;
+      }
+
+      // Apply memory limit if needed
+      let removedByMemory = 0;
+      if (maxHistoryMemory && historyMemoryUsage > maxHistoryMemory) {
+        while (historyMemoryUsage > maxHistoryMemory && history.length > 1) {
+          const removedSize = historySizes.shift() || 0;
+          historyMemoryUsage -= removedSize;
+          history.shift();
+          historyIndex--;
+          removedByMemory++;
+        }
+
+        if (onMemoryLimitReached && removedByMemory > 0) {
+          onMemoryLimitReached({
+            currentMemory: historyMemoryUsage,
+            maxMemory: maxHistoryMemory,
+            historyLength: history.length,
+            entriesRemoved: removedByMemory,
+          });
+        }
+      }
+
+      notifyListeners(state, prevState);
+
+      return true;
+    },
+    deleteSnapshot: (id: string): boolean => {
+      return snapshots.delete(id);
+    },
+    clearSnapshots: (): void => {
+      snapshots.clear();
+    },
+    // Bulk restore snapshots (used by persist middleware)
+    restoreSnapshots: (snapshotArray: Snapshot<T>[]): void => {
+      snapshots.clear();
+      for (const snapshot of snapshotArray) {
+        if (snapshot?.id && snapshot?.name && snapshot?.state) {
+          // Deep clone snapshot state to prevent reference sharing
+          snapshots.set(snapshot.id, {
+            ...snapshot,
+            state: cloneStateForHistory(snapshot.state),
+          });
+        }
+      }
     },
   };
 

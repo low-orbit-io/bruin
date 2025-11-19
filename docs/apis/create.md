@@ -43,8 +43,11 @@ create<T>()(stateCreatorFn: StateCreator<T, [], []>): UseBoundStore<StoreApi<T>>
 #### Returns
 
 `create` returns a React Hook with API utilities, `setState`, `getState`, `getInitialState` and
-`subscribe`, attached. It lets you return data that is based on current state, using a selector
-function. It should take a selector function as its only argument.
+`subscribe`, attached. It also exposes history methods (`undo`, `redo`, `canUndo`, `canRedo`,
+`getHistory`, `getCurrentHistoryIndex`, `getHistoryMemoryUsage`, `clearHistory`) and snapshot methods
+(`saveSnapshot`, `loadSnapshot`, `listSnapshots`, `getSnapshot`, `getSnapshotInfo`, `deleteSnapshot`,
+`clearSnapshots`). It lets you return data that is based on current state, using a selector function.
+It should take a selector function as its only argument.
 
 ## Usage
 

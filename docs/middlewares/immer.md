@@ -60,7 +60,7 @@ In the next example, we're going to update the `person` object. Since it's a nes
 to create a copy of the entire object before making the update.
 
 ```ts
-import { createStore } from 'bruin/vanilla';
+import { createStore } from '@low-orbit/bruin/vanilla';
 
 type PersonStoreState = {
   person: { firstName: string; lastName: string; email: string };
@@ -158,8 +158,8 @@ To avoid manually copying the entire object before making updates, we'll use the
 middleware.
 
 ```ts
-import { createStore } from 'bruin/vanilla';
-import { immer } from 'bruin/middleware/immer';
+import { createStore } from '@low-orbit/bruin/vanilla';
+import { immer } from '@low-orbit/bruin/middleware/immer';
 
 type PersonStoreState = {
   person: { firstName: string; lastName: string; email: string };

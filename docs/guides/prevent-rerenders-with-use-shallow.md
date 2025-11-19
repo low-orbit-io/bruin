@@ -15,10 +15,16 @@ equal the previous one.
 
 We have a store that associates to each bear a meal and we want to render their names.
 
-```js
+```tsx
 import { create } from '@low-orbit/bruin';
 
-const useMeals = create(() => ({
+interface MealsState {
+  papaBear: string;
+  mamaBear: string;
+  littleBear: string;
+}
+
+const useMeals = create<MealsState>(() => ({
   papaBear: 'large porridge-pot',
   mamaBear: 'middle-size porridge pot',
   littleBear: 'A little, small, wee pot',
@@ -33,7 +39,7 @@ export const BearNames = () => {
 
 Now papa bear wants a pizza instead:
 
-```js
+```tsx
 useMeals.setState({
   papaBear: 'a large pizza',
 });
@@ -43,11 +49,17 @@ This change causes `BearNames` rerenders even though the actual output of `names
 
 We can fix that using `useShallow`!
 
-```js
+```tsx
 import { create } from '@low-orbit/bruin';
-import { useShallow } from 'bruin/react/shallow';
+import { useShallow } from '@low-orbit/bruin/react/shallow';
 
-const useMeals = create(() => ({
+interface MealsState {
+  papaBear: string;
+  mamaBear: string;
+  littleBear: string;
+}
+
+const useMeals = create<MealsState>(() => ({
   papaBear: 'large porridge-pot',
   mamaBear: 'middle-size porridge pot',
   littleBear: 'A little, small, wee pot',

@@ -234,12 +234,15 @@ function HistoryControls() {
 
 function HistoryTimeline() {
   const history = useStore((state) => state.getHistory());
-  const jumpTo = useStore((state) => state.jumpToHistoryIndex);
+  const currentIndex = useStore((state) => state.getCurrentHistoryIndex());
 
   return (
     <ul>
       {history.map((entry, index) => (
-        <li key={index} onClick={() => jumpTo(index)}>
+        <li
+          key={index}
+          className={index === currentIndex ? 'current' : ''}
+        >
           {entry.action || 'unnamed'}: {JSON.stringify(entry.state)}
         </li>
       ))}
@@ -254,7 +257,7 @@ Use the persist middleware to save/restore history:
 
 ```ts
 import { create } from '@low-orbit/bruin';
-import { persist } from 'bruin/middleware';
+import { persist } from '@low-orbit/bruin/middleware';
 
 const useStore = create(
   persist(
@@ -278,7 +281,7 @@ History automatically integrates with Redux DevTools:
 
 ```ts
 import { create } from '@low-orbit/bruin';
-import { devtools } from 'bruin/middleware';
+import { devtools } from '@low-orbit/bruin/middleware';
 
 const useStore = create(
   devtools(
@@ -459,7 +462,6 @@ function Editor() {
 function HistoryDebugger() {
   const history = useStore((state) => state.getHistory());
   const currentIndex = useStore((state) => state.getCurrentHistoryIndex());
-  const jumpTo = useStore((state) => state.jumpToHistoryIndex);
 
   return (
     <div className="history-viewer">
@@ -468,7 +470,6 @@ function HistoryDebugger() {
         <div
           key={index}
           className={index === currentIndex ? 'current' : ''}
-          onClick={() => jumpTo(index)}
         >
           <strong>{entry.action}</strong>
           <pre>{JSON.stringify(entry.state, null, 2)}</pre>
@@ -478,6 +479,248 @@ function HistoryDebugger() {
   );
 }
 ```
+
+## Named Snapshots
+
+Named snapshots allow you to save and restore specific state checkpoints by name. Unlike history
+entries, snapshots persist independently and can be restored at any time, even after clearing history.
+
+### Basic Usage
+
+```ts
+import { create } from '@low-orbit/bruin';
+
+interface EditorState {
+  content: string;
+  fontSize: number;
+  setContent: (content: string) => void;
+  setFontSize: (size: number) => void;
+}
+
+const useEditorStore = create<EditorState>((set) => ({
+  content: '',
+  fontSize: 14,
+  setContent: (content) => set({ content }),
+  setFontSize: (size) => set({ fontSize: size }),
+}));
+
+const store = useEditorStore.getState();
+
+// Save a snapshot
+const snapshotId = store.saveSnapshot('before-experiment');
+
+// Make changes
+store.setContent('New content');
+store.setFontSize(18);
+
+// Restore the snapshot (adds to history)
+store.loadSnapshot(snapshotId);
+```
+
+### Saving Snapshots
+
+Save snapshots with optional metadata:
+
+```ts
+// Simple snapshot
+const id1 = store.saveSnapshot('checkpoint-1');
+
+// With description and metadata
+const id2 = store.saveSnapshot('template-v1', {
+  description: 'Default template configuration',
+  metadata: { version: '1.0', author: 'Alice' },
+});
+
+// With custom ID
+const id3 = store.saveSnapshot('custom-name', {
+  id: 'my-custom-id',
+});
+```
+
+### Listing Snapshots
+
+Get all saved snapshots:
+
+```ts
+const snapshots = store.listSnapshots();
+// [
+//   {
+//     id: 'abc123',
+//     name: 'checkpoint-1',
+//     timestamp: 1234567890,
+//     description: 'Optional description',
+//     metadata: { version: '1.0' }
+//   },
+//   ...
+// ]
+
+// Find a specific snapshot by name
+const checkpoint = snapshots.find((s) => s.name === 'checkpoint-1');
+```
+
+### Getting Snapshot Details
+
+Retrieve snapshot information or full state:
+
+```ts
+// Get snapshot info (without state)
+const info = store.getSnapshotInfo(snapshotId);
+// { id: '...', name: '...', timestamp: 1234567890, ... }
+
+// Get full snapshot (with state)
+const snapshot = store.getSnapshot(snapshotId);
+// { id: '...', name: '...', state: { ... }, timestamp: 1234567890, ... }
+```
+
+### Loading Snapshots
+
+Load a snapshot to restore its state:
+
+```ts
+// Load snapshot (always adds to history)
+const success = store.loadSnapshot(snapshotId);
+
+if (success) {
+  console.log('Snapshot loaded successfully');
+} else {
+  console.error('Snapshot not found');
+}
+```
+
+**Important:** Loading a snapshot always adds a new history entry. This ensures the current state
+always matches the history pointer. If you're not at the end of history when loading, future entries
+will be truncated.
+
+### Deleting Snapshots
+
+Remove individual snapshots or clear all:
+
+```ts
+// Delete a specific snapshot
+const deleted = store.deleteSnapshot(snapshotId);
+
+// Clear all snapshots
+store.clearSnapshots();
+```
+
+### Snapshot vs History
+
+Understanding the difference:
+
+| Feature | History | Snapshots |
+|---------|---------|-----------|
+| **Purpose** | Track sequential changes | Save named checkpoints |
+| **Persistence** | Cleared with `clearHistory()` | Independent, persist until deleted |
+| **Navigation** | Sequential (`undo`/`redo`) | Direct access by ID |
+| **Use Case** | Undo/redo workflow | Templates, experiments, checkpoints |
+
+### Use Cases
+
+**1. Save "Before Experiment" State**
+
+```ts
+const beforeExperiment = store.saveSnapshot('before-experiment');
+
+// Try different configurations
+store.setFontSize(20);
+store.setContent('Experimental content');
+
+// Restore if needed
+store.loadSnapshot(beforeExperiment);
+```
+
+**2. Template System**
+
+```ts
+// Save templates
+const template1 = store.saveSnapshot('template-minimal', {
+  description: 'Minimal configuration',
+});
+const template2 = store.saveSnapshot('template-rich', {
+  description: 'Rich configuration',
+});
+
+// Load template
+store.loadSnapshot(template1);
+```
+
+**3. Checkpoint Before Major Changes**
+
+```ts
+const checkpoint = store.saveSnapshot('pre-refactor');
+
+// Perform refactoring
+store.setContent(transformContent(store.getState().content));
+
+// Restore if refactoring fails
+if (refactoringFailed) {
+  store.loadSnapshot(checkpoint);
+}
+```
+
+### Integration with History
+
+Snapshots integrate seamlessly with history:
+
+```ts
+// Make changes
+store.setContent('Step 1');
+store.setContent('Step 2');
+
+// Save snapshot
+const snapshotId = store.saveSnapshot('checkpoint');
+
+// Continue making changes
+store.setContent('Step 3');
+store.setContent('Step 4');
+
+// Undo back
+store.undo(); // Step 3
+store.undo(); // Step 2
+
+// Load snapshot (adds to history, truncates future)
+store.loadSnapshot(snapshotId); // Restores to Step 2
+
+// Can still undo through history
+store.undo(); // Step 1
+```
+
+### React Component Example
+
+```tsx
+function SnapshotManager() {
+  const snapshots = useEditorStore((state) => state.listSnapshots());
+  const loadSnapshot = useEditorStore((state) => state.loadSnapshot);
+  const saveSnapshot = useEditorStore((state) => state.saveSnapshot);
+  const deleteSnapshot = useEditorStore((state) => state.deleteSnapshot);
+
+  return (
+    <div>
+      <button onClick={() => saveSnapshot('checkpoint-' + Date.now())}>
+        Save Snapshot
+      </button>
+      <ul>
+        {snapshots.map((snapshot) => (
+          <li key={snapshot.id}>
+            <strong>{snapshot.name}</strong>
+            <span>{new Date(snapshot.timestamp).toLocaleString()}</span>
+            <button onClick={() => loadSnapshot(snapshot.id)}>Load</button>
+            <button onClick={() => deleteSnapshot(snapshot.id)}>Delete</button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+
+### Best Practices
+
+1. **Use descriptive names** - Make snapshot purposes clear
+2. **Add metadata** - Include version, author, or context information
+3. **Clean up old snapshots** - Delete snapshots that are no longer needed
+4. **Combine with history** - Use snapshots for major checkpoints, history for day-to-day undo/redo
+5. **Document snapshots** - Use descriptions to explain what each snapshot represents
 
 ## Related
 

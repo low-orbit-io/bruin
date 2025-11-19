@@ -325,8 +325,8 @@ export const useCounterStore = create<CounterStore>()(counterStoreCreator);
 // contexts/use-counter-store-context.tsx
 import { type ReactNode, createContext, useContext, useRef } from 'react';
 import { createStore } from '@low-orbit/bruin';
-import { useStoreWithEqualityFn } from 'bruin/traditional';
-import { shallow } from 'bruin/shallow';
+import { useStoreWithEqualityFn } from '@low-orbit/bruin/traditional';
+import { shallow } from '@low-orbit/bruin/shallow';
 
 import {
   type CounterStore,
@@ -544,8 +544,8 @@ export const useCounterStore = create<CounterStore>()(counterStoreCreator);
 // contexts/use-counter-store-context.tsx
 import { type ReactNode, createContext, useContext, useRef } from 'react';
 import { createStore } from '@low-orbit/bruin';
-import { useStoreWithEqualityFn } from 'bruin/traditional';
-import { shallow } from 'bruin/shallow';
+import { useStoreWithEqualityFn } from '@low-orbit/bruin/traditional';
+import { shallow } from '@low-orbit/bruin/shallow';
 
 import {
   type CounterStore,

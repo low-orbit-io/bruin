@@ -25,7 +25,7 @@ Updating simple states
 
 ```ts
 import { create } from '@low-orbit/bruin';
-import { immer } from 'bruin/middleware/immer';
+import { immer } from '@low-orbit/bruin/middleware/immer';
 
 type State = {
   count: number;
@@ -55,7 +55,7 @@ Updating complex states
 
 ```ts
 import { create } from '@low-orbit/bruin';
-import { immer } from 'bruin/middleware/immer';
+import { immer } from '@low-orbit/bruin/middleware/immer';
 
 interface Todo {
   id: string;
