@@ -421,7 +421,7 @@ function createStoreImpl<
       // Deep clone the historyState to ensure we don't mutate the original
       // This is critical for snapshots - we must never mutate the snapshot's state
       // Use cloneStateForHistory to ensure consistent deep cloning behavior
-      let newState: T = cloneStateForHistory(historyState);
+      const newState: T = cloneStateForHistory(historyState);
 
       // Restore getters, setters, and function properties from currentState
       // This ensures functions and computed properties are preserved
