@@ -282,8 +282,9 @@ describe('Named Snapshots', () => {
 
       // The last entry should be the restored snapshot
       const lastEntry = historyAfter[historyAfter.length - 1];
-      expect(lastEntry.count).toBe(5); // The snapshot was saved when count was 5
-      expect(lastEntry.name).toBe('Restored snapshot: history-test');
+      expect(lastEntry).toBeDefined();
+      expect(lastEntry!.count).toBe(5); // The snapshot was saved when count was 5
+      expect(lastEntry!.name).toBe('Restored snapshot: history-test');
     });
 
     it('should skip history when addToHistory is false', () => {
