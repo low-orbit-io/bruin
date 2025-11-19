@@ -50,6 +50,7 @@ export default defineConfig({
           name: 'react',
           include: ['tests/react/**'],
           environment: 'happy-dom',
+          setupFiles: ['tests/setup.ts'],
         },
       },
     ],

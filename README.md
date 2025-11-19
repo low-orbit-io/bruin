@@ -1,11 +1,21 @@
 # Bruin 🐻
 
+[![npm version](https://img.shields.io/npm/v/@low-orbit/bruin.svg)](https://www.npmjs.com/package/@low-orbit/bruin)
+[![npm downloads](https://img.shields.io/npm/dm/@low-orbit/bruin.svg)](https://www.npmjs.com/package/@low-orbit/bruin)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A small, fast state-management solution with built-in undo/redo history. Based on [Zustand](https://github.com/pmndrs/zustand).
 
 If you know Zustand, you already know Bruin. Plus history.
 
+## Installation
+
 ```bash
-npm install bruin
+npm install @low-orbit/bruin
+# or
+pnpm add @low-orbit/bruin
+# or
+yarn add @low-orbit/bruin
 ```
 
 ## First create a store
@@ -13,7 +23,7 @@ npm install bruin
 Your store is a hook! You can put anything in it: primitives, objects, functions. History is automatic.
 
 ```jsx
-import { create } from 'bruin';
+import { create } from '@low-orbit/bruin';
 
 const useStore = create((set) => ({
   count: 0,
@@ -100,7 +110,7 @@ All Zustand middleware works out of the box:
 ### Persist
 
 ```jsx
-import { persist, createJSONStorage } from 'bruin/middleware';
+import { persist, createJSONStorage } from '@low-orbit/bruin/middleware';
 
 const useStore = create(
   persist((set) => ({ count: 0 }), {
@@ -114,7 +124,7 @@ const useStore = create(
 ### DevTools
 
 ```jsx
-import { devtools } from 'bruin/middleware';
+import { devtools } from '@low-orbit/bruin/middleware';
 
 const useStore = create(
   devtools((set) => ({ count: 0 }), { name: 'CounterStore' }),
@@ -124,7 +134,7 @@ const useStore = create(
 ### SubscribeWithSelector
 
 ```jsx
-import { subscribeWithSelector } from 'bruin/middleware';
+import { subscribeWithSelector } from '@low-orbit/bruin/middleware';
 
 const useStore = create(
   subscribeWithSelector((set) => ({
@@ -142,7 +152,7 @@ useStore.subscribe(
 ### Combine
 
 ```jsx
-import { combine } from 'bruin/middleware';
+import { combine } from '@low-orbit/bruin/middleware';
 
 const useStore = create(
   combine(
@@ -158,7 +168,7 @@ const useStore = create(
 ### Redux
 
 ```jsx
-import { redux } from 'bruin/middleware';
+import { redux } from '@low-orbit/bruin/middleware';
 
 const useStore = create(
   redux(
@@ -182,7 +192,7 @@ useStore.dispatch({ type: 'INC' });
 Works without React too:
 
 ```js
-import { createStore } from 'bruin/vanilla';
+import { createStore } from '@low-orbit/bruin/vanilla';
 
 const store = createStore((set) => ({
   count: 0,
@@ -201,7 +211,7 @@ store.getState().count; // 0
 Prevent unnecessary re-renders:
 
 ```jsx
-import { useShallow } from 'bruin/react/shallow';
+import { useShallow } from '@low-orbit/bruin/react/shallow';
 
 const items = useStore(useShallow((state) => state.items));
 ```
@@ -211,7 +221,7 @@ const items = useStore(useShallow((state) => state.items));
 Full TypeScript support with excellent inference:
 
 ```tsx
-import { create } from 'bruin';
+import { create } from '@low-orbit/bruin';
 
 interface BearState {
   bears: number;

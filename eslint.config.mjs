@@ -101,6 +101,7 @@ export default defineConfig(
     ...vitest.configs.recommended,
     rules: {
       'import/extensions': ['error', 'never'],
+      '@typescript-eslint/no-require-imports': 'off',
       'vitest/consistent-test-it': [
         'error',
         { fn: 'it', withinDescribe: 'it' },
