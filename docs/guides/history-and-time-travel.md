@@ -234,12 +234,15 @@ function HistoryControls() {
 
 function HistoryTimeline() {
   const history = useStore((state) => state.getHistory());
-  const jumpTo = useStore((state) => state.jumpToHistoryIndex);
+  const currentIndex = useStore((state) => state.getCurrentHistoryIndex());
 
   return (
     <ul>
       {history.map((entry, index) => (
-        <li key={index} onClick={() => jumpTo(index)}>
+        <li
+          key={index}
+          className={index === currentIndex ? 'current' : ''}
+        >
           {entry.action || 'unnamed'}: {JSON.stringify(entry.state)}
         </li>
       ))}
@@ -459,7 +462,6 @@ function Editor() {
 function HistoryDebugger() {
   const history = useStore((state) => state.getHistory());
   const currentIndex = useStore((state) => state.getCurrentHistoryIndex());
-  const jumpTo = useStore((state) => state.jumpToHistoryIndex);
 
   return (
     <div className="history-viewer">
@@ -468,7 +470,6 @@ function HistoryDebugger() {
         <div
           key={index}
           className={index === currentIndex ? 'current' : ''}
-          onClick={() => jumpTo(index)}
         >
           <strong>{entry.action}</strong>
           <pre>{JSON.stringify(entry.state, null, 2)}</pre>

@@ -730,7 +730,13 @@ function createStoreImpl<
     },
     canUndo: () => historyIndex > 0,
     canRedo: () => historyIndex < history.length - 1,
-    getCurrentHistoryIndex: () => historyIndex,
+    getCurrentHistoryIndex: () => {
+      if (history.length > maxHistorySize) {
+        const offset = history.length - maxHistorySize;
+        return historyIndex - offset;
+      }
+      return historyIndex;
+    },
     transaction: (fn, txOptions) => {
       if (inTransaction) {
         fn();

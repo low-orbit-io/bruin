@@ -7,10 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `getCurrentHistoryIndex()` method to expose the current history pointer position
+  - Returns the current index in the history array (-1 if no history)
+  - Enables proper UI highlighting based on position rather than state value
+  - Fixes incorrect highlighting when multiple history entries have the same state value
+  - **Location:** `src/vanilla.ts:735`, `src/types/core.ts:81`
+
+### Changed
+- **BREAKING:** Simplified `loadSnapshot()` API by removing the `addToHistory` option
+  - **Old:** `loadSnapshot(id: string, options?: SnapshotRestoreOptions): boolean`
+  - **New:** `loadSnapshot(id: string): boolean`
+  - Snapshot loading now **always** adds a history entry to maintain the history pointer invariant
+  - Removed `SnapshotRestoreOptions` type entirely
+  - **Rationale:** Loading snapshots without adding to history creates a "detached head" state where `currentState !== history[historyIndex].state`, violating the core invariant that the current state always matches the history pointer
+  - **Migration:** Remove the second parameter from all `loadSnapshot()` calls
+  - **Location:** `src/vanilla.ts:982`, `src/types/core.ts:96`
+
+### Design Decisions
+- **No positional navigation methods:** Bruin intentionally does NOT provide `undoTo(index)`, `redoTo(index)`, or `undoSteps(n)` methods
+  - **Rationale:** These methods require meta-knowledge about history structure that developers never have in real applications
+  - Users think in terms of **meaningful states** ("before experiment") and **relative motion** ("go back one"), not **absolute positions** ("go to index 3")
+  - **Correct patterns:**
+    - For single-step navigation: Use `undo()` and `redo()`
+    - For semantic navigation: Use named snapshots with `saveSnapshot()` and `loadSnapshot()`
+    - For DevTools/testing: Use `getHistory()` and `getCurrentHistoryIndex()` to build custom UIs
+  - See CHANGELOG_DRAFT.md for detailed philosophy and examples
+
 ### Planned
-- Named snapshots feature
-- Memory estimation and limits
 - Enhanced devtools integration
+- Additional history configuration options
 
 ## [0.1.0] - TBD
 

@@ -42,8 +42,8 @@ createStore<T>()(stateCreatorFn: StateCreator<T, [], []>): StoreApi<T>
 #### Returns
 
 `createStore` returns a vanilla store that exposes API utilities, `setState`, `getState`,
-`getInitialState`, `subscribe`, and history methods including `undo`, `redo`, `getHistory`,
-`getHistoryMemoryUsage`, and `clearHistory`.
+`getInitialState`, `subscribe`, and history methods including `undo`, `redo`, `canUndo`, `canRedo`,
+`getHistory`, `getCurrentHistoryIndex`, `getHistoryMemoryUsage`, and `clearHistory`.
 
 ## Usage
 

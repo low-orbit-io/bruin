@@ -87,6 +87,26 @@ export default defineConfig({
           alias: getAliases(),
         },
         test: {
+          name: 'sequences',
+          include: ['tests/sequences/**'],
+          environment: 'node',
+        },
+      },
+      {
+        resolve: {
+          alias: getAliases(),
+        },
+        test: {
+          name: 'middleware',
+          include: ['tests/middleware/**'],
+          environment: 'node',
+        },
+      },
+      {
+        resolve: {
+          alias: getAliases(),
+        },
+        test: {
           name: 'react',
           include: ['tests/react/**'],
           environment: 'happy-dom',
