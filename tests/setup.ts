@@ -12,6 +12,33 @@ if (typeof React.act !== 'function') {
 (globalThis as any).React = React;
 
 if (typeof require !== 'undefined') {
+  // Patch React immediately in require cache before any other modules load
+  if (require.cache) {
+    for (const key in require.cache) {
+      const cached = require.cache[key];
+      if (
+        cached &&
+        cached.exports &&
+        cached.id &&
+        cached.id.includes('react') &&
+        !cached.id.includes('react-dom')
+      ) {
+        try {
+          if (cached.exports && typeof cached.exports.act !== 'function') {
+            cached.exports.act = act;
+          }
+          if (
+            cached.exports.default &&
+            typeof cached.exports.default.act !== 'function'
+          ) {
+            cached.exports.default.act = act;
+          }
+        } catch {
+          // exports.act may be non-configurable
+        }
+      }
+    }
+  }
   const Module = require('module') as typeof import('module');
   const originalRequire = Module.prototype.require;
 

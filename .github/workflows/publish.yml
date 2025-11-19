@@ -9,16 +9,12 @@ on:
 
 permissions:
   contents: read
-  id-token: write # Required for npm provenance AND Trusted Publishing (OIDC)
+  id-token: write # Required for npm provenance (supply chain attestation)
 
 jobs:
   publish:
     name: Publish to npm
     runs-on: ubuntu-latest
-
-    # Optional: Use GitHub environment for additional protection
-    # Uncomment and create "npm-publish" environment in repo settings
-    # environment: npm-publish
 
     # Only publish stable releases (not drafts or prereleases)
     # Remove this condition when using workflow_dispatch
@@ -52,9 +48,10 @@ jobs:
           fi
           cat dist/package.json
 
-      - name: Publish to npm (Trusted Publishing)
+      - name: Publish to npm
         run: npm publish --provenance --access public
-        # NO NODE_AUTH_TOKEN needed - npm uses OIDC automatically
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         working-directory: dist
 
       - name: Upload build artifacts
