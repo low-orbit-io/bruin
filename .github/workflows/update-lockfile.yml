@@ -4,7 +4,7 @@ on:
   push:
     branches: [master]
     paths:
-      - 'package.json'
+      - "package.json"
   workflow_dispatch:
 
 permissions:
@@ -15,7 +15,9 @@ jobs:
   update-lockfile:
     name: Update Lockfile
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.head_commit && github.event.head_commit.message != 'chore: update pnpm-lock.yaml') }}
+    if: >-
+      ${{ github.event_name == 'workflow_dispatch' ||
+      github.event.head_commit.message != 'chore: update pnpm-lock.yaml' }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -23,8 +25,8 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v6
         with:
-          node-version: 'lts/*'
-          cache: 'pnpm'
+          node-version: "lts/*"
+          cache: "pnpm"
       - name: Install dependencies
         run: pnpm install
       - name: Check for changes
@@ -40,9 +42,8 @@ jobs:
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: 'chore: update pnpm-lock.yaml'
-          title: 'chore: update pnpm-lock.yaml'
-          body: 'Automatically updated lockfile to match package.json changes'
-          branch: 'chore/update-lockfile'
+          commit-message: "chore: update pnpm-lock.yaml"
+          title: "chore: update pnpm-lock.yaml"
+          body: "Automatically updated lockfile to match package.json changes"
+          branch: "chore/update-lockfile"
           delete-branch: true
-

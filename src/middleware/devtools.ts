@@ -462,7 +462,7 @@ const devtoolsImpl =
                 (set as SetType)(storeState, true);
               }
             } else if (payload.state) {
-              (set as SetType)(payload.state, true);
+              (set as unknown as SetType)(payload.state, true);
             }
           } else if (payload.type) {
             const dispatch = (api as any).dispatch;
@@ -492,7 +492,7 @@ const devtoolsImpl =
       if (multiStore) {
         const storeEntry = {
           getState: () => (api as unknown as ApiType).getState(),
-          setState: set as SetType,
+          setState: set as unknown as SetType,
         };
 
         multiStore.stores.set(storeId, storeEntry);
