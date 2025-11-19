@@ -1,8 +1,11 @@
-import { StrictMode } from 'react';
+import { StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { MantineProvider } from '@mantine/core';
 import { create } from '../../../src/react';
-import { HeadlessTimelineList, HeadlessTimelineCompact } from './headless';
-import type { HistoryEntry } from './headless';
+import { MantineTimeline, MantineControls } from './integrations/WithMantine';
+import { RadixTimeline, RadixControls } from './integrations/WithRadixUI';
+import { TailwindTimeline, TailwindControls } from './integrations/WithTailwind';
+import './index.css';
 
 // Create a simple counter store to demonstrate history
 type CounterStore = {
@@ -22,7 +25,7 @@ const useCounterStore = create<CounterStore>((set) => ({
   reset: () => set({ count: 0 }),
 }));
 
-// Main counter display
+// Main counter display (using Tailwind)
 function Counter() {
   const count = useCounterStore((s) => s.count);
   const { increment, decrement, addAmount, reset } = useCounterStore.getState();
@@ -69,116 +72,44 @@ function Counter() {
   );
 }
 
-// Compact timeline demo
-function CompactTimelineDemo() {
+// Tab navigation
+type IntegrationTab = 'tailwind' | 'mantine' | 'radix';
+
+function TabButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
-      <h2 className="text-xl font-bold mb-4">Compact History Controls</h2>
-      <HeadlessTimelineCompact
-        store={useCounterStore}
-        renderControls={({ canUndo, canRedo, currentIndex, totalEntries, undo, redo, toggleList, showList }) => (
-          <div>
-            <div className="flex items-center gap-3 mb-4">
-              <button
-                onClick={undo}
-                disabled={!canUndo}
-                className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
-              >
-                ← Undo
-              </button>
-              <span className="text-lg font-mono">
-                {currentIndex + 1} / {totalEntries}
-              </span>
-              <button
-                onClick={redo}
-                disabled={!canRedo}
-                className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
-              >
-                Redo →
-              </button>
-              <button
-                onClick={toggleList}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition ml-auto"
-              >
-                {showList ? 'Hide' : 'Show'} Timeline
-              </button>
-            </div>
-          </div>
-        )}
-        renderList={(entries, currentIndex) => (
-          <div className="mt-4 border-t pt-4">
-            <h3 className="font-semibold mb-2">History Timeline:</h3>
-            <ul className="space-y-2">
-              {entries.map((entry: HistoryEntry<CounterStore>, index: number) => (
-                <li
-                  key={index}
-                  className={`p-2 rounded ${
-                    index === currentIndex
-                      ? 'bg-blue-100 border-2 border-blue-500 font-bold'
-                      : 'bg-gray-50'
-                  }`}
-                >
-                  <div className="flex justify-between items-center">
-                    <span>Count: {entry.state.count}</span>
-                    <span className="text-sm text-gray-500">
-                      {new Date(entry.timestamp).toLocaleTimeString()}
-                    </span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      />
-    </div>
+    <button
+      onClick={onClick}
+      className={`
+        px-6 py-3 font-semibold rounded-t-lg transition-all
+        ${
+          active
+            ? 'bg-white text-blue-600 border-b-2 border-blue-600'
+            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+        }
+      `}
+    >
+      {children}
+    </button>
   );
 }
 
-// List timeline demo
-function ListTimelineDemo() {
-  return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
-      <h2 className="text-xl font-bold mb-4">Timeline List (All Entries)</h2>
-      <HeadlessTimelineList
-        store={useCounterStore}
-        renderEntry={(entry: HistoryEntry<CounterStore>, index: number, isCurrent: boolean) => (
-          <div
-            className={`p-3 mb-2 rounded border-2 transition ${
-              isCurrent
-                ? 'bg-blue-50 border-blue-500 shadow-md'
-                : 'bg-white border-gray-200 hover:border-gray-300'
-            }`}
-          >
-            <div className="flex justify-between items-center">
-              <div>
-                <span className="font-mono text-lg">
-                  Count: <strong>{entry.state.count}</strong>
-                </span>
-                {isCurrent && (
-                  <span className="ml-2 px-2 py-1 text-xs bg-blue-500 text-white rounded">
-                    Current
-                  </span>
-                )}
-              </div>
-              <div className="text-sm text-gray-500">
-                <div>{new Date(entry.timestamp).toLocaleTimeString()}</div>
-                <div className="text-xs">Entry #{index + 1}</div>
-              </div>
-            </div>
-          </div>
-        )}
-        emptyMessage={
-          <div className="text-center text-gray-500 py-8">
-            No history yet. Make some changes to see history entries!
-          </div>
-        }
-      />
-    </div>
-  );
-}
+// Render entry content helper
+const renderEntryContent = (state: CounterStore) => (
+  <span className="font-semibold">Count: {state.count}</span>
+);
 
 // Main app
 function App() {
+  const [activeTab, setActiveTab] = useState<IntegrationTab>('tailwind');
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
       <div className="max-w-7xl mx-auto">
@@ -187,27 +118,192 @@ function App() {
             🐻 Bruin History Example
           </h1>
           <p className="text-xl text-gray-600">
-            Demonstrating headless history visualization components
+            Demonstrating history visualization with three UI approaches
           </p>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        {/* Counter Section */}
+        <div className="mb-8">
           <Counter />
-          <CompactTimelineDemo />
         </div>
 
-        <div className="grid grid-cols-1">
-          <ListTimelineDemo />
+        {/* Integration Tabs */}
+        <div className="mb-8">
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div className="flex border-b border-gray-200">
+              <TabButton
+                active={activeTab === 'tailwind'}
+                onClick={() => setActiveTab('tailwind')}
+              >
+                Tailwind CSS
+              </TabButton>
+              <TabButton
+                active={activeTab === 'mantine'}
+                onClick={() => setActiveTab('mantine')}
+              >
+                Mantine UI
+              </TabButton>
+              <TabButton
+                active={activeTab === 'radix'}
+                onClick={() => setActiveTab('radix')}
+              >
+                Radix UI
+              </TabButton>
+            </div>
+
+            <div className="p-6 bg-gray-50">
+              {activeTab === 'tailwind' && (
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-2xl font-bold mb-2">Tailwind CSS Integration</h3>
+                    <p className="text-gray-600 mb-6">
+                      Utility-first CSS framework - compose styles from utility classes
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <TailwindControls
+                      store={useCounterStore}
+                      title="Tailwind Controls"
+                      description="Compact undo/redo with expandable timeline"
+                      renderEntryContent={renderEntryContent}
+                    />
+                    <TailwindTimeline
+                      store={useCounterStore}
+                      title="Tailwind Timeline"
+                      description="Full history list with all entries"
+                      renderEntryContent={renderEntryContent}
+                    />
+                  </div>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p className="text-sm text-blue-800">
+                      <strong>Key Features:</strong> Utility classes, rapid iteration, responsive design,
+                      customizable via tailwind.config.js
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'mantine' && (
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-2xl font-bold mb-2">Mantine UI Integration</h3>
+                    <p className="text-gray-600 mb-6">
+                      Pre-styled component library - rapid development with beautiful defaults
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <MantineControls
+                      store={useCounterStore}
+                      title="Mantine Controls"
+                      description="Compact undo/redo with expandable timeline"
+                      renderEntryContent={renderEntryContent}
+                    />
+                    <MantineTimeline
+                      store={useCounterStore}
+                      title="Mantine Timeline"
+                      description="Full history list with all entries"
+                      renderEntryContent={renderEntryContent}
+                    />
+                  </div>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p className="text-sm text-blue-800">
+                      <strong>Key Features:</strong> Pre-styled components, theming system, rich component library,
+                      built-in accessibility
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'radix' && (
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-2xl font-bold mb-2">Radix UI Integration</h3>
+                    <p className="text-gray-600 mb-6">
+                      Unstyled accessible primitives - full design control with excellent a11y
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <RadixControls
+                      store={useCounterStore}
+                      title="Radix Controls"
+                      description="Compact undo/redo with expandable timeline"
+                      renderEntryContent={renderEntryContent}
+                    />
+                    <RadixTimeline
+                      store={useCounterStore}
+                      title="Radix Timeline"
+                      description="Full history list with all entries"
+                      renderEntryContent={renderEntryContent}
+                    />
+                  </div>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p className="text-sm text-blue-800">
+                      <strong>Key Features:</strong> Unstyled primitives, accessibility-first, keyboard navigation,
+                      ARIA compliant, full CSS control
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Comparison Section */}
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <h2 className="text-2xl font-bold mb-4">Comparison</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b-2 border-gray-200">
+                  <th className="text-left py-3 px-4">Feature</th>
+                  <th className="text-left py-3 px-4">Tailwind</th>
+                  <th className="text-left py-3 px-4">Mantine</th>
+                  <th className="text-left py-3 px-4">Radix</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-gray-200">
+                  <td className="py-3 px-4 font-medium">Styling</td>
+                  <td className="py-3 px-4">Utility classes</td>
+                  <td className="py-3 px-4">Pre-styled</td>
+                  <td className="py-3 px-4">Unstyled primitives</td>
+                </tr>
+                <tr className="border-b border-gray-200">
+                  <td className="py-3 px-4 font-medium">Customization</td>
+                  <td className="py-3 px-4">High (config + utilities)</td>
+                  <td className="py-3 px-4">Medium (theme API)</td>
+                  <td className="py-3 px-4">Maximum (full CSS)</td>
+                </tr>
+                <tr className="border-b border-gray-200">
+                  <td className="py-3 px-4 font-medium">Accessibility</td>
+                  <td className="py-3 px-4">Manual</td>
+                  <td className="py-3 px-4">Built-in</td>
+                  <td className="py-3 px-4">Excellent</td>
+                </tr>
+                <tr className="border-b border-gray-200">
+                  <td className="py-3 px-4 font-medium">Bundle Size</td>
+                  <td className="py-3 px-4">Small (purged)</td>
+                  <td className="py-3 px-4">Large</td>
+                  <td className="py-3 px-4">Small</td>
+                </tr>
+                <tr>
+                  <td className="py-3 px-4 font-medium">Best For</td>
+                  <td className="py-3 px-4">Custom designs</td>
+                  <td className="py-3 px-4">Rapid prototypes</td>
+                  <td className="py-3 px-4">Accessible apps</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <footer className="mt-12 text-center text-sm text-gray-600">
           <p>
-            These components use <strong>headless patterns</strong> - zero
-            styling, maximum flexibility.
+            All three integrations use the <strong>same headless components</strong> under the hood.
           </p>
           <p className="mt-2">
             See <code className="bg-gray-200 px-2 py-1 rounded">src/headless/</code> for the
-            unstyled components.
+            unstyled base components.
           </p>
         </footer>
       </div>
@@ -217,6 +313,8 @@ function App() {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <MantineProvider>
+      <App />
+    </MantineProvider>
   </StrictMode>,
 );

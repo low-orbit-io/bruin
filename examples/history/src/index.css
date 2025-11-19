@@ -1,0 +1,10 @@
+/* Mantine Core Styles */
+@import '@mantine/core/styles.css';
+
+/* Radix UI Integration Styles */
+@import './integrations/WithRadixUI/styles.css';
+
+/* Tailwind CSS */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
