@@ -15,7 +15,7 @@ and triggering subscribers only once.
 Use `set.transaction()` to batch multiple updates:
 
 ```ts
-import { create } from 'bruin';
+import { create } from '@low-orbit/bruin';
 
 const useStore = create((set) => ({
   firstName: '',
@@ -204,7 +204,7 @@ const useStore = create((set, get) => ({
 Transactions work seamlessly with React:
 
 ```tsx
-import { create } from 'bruin';
+import { create } from '@low-orbit/bruin';
 
 const useStore = create((set) => ({
   formData: {
@@ -256,7 +256,7 @@ Transactions work with all Bruin middleware:
 ### Persist Middleware
 
 ```ts
-import { create } from 'bruin';
+import { create } from '@low-orbit/bruin';
 import { persist } from 'bruin/middleware';
 
 const useStore = create(
@@ -289,7 +289,7 @@ const useStore = create(
 ### DevTools Middleware
 
 ```ts
-import { create } from 'bruin';
+import { create } from '@low-orbit/bruin';
 import { devtools } from 'bruin/middleware';
 
 const useStore = create(
@@ -320,7 +320,7 @@ const useStore = create(
 Transactions are fully typed:
 
 ```ts
-import { create } from 'bruin';
+import { create } from '@low-orbit/bruin';
 
 type Store = {
   count: number;

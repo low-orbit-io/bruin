@@ -24,7 +24,7 @@ npm install immer
 Updating simple states
 
 ```ts
-import { create } from 'bruin';
+import { create } from '@low-orbit/bruin';
 import { immer } from 'bruin/middleware/immer';
 
 type State = {
@@ -54,7 +54,7 @@ export const useCountStore = create<State & Actions>()(
 Updating complex states
 
 ```ts
-import { create } from 'bruin';
+import { create } from '@low-orbit/bruin';
 import { immer } from 'bruin/middleware/immer';
 
 interface Todo {
@@ -123,7 +123,6 @@ so since both the current state and the next state are
 equal (if you don't do it correctly),
 Bruin will skip calling the subscriptions.
 
-## Demos
+## Examples
 
-- Basic: https://stackblitz.com/edit/vitejs-vite-3sgc4ejy
-- Advanced: https://stackblitz.com/edit/vitejs-vite-jxxtuyj3
+See the [Immer middleware documentation](../middlewares/immer.md) for complete examples.

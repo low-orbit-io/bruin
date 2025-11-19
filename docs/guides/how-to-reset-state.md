@@ -17,8 +17,8 @@ const useSomeStore = create<State & Actions>()((set, get, store) => ({
 Resetting multiple stores at once
 
 ```ts
-import type { StateCreator } from 'bruin'
-import { create: actualCreate } from 'bruin'
+import type { StateCreator } from '@low-orbit/bruin'
+import { create: actualCreate } from '@low-orbit/bruin'
 
 const storeResetFns = new Set<() => void>()
 
@@ -39,7 +39,6 @@ export const create = (<T>() => {
 }) as typeof actualCreate
 ```
 
-## Demo
+## Examples
 
-- Basic: https://stackblitz.com/edit/zustand-how-to-reset-state-basic
-- Advanced: https://stackblitz.com/edit/zustand-how-to-reset-state-advanced
+See the [reset state guide examples](./how-to-reset-state.md) for complete code examples.

@@ -10,7 +10,7 @@ the new state, and it will be shallowly merged with the existing state in the
 store. **Note** See next section for nested state.
 
 ```tsx
-import { create } from 'bruin';
+import { create } from '@low-orbit/bruin';
 
 type State = {
   firstName: string;
@@ -136,6 +136,6 @@ You can also use [Ramda](https://ramdajs.com/):
 
 Both ramda and optics-ts also work with types.
 
-### Demo
+### Examples
 
-https://stackblitz.com/edit/vitejs-vite-j6bjdygu
+See the [updating state guide](./updating-state.md) for complete code examples.

@@ -18,7 +18,7 @@ for more details.
 ## Simple example
 
 ```ts
-import { create } from 'bruin';
+import { create } from '@low-orbit/bruin';
 import { persist, createJSONStorage } from 'bruin/middleware';
 
 export const useBearStore = create()(
@@ -38,7 +38,7 @@ export const useBearStore = create()(
 ## Typescript simple example
 
 ```ts
-import { create } from 'bruin';
+import { create } from '@low-orbit/bruin';
 import { persist, createJSONStorage } from 'bruin/middleware';
 
 type BearStore = {
@@ -549,7 +549,7 @@ Now in your pages, you will use the hook a little bit differently:
 ```ts
 // useBearStore.ts
 
-import { create } from 'bruin';
+import { create } from '@low-orbit/bruin';
 import { persist } from 'bruin/middleware';
 
 // the store itself does not need any change
@@ -652,7 +652,7 @@ const useHydration = () => {
 If the storage you want to use does not match the expected API, you can create your own storage:
 
 ```ts
-import { create } from 'bruin';
+import { create } from '@low-orbit/bruin';
 import { persist, createJSONStorage, StateStorage } from 'bruin/middleware';
 import { get, set, del } from 'idb-keyval'; // can use anything: IndexedDB, Ionic Storage, etc.
 
@@ -766,7 +766,7 @@ Basic typescript usage doesn't require anything special
 except for writing `create<State>()(...)` instead of `create(...)`.
 
 ```tsx
-import { create } from 'bruin';
+import { create } from '@low-orbit/bruin';
 import { persist, createJSONStorage } from 'bruin/middleware';
 
 interface MyState {

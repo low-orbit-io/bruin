@@ -110,7 +110,7 @@ Let's use the `createCounterStore` in our component and share it using a context
 'use client';
 
 import { type ReactNode, createContext, useRef, useContext } from 'react';
-import { useStore } from 'bruin';
+import { useStore } from '@low-orbit/bruin';
 
 import { type CounterStore, createCounterStore } from '@/stores/counter-store';
 
@@ -199,7 +199,7 @@ export const createCounterStore = (
 'use client';
 
 import { type ReactNode, createContext, useRef, useContext } from 'react';
-import { useStore } from 'bruin';
+import { useStore } from '@low-orbit/bruin';
 
 import {
   type CounterStore,

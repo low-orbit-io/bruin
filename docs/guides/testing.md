@@ -55,7 +55,7 @@ this means your application logic does not need to be changed or mocked when wri
 > **Note**: Since Jest and Vitest have slight differences, like Vitest using **ES modules** and Jest using
 > **CommonJS modules**, you need to keep that in mind if you are using Vitest instead of Jest.
 
-The mock provided below will enable the relevant test runner to reset the zustand stores after each test.
+The mock provided below will enable the relevant test runner to reset the Bruin stores after each test.
 
 ### Shared code just for testing purposes
 
@@ -64,7 +64,7 @@ creator for both implementations, with and without `Context` API — `createStor
 
 ```ts
 // shared/counter-store-creator.ts
-import { type StateCreator } from 'bruin';
+import { type StateCreator } from '@low-orbit/bruin';
 
 export type CounterStore = {
   count: number;
@@ -82,13 +82,13 @@ export const counterStoreCreator: StateCreator<CounterStore> = (set) => ({
 In the next steps we are going to setup our Jest environment in order to mock Bruin.
 
 ```ts
-// __mocks__/zustand.ts
+// __mocks__/@low-orbit-bruin.ts
 import { act } from '@testing-library/react';
-import type * as BruinExportedTypes from 'bruin';
-export * from 'bruin';
+import type * as BruinExportedTypes from '@low-orbit/bruin';
+export * from '@low-orbit/bruin';
 
 const { create: actualCreate, createStore: actualCreateStore } =
-  jest.requireActual<typeof BruinExportedTypes>('bruin');
+  jest.requireActual<typeof BruinExportedTypes>('@low-orbit/bruin');
 
 // a variable to hold reset functions for all stores declared in the app
 export const storeResetFns = new Set<() => void>();
@@ -108,7 +108,7 @@ const createUncurried = <T>(
 export const create = (<T>(
   stateCreator: BruinExportedTypes.StateCreator<T>,
 ) => {
-  console.log('zustand create mock');
+  console.log('bruin create mock');
 
   // to support curried version of create
   return typeof stateCreator === 'function'
@@ -131,7 +131,7 @@ const createStoreUncurried = <T>(
 export const createStore = (<T>(
   stateCreator: BruinExportedTypes.StateCreator<T>,
 ) => {
-  console.log('zustand createStore mock');
+  console.log('bruin createStore mock');
 
   // to support curried version of createStore
   return typeof stateCreator === 'function'
@@ -180,13 +180,13 @@ In the next steps we are going to setup our Vitest environment in order to mock 
 > Creating `__mocks__` directory in the wrong place can lead to issues when using Vitest.
 
 ```ts
-// __mocks__/zustand.ts
+// __mocks__/@low-orbit-bruin.ts
 import { act } from '@testing-library/react';
-import type * as BruinExportedTypes from 'bruin';
-export * from 'bruin';
+import type * as BruinExportedTypes from '@low-orbit/bruin';
+export * from '@low-orbit/bruin';
 
 const { create: actualCreate, createStore: actualCreateStore } =
-  await vi.importActual<typeof BruinExportedTypes>('bruin');
+  await vi.importActual<typeof BruinExportedTypes>('@low-orbit/bruin');
 
 // a variable to hold reset functions for all stores declared in the app
 export const storeResetFns = new Set<() => void>();
@@ -206,7 +206,7 @@ const createUncurried = <T>(
 export const create = (<T>(
   stateCreator: BruinExportedTypes.StateCreator<T>,
 ) => {
-  console.log('zustand create mock');
+  console.log('bruin create mock');
 
   // to support curried version of create
   return typeof stateCreator === 'function'
@@ -229,7 +229,7 @@ const createStoreUncurried = <T>(
 export const createStore = (<T>(
   stateCreator: BruinExportedTypes.StateCreator<T>,
 ) => {
-  console.log('zustand createStore mock');
+  console.log('bruin createStore mock');
 
   // to support curried version of createStore
   return typeof stateCreator === 'function'
@@ -296,7 +296,7 @@ In the next examples we are going to use `useCounterStore`
 
 ```ts
 // shared/counter-store-creator.ts
-import { type StateCreator } from 'bruin';
+import { type StateCreator } from '@low-orbit/bruin';
 
 export type CounterStore = {
   count: number;
@@ -311,7 +311,7 @@ export const counterStoreCreator: StateCreator<CounterStore> = (set) => ({
 
 ```ts
 // stores/use-counter-store.ts
-import { create } from 'bruin';
+import { create } from '@low-orbit/bruin';
 
 import {
   type CounterStore,
@@ -324,7 +324,7 @@ export const useCounterStore = create<CounterStore>()(counterStoreCreator);
 ```tsx
 // contexts/use-counter-store-context.tsx
 import { type ReactNode, createContext, useContext, useRef } from 'react';
-import { createStore } from 'bruin';
+import { createStore } from '@low-orbit/bruin';
 import { useStoreWithEqualityFn } from 'bruin/traditional';
 import { shallow } from 'bruin/shallow';
 
@@ -515,7 +515,7 @@ In the next examples we are going to use `useCounterStore`
 
 ```ts
 // shared/counter-store-creator.ts
-import { type StateCreator } from 'bruin';
+import { type StateCreator } from '@low-orbit/bruin';
 
 export type CounterStore = {
   count: number;
@@ -530,7 +530,7 @@ export const counterStoreCreator: StateCreator<CounterStore> = (set) => ({
 
 ```ts
 // stores/use-counter-store.ts
-import { create } from 'bruin';
+import { create } from '@low-orbit/bruin';
 
 import {
   type CounterStore,
@@ -543,7 +543,7 @@ export const useCounterStore = create<CounterStore>()(counterStoreCreator);
 ```tsx
 // contexts/use-counter-store-context.tsx
 import { type ReactNode, createContext, useContext, useRef } from 'react';
-import { createStore } from 'bruin';
+import { createStore } from '@low-orbit/bruin';
 import { useStoreWithEqualityFn } from 'bruin/traditional';
 import { shallow } from 'bruin/shallow';
 
@@ -743,7 +743,6 @@ const renderCounterWithContext = (store) => {
 - **Testing Implementation Details**: Blog post by Kent C. Dodds on why he recommends to avoid
   [testing implementation details](https://kentcdodds.com/blog/testing-implementation-details).
 
-## Demos
+## Examples
 
-- Jest: https://stackblitz.com/edit/jest-zustand
-- Vitest: https://stackblitz.com/edit/vitest-zustand
+For complete testing examples, see the [testing examples in the repository](https://github.com/low-orbit-io/bruin/tree/main/tests).

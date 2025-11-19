@@ -26,13 +26,13 @@ Bruin is available as a package on NPM:
 
 ```bash
 # NPM
-npm install bruin
+npm install @low-orbit/bruin
 
 # Yarn
-yarn add bruin
+yarn add @low-orbit/bruin
 
 # PNPM
-pnpm add bruin
+pnpm add @low-orbit/bruin
 ```
 
 ## First create a store
@@ -41,7 +41,7 @@ Your store is a hook! You can put anything in it: primitives, objects, functions
 The `set` function _merges_ state by default.
 
 ```js
-import { create } from 'bruin';
+import { create } from '@low-orbit/bruin';
 
 const useBear = create((set) => ({
   bears: 0,
@@ -73,7 +73,7 @@ function Controls() {
 Bruin automatically tracks state changes, enabling time-travel debugging:
 
 ```js
-import { create } from 'bruin';
+import { create } from '@low-orbit/bruin';
 
 const useStore = create((set) => ({
   count: 0,
@@ -95,7 +95,7 @@ store.redo(); // Restore entire next state
 Batch multiple state updates into a single atomic change:
 
 ```js
-import { create } from 'bruin';
+import { create } from '@low-orbit/bruin';
 
 const useStore = create((set) => ({
   count: 0,
@@ -114,7 +114,7 @@ const useStore = create((set) => ({
 
 ## 100% Zustand Compatible
 
-Bruin is a drop-in replacement for Zustand. Simply replace `zustand` with `bruin` in your imports,
+Bruin is a drop-in replacement for Zustand. Simply replace `zustand` with `@low-orbit/bruin` in your imports,
 and you're ready to go - no breaking changes, no migration needed!
 
 ## What's Next?

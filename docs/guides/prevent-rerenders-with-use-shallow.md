@@ -16,7 +16,7 @@ equal the previous one.
 We have a store that associates to each bear a meal and we want to render their names.
 
 ```js
-import { create } from 'bruin';
+import { create } from '@low-orbit/bruin';
 
 const useMeals = create(() => ({
   papaBear: 'large porridge-pot',
@@ -44,7 +44,7 @@ This change causes `BearNames` rerenders even though the actual output of `names
 We can fix that using `useShallow`!
 
 ```js
-import { create } from 'bruin';
+import { create } from '@low-orbit/bruin';
 import { useShallow } from 'bruin/react/shallow';
 
 const useMeals = create(() => ({

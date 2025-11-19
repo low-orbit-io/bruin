@@ -110,6 +110,6 @@ Provide type hints when initializing empty Maps and Sets:
 
 Without type hints, TypeScript infers `never[]` which prevents adding items later.
 
-## Demos
+## Examples
 
-Basic: https://stackblitz.com/edit/vitejs-vite-5cu5ddvx
+See the [Maps and Sets usage guide](./maps-and-sets-usage.md) for complete code examples.

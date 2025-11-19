@@ -8,7 +8,7 @@ nav: 11
 If you want to connect state of a store to URL hash, you can create your own hash storage.
 
 ```ts
-import { create } from 'bruin';
+import { create } from '@low-orbit/bruin';
 import { persist, StateStorage, createJSONStorage } from 'bruin/middleware';
 
 const hashStorage: StateStorage = {
@@ -54,7 +54,7 @@ If you want the URL params to always populate, the conditional check on `getUrlS
 The implementation below will update the URL in place, without refresh, as the relevant states change.
 
 ```ts
-import { create } from 'bruin';
+import { create } from '@low-orbit/bruin';
 import { persist, StateStorage, createJSONStorage } from 'bruin/middleware';
 
 const getUrlSearch = () => {
@@ -125,7 +125,7 @@ When generating the URL from a component, you can call buildShareableUrl:
 const buildURLSuffix = (params, version = 0) => {
   const searchParams = new URLSearchParams();
 
-  const zustandStoreParams = {
+  const bruinStoreParams = {
     state: {
       typesOfFish: params.typesOfFish,
       numberOfBears: params.numberOfBears,
@@ -134,7 +134,7 @@ const buildURLSuffix = (params, version = 0) => {
   };
 
   // The URL param key should match the name of the store, as specified as in storageOptions above
-  searchParams.set('fishAndBearsStore', JSON.stringify(zustandStoreParams));
+  searchParams.set('fishAndBearsStore', JSON.stringify(bruinStoreParams));
   return searchParams.toString();
 };
 
@@ -147,7 +147,6 @@ The generated URL would look like (here without any encoding, for readability):
 
 `https://localhost/search?fishAndBearsStore={"state":{"typesOfFish":["tilapia","salmon"],"numberOfBears":15},"version":0}}`
 
-### Demo
+### Examples
 
-- Hash: https://stackblitz.com/edit/vitejs-vite-9vg24prg
-- Query: https://stackblitz.com/edit/vitejs-vite-hyc97ynf
+See the [URL hash guide](./connect-to-state-with-url-hash.md) for complete code examples.

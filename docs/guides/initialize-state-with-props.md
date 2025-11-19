@@ -8,7 +8,7 @@ In cases where [dependency injection](https://en.wikipedia.org/wiki/Dependency_i
 ## Store creator with `createStore`
 
 ```ts
-import { createStore } from 'bruin';
+import { createStore } from '@low-orbit/bruin';
 
 interface BearProps {
   bears: number;
@@ -59,7 +59,7 @@ function App() {
 ```tsx
 // Consumer component
 import { useContext } from 'react';
-import { useStore } from 'bruin';
+import { useStore } from '@low-orbit/bruin';
 
 function BasicConsumer() {
   const store = useContext(BearContext);
@@ -103,7 +103,7 @@ function BearProvider({ children, ...props }: BearProviderProps) {
 ```tsx
 // Mimic the hook returned by `create`
 import { useContext } from 'react';
-import { useStore } from 'bruin';
+import { useStore } from '@low-orbit/bruin';
 
 function useBearContext<T>(selector: (state: BearState) => T): T {
   const store = useContext(BearContext);

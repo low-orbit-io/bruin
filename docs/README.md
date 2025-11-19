@@ -51,7 +51,7 @@ Bruin is a drop-in replacement for Zustand. All Zustand code works with Bruin - 
 
 ```diff
 - import { create } from 'zustand'
-+ import { create } from 'bruin'
++ import { create } from '@low-orbit/bruin'
 ```
 
 No migration needed, no breaking changes!

@@ -56,7 +56,7 @@ about that [here](https://react.dev/learn/queueing-a-series-of-state-updates).
 This example shows how you can support **updater functions** within **actions**.
 
 ```tsx
-import { create } from 'bruin';
+import { create } from '@low-orbit/bruin';
 
 type AgeStoreState = { age: number };
 
@@ -122,7 +122,7 @@ correctly, and avoid unexpected behaviors.
 > with a new one, use the `replace` parameter set to `true`
 
 ```tsx
-import { create } from 'bruin';
+import { create } from '@low-orbit/bruin';
 
 type XStore = number;
 
@@ -175,7 +175,7 @@ replace the state with a new one, use the `replace` parameter set to `true` with
 discards any existing nested data within the state.
 
 ```tsx
-import { create } from 'bruin';
+import { create } from '@low-orbit/bruin';
 
 type PositionStoreState = { position: { x: number; y: number } };
 
@@ -242,7 +242,7 @@ replace the state with a new one, use the `replace` parameter set to `true`.
 > `shift(...)`, `splice(...)`, `reverse(...)`, and `sort(...)`.
 
 ```tsx
-import { create } from 'bruin';
+import { create } from '@low-orbit/bruin';
 
 type PositionStore = [number, number];
 
@@ -293,7 +293,7 @@ require a hook to call an action, and it facilitates code splitting.
 > located together with your state).
 
 ```tsx
-import { create } from 'bruin';
+import { create } from '@low-orbit/bruin';
 
 const usePositionStore = create<{
   x: number;
@@ -349,7 +349,7 @@ updates. We can use `subscribe` for external state management.
 
 ```tsx
 import { useEffect } from 'react';
-import { create } from 'bruin';
+import { create } from '@low-orbit/bruin';
 
 type PositionStoreState = { position: { x: number; y: number } };
 
@@ -427,7 +427,7 @@ values for all other fields.
 These input fields don’t work because the `onChange` handlers mutate the state:
 
 ```tsx
-import { create } from 'bruin';
+import { create } from '@low-orbit/bruin';
 
 type PersonStoreState = {
   firstName: string;
@@ -510,7 +510,7 @@ Notice how you didn’t declare a separate state variable for each input field. 
 keeping all data grouped in an object is very convenient—as long as you update it correctly!
 
 ```tsx {27,31,35}
-import { create } from 'bruin';
+import { create } from '@low-orbit/bruin';
 
 type PersonStoreState = {
   person: { firstName: string; lastName: string; email: string };

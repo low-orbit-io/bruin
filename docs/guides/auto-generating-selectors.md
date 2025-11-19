@@ -14,7 +14,7 @@ However, writing these could be tedious. If that is the case for you, you can au
 ## Create the following function: `createSelectors`
 
 ```typescript
-import { StoreApi, UseBoundStore } from 'bruin';
+import { StoreApi, UseBoundStore } from '@low-orbit/bruin';
 
 type WithSelectors<S> = S extends { getState: () => infer T }
   ? S & { use: { [K in keyof T]: () => T[K] } }
@@ -70,7 +70,7 @@ const increment = useBearStore.use.increment();
 If you are using a vanilla store, use the following `createSelectors` function:
 
 ```typescript
-import { StoreApi, useStore } from 'bruin';
+import { StoreApi, useStore } from '@low-orbit/bruin';
 
 type WithSelectors<S> = S extends { getState: () => infer T }
   ? S & { use: { [K in keyof T]: () => T[K] } }
@@ -91,7 +91,7 @@ const createSelectors = <S extends StoreApi<object>>(_store: S) => {
 The usage is the same as a React store. If you have a store like this:
 
 ```typescript
-import { createStore } from 'bruin';
+import { createStore } from '@low-orbit/bruin';
 
 interface BearState {
   bears: number;
@@ -122,9 +122,9 @@ const bears = useBearStore.use.bears();
 const increment = useBearStore.use.increment();
 ```
 
-## Live Demo
+## Example
 
-For a working example of this, see the [Code Sandbox](https://codesandbox.io/s/zustand-auto-generate-selectors-forked-rl8v5e?file=/src/selectors.ts).
+For a working example of this pattern, see the [auto-generating selectors guide](../guides/auto-generating-selectors.md).
 
 ## Third-party Libraries
 

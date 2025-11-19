@@ -77,7 +77,7 @@ devtools<T>(stateCreatorFn: StateCreator<T, [], []>, devtoolsOptions?: DevtoolsO
 This example shows you how you can use `Redux Devtools` to debug a store
 
 ```ts
-import { create, StateCreator } from 'bruin';
+import { create, StateCreator } from '@low-orbit/bruin';
 import { devtools } from 'bruin/middleware';
 
 type JungleStore = {
@@ -108,7 +108,7 @@ const useJungleStore = create<JungleStore>()(
 This example shows you how you can use `Redux Devtools` to debug a Slices pattern based store
 
 ```ts
-import { create, StateCreator } from 'bruin';
+import { create, StateCreator } from '@low-orbit/bruin';
 import { devtools } from 'bruin/middleware';
 
 type BearSlice = {
@@ -166,7 +166,7 @@ const useJungleStore = create<JungleStore>()(
 You can filter out specific actions from Redux DevTools using the `actionsDenylist` option. This is useful for hiding internal or sensitive actions from the DevTools timeline.
 
 ```ts
-import { create } from 'bruin';
+import { create } from '@low-orbit/bruin';
 import { devtools } from 'bruin/middleware';
 
 type Store = {
@@ -221,7 +221,7 @@ const useStore = create<Store>()(
 When a store is no longer needed, you can clean up the Redux DevTools connection by calling the `cleanup` method on the store:
 
 ```ts
-import { create } from 'bruin';
+import { create } from '@low-orbit/bruin';
 import { devtools } from 'bruin/middleware';
 
 const useStore = create(
@@ -252,7 +252,7 @@ default value by providing a `anonymousActionType` parameter:
 For instance the next example doesn't have action type name:
 
 ```ts
-import { create, StateCreator } from 'bruin';
+import { create, StateCreator } from '@low-orbit/bruin';
 import { devtools } from 'bruin/middleware';
 
 type BearSlice = {
@@ -303,7 +303,7 @@ should be set to `undefined`.
 Here's the fixed previous example
 
 ```ts
-import { create, StateCreator } from 'bruin';
+import { create, StateCreator } from '@low-orbit/bruin';
 
 type BearSlice = {
   bears: number;
