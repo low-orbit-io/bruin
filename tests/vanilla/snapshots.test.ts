@@ -375,6 +375,21 @@ describe('Named Snapshots', () => {
       // Should have unique values, not all the same
       const uniqueCounts = new Set(allCounts);
       expect(uniqueCounts.size).toBeGreaterThan(1); // Not all entries should be the same
+      
+      // CRITICAL: Verify that history entries are truly independent objects
+      // Mutate one entry's state and verify others are not affected
+      const firstEntry = store.getHistory()[0];
+      const lastEntry = store.getHistory()[store.getHistory().length - 1];
+      
+      // These should be different objects
+      expect(firstEntry.state).not.toBe(lastEntry.state);
+      
+      // Mutate the first entry's state (if possible) and verify last entry is unchanged
+      if (firstEntry && firstEntry.state && typeof firstEntry.state === 'object') {
+        const originalLastCount = (lastEntry.state as any).count;
+        (firstEntry.state as any).count = 999; // Mutate first entry
+        expect((lastEntry.state as any).count).toBe(originalLastCount); // Last entry should be unchanged
+      }
     });
   });
 

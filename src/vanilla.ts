@@ -420,30 +420,8 @@ function createStoreImpl<
     if (isImmerable(historyState) && isImmerable(currentState)) {
       // Deep clone the historyState to ensure we don't mutate the original
       // This is critical for snapshots - we must never mutate the snapshot's state
-      let newState: T;
-
-      if (typeof structuredClone !== 'undefined') {
-        try {
-          newState = structuredClone(historyState) as T;
-        } catch {
-          // structuredClone failed, use JSON clone
-          try {
-            newState = JSON.parse(JSON.stringify(historyState)) as T;
-          } catch {
-            // JSON clone failed, use shallow clone as last resort
-            newState = {} as T;
-            Object.assign(newState as any, historyState);
-          }
-        }
-      } else {
-        try {
-          newState = JSON.parse(JSON.stringify(historyState)) as T;
-        } catch {
-          // JSON clone failed, use shallow clone as last resort
-          newState = {} as T;
-          Object.assign(newState as any, historyState);
-        }
-      }
+      // Use cloneStateForHistory to ensure consistent deep cloning behavior
+      let newState: T = cloneStateForHistory(historyState);
 
       // Restore getters, setters, and function properties from currentState
       // This ensures functions and computed properties are preserved
@@ -465,14 +443,7 @@ function createStoreImpl<
 
       return newState;
     }
-    // For non-objects, return a copy if possible, otherwise return as-is
-    if (typeof historyState === 'object' && historyState !== null) {
-      try {
-        return JSON.parse(JSON.stringify(historyState)) as T;
-      } catch {
-        return historyState;
-      }
-    }
+    // For non-objects, return as-is (primitives don't need cloning)
     return historyState;
   };
 
@@ -660,7 +631,9 @@ function createStoreImpl<
                 const historyState = historyEntry.state;
 
                 if (isImmerable(historyState)) {
-                  const updatedState = { ...historyState };
+                  // Deep clone the history state before updating to prevent mutation
+                  const clonedState = cloneStateForHistory(historyState);
+                  const updatedState = { ...clonedState };
 
                   for (const key of changedKeys) {
                     (updatedState as any)[key] = (state as any)[key];
@@ -833,13 +806,13 @@ function createStoreImpl<
 
       if (isEntryFormat) {
         history = (statesOrEntries as HistoryEntry<T>[]).map((entry) => ({
-          state: entry.state,
+          state: cloneStateForHistory(entry.state), // Deep clone to prevent reference sharing
           timestamp: entry.timestamp ?? Date.now(),
           ...(entry.name !== undefined && { name: entry.name }),
         }));
       } else {
         history = (statesOrEntries as T[]).map((s) => ({
-          state: s,
+          state: cloneStateForHistory(s), // Deep clone to prevent reference sharing
           timestamp: Date.now(),
         }));
       }
@@ -1038,7 +1011,11 @@ function createStoreImpl<
       snapshots.clear();
       for (const snapshot of snapshotArray) {
         if (snapshot?.id && snapshot?.name && snapshot?.state) {
-          snapshots.set(snapshot.id, snapshot);
+          // Deep clone snapshot state to prevent reference sharing
+          snapshots.set(snapshot.id, {
+            ...snapshot,
+            state: cloneStateForHistory(snapshot.state),
+          });
         }
       }
     },
