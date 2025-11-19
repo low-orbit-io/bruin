@@ -19,25 +19,38 @@ Bruin extends Zustand with these built-in features:
 
 **1. History Tracking**
 
-```ts
+```tsx
 import { create } from '@low-orbit/bruin';
 
-const useStore = create((set) => ({
+interface StoreState {
+  count: number;
+  increment: () => void;
+}
+
+const useStore = create<StoreState>((set) => ({
   count: 0,
   increment: () =>
-    set((state) => ({ count: state.count + 1 }), false, 'increment'),
+    set((state) => ({ count: state.count + 1 })),
 }));
 
 // Built-in time-travel
 useStore.getState().undo();
 useStore.getState().redo();
 useStore.getState().getHistory();
+useStore.getState().canUndo();
+useStore.getState().canRedo();
 ```
 
 **2. Transactions**
 
-```ts
-const useStore = create((set) => ({
+```tsx
+interface StoreState {
+  count: number;
+  name: string;
+  updateBoth: () => void;
+}
+
+const useStore = create<StoreState>((set) => ({
   count: 0,
   name: 'Alice',
   updateBoth: () => {

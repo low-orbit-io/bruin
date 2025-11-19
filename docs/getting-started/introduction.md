@@ -40,14 +40,21 @@ pnpm add @low-orbit/bruin
 Your store is a hook! You can put anything in it: primitives, objects, functions.
 The `set` function _merges_ state by default.
 
-```js
+```tsx
 import { create } from '@low-orbit/bruin';
 
-const useBear = create((set) => ({
+interface BearState {
+  bears: number;
+  increasePopulation: () => void;
+  removeAllBears: () => void;
+  updateBears: (newBears: number) => void;
+}
+
+const useBear = create<BearState>((set) => ({
   bears: 0,
   increasePopulation: () => set((state) => ({ bears: state.bears + 1 })),
   removeAllBears: () => set({ bears: 0 }),
-  updateBears: (newBears) => set({ bears: newBears }),
+  updateBears: (newBears: number) => set({ bears: newBears }),
 }));
 ```
 
@@ -55,8 +62,9 @@ const useBear = create((set) => ({
 
 You can use the hook anywhere, without the need of providers.
 Select your state and the consuming component will re-render when that state changes.
+Undo and redo are available directly on the store.
 
-```jsx
+```tsx
 function BearCounter() {
   const bears = useBear((state) => state.bears);
   return <h1>{bears} bears around here...</h1>;
@@ -64,7 +72,14 @@ function BearCounter() {
 
 function Controls() {
   const increasePopulation = useBear((state) => state.increasePopulation);
-  return <button onClick={increasePopulation}>one up</button>;
+  const { undo, redo, canUndo, canRedo } = useBear;
+  return (
+    <>
+      <button onClick={increasePopulation}>one up</button>
+      <button onClick={undo} disabled={!canUndo}>undo</button>
+      <button onClick={redo} disabled={!canRedo}>redo</button>
+    </>
+  );
 }
 ```
 
@@ -72,13 +87,18 @@ function Controls() {
 
 Bruin automatically tracks state changes, enabling time-travel debugging:
 
-```js
+```tsx
 import { create } from '@low-orbit/bruin';
 
-const useStore = create((set) => ({
+interface StoreState {
+  count: number;
+  increment: () => void;
+}
+
+const useStore = create<StoreState>((set) => ({
   count: 0,
   increment: () =>
-    set((state) => ({ count: state.count + 1 }), false, 'increment'),
+    set((state) => ({ count: state.count + 1 })),
 }));
 
 // Access history
@@ -86,6 +106,8 @@ const store = useStore.getState();
 console.log(store.getHistory()); // Array of complete state snapshots
 store.undo(); // Restore entire previous state
 store.redo(); // Restore entire next state
+store.canUndo(); // Check if undo is possible
+store.canRedo(); // Check if redo is possible
 ```
 
 **Note:** Undo/redo restores the **entire state** to the previous snapshot (not just changed fields). Each store maintains its **own independent history** - multiple stores don't interfere with each other.
@@ -94,10 +116,16 @@ store.redo(); // Restore entire next state
 
 Batch multiple state updates into a single atomic change:
 
-```js
+```tsx
 import { create } from '@low-orbit/bruin';
 
-const useStore = create((set) => ({
+interface StoreState {
+  count: number;
+  name: string;
+  updateBoth: () => void;
+}
+
+const useStore = create<StoreState>((set) => ({
   count: 0,
   name: 'Alice',
   updateBoth: () => {

@@ -52,7 +52,7 @@ createStore<T>()(stateCreatorFn: StateCreator<T, [], []>): StoreApi<T>
 This example shows how you can support **updater functions** within **actions**.
 
 ```tsx
-import { createStore } from 'bruin/vanilla';
+import { createStore } from '@low-orbit/bruin/vanilla';
 
 type AgeStoreState = { age: number };
 
@@ -126,7 +126,7 @@ correctly, and avoid unexpected behaviors.
 > the state with a new one, use the `replace` parameter set to `true`
 
 ```ts
-import { createStore } from 'bruin/vanilla';
+import { createStore } from '@low-orbit/bruin/vanilla';
 
 type XStore = number;
 
@@ -176,7 +176,7 @@ replace the state with a new one, use the `replace` parameter set to `true` with
 discards any existing nested data within the state.
 
 ```ts
-import { createStore } from 'bruin/vanilla';
+import { createStore } from '@low-orbit/bruin/vanilla';
 
 type PositionStoreState = { position: { x: number; y: number } };
 
@@ -243,7 +243,7 @@ replace the state with a new one, use the `replace` parameter set to `true`.
 > `shift(...)`, `splice(...)`, `reverse(...)`, and `sort(...)`.
 
 ```ts
-import { createStore } from 'bruin/vanilla';
+import { createStore } from '@low-orbit/bruin/vanilla';
 
 type PositionStore = [number, number];
 
@@ -287,7 +287,7 @@ By subscribing to state updates, you register a callback that fires whenever the
 updates. We can use `subscribe` for external state management.
 
 ```ts
-import { createStore } from 'bruin/vanilla';
+import { createStore } from '@low-orbit/bruin/vanilla';
 
 type PositionStoreState = { position: { x: number; y: number } };
 
@@ -356,7 +356,7 @@ values for all other fields.
 These input fields don’t work because the `oninput` handlers mutate the state:
 
 ```ts
-import { createStore } from 'bruin/vanilla';
+import { createStore } from '@low-orbit/bruin/vanilla';
 
 type PersonStoreState = {
   person: { firstName: string; lastName: string; email: string };
@@ -457,7 +457,7 @@ Notice how you didn’t declare a separate state variable for each input field. 
 keeping all data grouped in an object is very convenient—as long as you update it correctly!
 
 ```ts {32-34,38-40,44-46}
-import { createStore } from 'bruin/vanilla';
+import { createStore } from '@low-orbit/bruin/vanilla';
 
 type PersonStoreState = {
   person: { firstName: string; lastName: string; email: string };

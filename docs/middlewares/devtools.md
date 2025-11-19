@@ -78,7 +78,7 @@ This example shows you how you can use `Redux Devtools` to debug a store
 
 ```ts
 import { create, StateCreator } from '@low-orbit/bruin';
-import { devtools } from 'bruin/middleware';
+import { devtools } from '@low-orbit/bruin/middleware';
 
 type JungleStore = {
   bears: number;
@@ -109,7 +109,7 @@ This example shows you how you can use `Redux Devtools` to debug a Slices patter
 
 ```ts
 import { create, StateCreator } from '@low-orbit/bruin';
-import { devtools } from 'bruin/middleware';
+import { devtools } from '@low-orbit/bruin/middleware';
 
 type BearSlice = {
   bears: number;
@@ -167,7 +167,7 @@ You can filter out specific actions from Redux DevTools using the `actionsDenyli
 
 ```ts
 import { create } from '@low-orbit/bruin';
-import { devtools } from 'bruin/middleware';
+import { devtools } from '@low-orbit/bruin/middleware';
 
 type Store = {
   user: string | null;
@@ -222,7 +222,7 @@ When a store is no longer needed, you can clean up the Redux DevTools connection
 
 ```ts
 import { create } from '@low-orbit/bruin';
-import { devtools } from 'bruin/middleware';
+import { devtools } from '@low-orbit/bruin/middleware';
 
 const useStore = create(
   devtools((set) => ({
@@ -253,7 +253,7 @@ For instance the next example doesn't have action type name:
 
 ```ts
 import { create, StateCreator } from '@low-orbit/bruin';
-import { devtools } from 'bruin/middleware';
+import { devtools } from '@low-orbit/bruin/middleware';
 
 type BearSlice = {
   bears: number;

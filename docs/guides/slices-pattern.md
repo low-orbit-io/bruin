@@ -11,8 +11,15 @@ You can divide your main store into smaller individual stores to achieve modular
 
 The first individual store:
 
-```js
-export const createFishSlice = (set) => ({
+```tsx
+import { StateCreator } from '@low-orbit/bruin';
+
+interface FishSlice {
+  fishes: number;
+  addFish: () => void;
+}
+
+export const createFishSlice: StateCreator<FishSlice> = (set) => ({
   fishes: 0,
   addFish: () => set((state) => ({ fishes: state.fishes + 1 })),
 });
@@ -20,8 +27,14 @@ export const createFishSlice = (set) => ({
 
 Another individual store:
 
-```js
-export const createBearSlice = (set) => ({
+```tsx
+interface BearSlice {
+  bears: number;
+  addBear: () => void;
+  eatFish: () => void;
+}
+
+export const createBearSlice: StateCreator<BearSlice> = (set) => ({
   bears: 0,
   addBear: () => set((state) => ({ bears: state.bears + 1 })),
   eatFish: () => set((state) => ({ fishes: state.fishes - 1 })),
@@ -30,12 +43,14 @@ export const createBearSlice = (set) => ({
 
 You can now combine both the stores into **one bounded store**:
 
-```js
+```tsx
 import { create } from '@low-orbit/bruin';
 import { createBearSlice } from './bearSlice';
 import { createFishSlice } from './fishSlice';
 
-export const useBoundStore = create((...a) => ({
+type BoundStore = BearSlice & FishSlice;
+
+export const useBoundStore = create<BoundStore>((...a) => ({
   ...createBearSlice(...a),
   ...createFishSlice(...a),
 }));
@@ -43,7 +58,7 @@ export const useBoundStore = create((...a) => ({
 
 ### Usage in a React component
 
-```jsx
+```tsx
 import { useBoundStore } from './stores/useBoundStore';
 
 function App() {
@@ -66,8 +81,12 @@ export default App;
 
 You can update multiple stores, at the same time, in a single function.
 
-```js
-export const createBearFishSlice = (set, get) => ({
+```tsx
+interface BearFishSlice {
+  addBearAndFish: () => void;
+}
+
+export const createBearFishSlice: StateCreator<BearFishSlice> = (set, get) => ({
   addBearAndFish: () => {
     get().addBear();
     get().addFish();
@@ -77,13 +96,15 @@ export const createBearFishSlice = (set, get) => ({
 
 Combining all the stores together is the same as before.
 
-```js
+```tsx
 import { create } from '@low-orbit/bruin';
 import { createBearSlice } from './bearSlice';
 import { createFishSlice } from './fishSlice';
 import { createBearFishSlice } from './createBearFishSlice';
 
-export const useBoundStore = create((...a) => ({
+type BoundStore = BearSlice & FishSlice & BearFishSlice;
+
+export const useBoundStore = create<BoundStore>((...a) => ({
   ...createBearSlice(...a),
   ...createFishSlice(...a),
   ...createBearFishSlice(...a),
@@ -96,13 +117,15 @@ Adding middlewares to a combined store is the same as with other normal stores.
 
 Adding `persist` middleware to our `useBoundStore`:
 
-```js
+```tsx
 import { create } from '@low-orbit/bruin';
 import { createBearSlice } from './bearSlice';
 import { createFishSlice } from './fishSlice';
-import { persist } from 'bruin/middleware';
+import { persist } from '@low-orbit/bruin/middleware';
 
-export const useBoundStore = create(
+type BoundStore = BearSlice & FishSlice;
+
+export const useBoundStore = create<BoundStore>()(
   persist(
     (...a) => ({
       ...createBearSlice(...a),

@@ -254,7 +254,7 @@ Use the persist middleware to save/restore history:
 
 ```ts
 import { create } from '@low-orbit/bruin';
-import { persist } from 'bruin/middleware';
+import { persist } from '@low-orbit/bruin/middleware';
 
 const useStore = create(
   persist(
@@ -278,7 +278,7 @@ History automatically integrates with Redux DevTools:
 
 ```ts
 import { create } from '@low-orbit/bruin';
-import { devtools } from 'bruin/middleware';
+import { devtools } from '@low-orbit/bruin/middleware';
 
 const useStore = create(
   devtools(

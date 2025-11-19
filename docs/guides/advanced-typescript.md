@@ -137,7 +137,7 @@ Alternatively, you can also use `combine`, which infers the state so that you do
 
 ```ts
 import { create } from '@low-orbit/bruin';
-import { combine } from 'bruin/middleware';
+import { combine } from '@low-orbit/bruin/middleware';
 
 const useBearStore = create(
   combine({ bears: 0 }, (set) => ({
@@ -165,7 +165,7 @@ If you want to infer state type also outside of state declaration, you can use t
 
 ```ts
 import { create, ExtractState } from '@low-orbit/bruin';
-import { combine } from 'bruin/middleware';
+import { combine } from '@low-orbit/bruin/middleware';
 
 type BearState = ExtractState<typeof useBearStore>;
 
@@ -182,7 +182,7 @@ You do not have to do anything special to use middlewares in TypeScript.
 
 ```ts
 import { create } from '@low-orbit/bruin';
-import { devtools, persist } from 'bruin/middleware';
+import { devtools, persist } from '@low-orbit/bruin/middleware';
 
 interface BearState {
   bears: number;
@@ -206,7 +206,7 @@ Just make sure you are using them immediately inside `create` so as to make the 
 
 ```ts
 import { create } from '@low-orbit/bruin';
-import { devtools, persist } from 'bruin/middleware';
+import { devtools, persist } from '@low-orbit/bruin/middleware';
 
 const myMiddlewares = (f) => devtools(persist(f, { name: 'bearStore' }));
 
@@ -483,7 +483,7 @@ If you have some middlewares then replace `StateCreator<MyState, [], [], MySlice
 
 ```ts
 import { useStore } from '@low-orbit/bruin';
-import { createStore } from 'bruin/vanilla';
+import { createStore } from '@low-orbit/bruin/vanilla';
 
 interface BearState {
   bears: number;
@@ -506,7 +506,7 @@ You can also make an abstract `createBoundedUseStore` function if you need to cr
 
 ```ts
 import { useStore, StoreApi } from '@low-orbit/bruin';
-import { createStore } from 'bruin/vanilla';
+import { createStore } from '@low-orbit/bruin/vanilla';
 
 interface BearState {
   bears: number;

@@ -107,7 +107,7 @@ All Zustand middleware works, plus:
 
 ## Contributing
 
-Found an issue or want to contribute? Check out our [GitHub repository](https://github.com/your-org/bruin).
+Found an issue or want to contribute? Check out our [GitHub repository](https://github.com/low-orbit-io/bruin).
 
 ## License
 

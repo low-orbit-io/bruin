@@ -149,7 +149,7 @@ See the [API documentation](../../hooks/use-shallow.md) for more details on `use
 
 ```tsx
 import { create } from '@low-orbit/bruin';
-import { useShallow } from 'bruin/react/shallow';
+import { useShallow } from '@low-orbit/bruin/react/shallow';
 
 // Bear store with explicit types
 interface BearState {
@@ -213,7 +213,7 @@ See the [API documentation](../../middlewares/combine.md) for more details.
 
 ```ts
 import { create } from '@low-orbit/bruin';
-import { combine } from 'bruin/middleware';
+import { combine } from '@low-orbit/bruin/middleware';
 
 interface BearState {
   bears: number;
@@ -236,7 +236,7 @@ See the [API documentation](../../middlewares/devtools.md) for more details.
 
 ```ts
 import { create } from '@low-orbit/bruin';
-import { devtools } from 'bruin/middleware';
+import { devtools } from '@low-orbit/bruin/middleware';
 
 interface BearState {
   bears: number;
@@ -259,7 +259,7 @@ See the [API documentation](../../middlewares/persist.md) for more details.
 
 ```ts
 import { create } from '@low-orbit/bruin';
-import { persist } from 'bruin/middleware';
+import { persist } from '@low-orbit/bruin/middleware';
 
 interface BearState {
   bears: number;
@@ -312,8 +312,8 @@ Not common, but shows Bruin’s flexibility. TS still keeps full type inference.
 See the [API documentation](../../apis/create-with-equality-fn.md) for more details.
 
 ```ts
-import { createWithEqualityFn } from 'bruin/traditional';
-import { shallow } from 'bruin/shallow';
+import { createWithEqualityFn } from '@low-orbit/bruin/traditional';
+import { shallow } from '@low-orbit/bruin/shallow';
 
 const useBearStore = createWithEqualityFn(() => ({
   bears: 0,
