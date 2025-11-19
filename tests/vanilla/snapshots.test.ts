@@ -36,8 +36,6 @@ describe('Named Snapshots', () => {
       type _TestSnapshot = import('../../src/vanilla').Snapshot<any>;
       type _TestSnapshotInfo = import('../../src/vanilla').SnapshotInfo;
       type _TestSnapshotOptions = import('../../src/vanilla').SnapshotOptions;
-      type _TestSnapshotRestoreOptions =
-        import('../../src/vanilla').SnapshotRestoreOptions;
       type _TestMemoryInfo = import('../../src/vanilla').MemoryInfo;
 
       // Types compile successfully
@@ -285,45 +283,6 @@ describe('Named Snapshots', () => {
       expect(lastEntry).toBeDefined();
       expect(lastEntry!.count).toBe(5); // The snapshot was saved when count was 5
       expect(lastEntry!.name).toBe('Restored snapshot: history-test');
-    });
-
-    it('should skip history when addToHistory is false', () => {
-      const store = createTestStore();
-
-      store.setState({ count: 5 });
-      store.setState({ count: 10 });
-      store.setState({ count: 15 });
-
-      const id = store.saveSnapshot('no-history-test');
-
-      store.setState({ count: 20 });
-      const historySizeBefore = store.getHistory().length;
-      const historyBefore = store.getHistory().map((entry: any) => ({
-        count: entry.state?.count,
-        name: entry.name,
-      }));
-
-      store.loadSnapshot(id, { addToHistory: false });
-
-      const historySizeAfter = store.getHistory().length;
-      expect(historySizeAfter).toBe(historySizeBefore);
-
-      // CRITICAL: Verify that existing history entries are NOT replaced
-      const historyAfter = store.getHistory().map((entry: any) => ({
-        count: entry.state?.count,
-        name: entry.name,
-      }));
-
-      // All previous entries should be preserved exactly
-      for (let i = 0; i < historyBefore.length; i++) {
-        expect(historyAfter[i]!.count).toBe(historyBefore[i]!.count);
-        expect(historyAfter[i]!.name).toBe(historyBefore[i]!.name);
-      }
-
-      // Verify entries are independent objects
-      const firstEntry = store.getHistory()[0];
-      const lastEntry = store.getHistory()[store.getHistory().length - 1];
-      expect(firstEntry.state).not.toBe(lastEntry.state);
     });
 
     it('should preserve all history entries when loading snapshot (reproduces bug)', () => {

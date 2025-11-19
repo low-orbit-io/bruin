@@ -10,7 +10,6 @@ import type {
   Snapshot,
   SnapshotInfo,
   SnapshotOptions,
-  SnapshotRestoreOptions,
   StateCreator,
   StateCreatorSet,
   StoreApi,
@@ -35,7 +34,6 @@ export type {
   Snapshot,
   SnapshotInfo,
   SnapshotOptions,
-  SnapshotRestoreOptions,
   MemoryInfo,
 } from './types/core';
 
@@ -732,6 +730,7 @@ function createStoreImpl<
     },
     canUndo: () => historyIndex > 0,
     canRedo: () => historyIndex < history.length - 1,
+    getCurrentHistoryIndex: () => historyIndex,
     transaction: (fn, txOptions) => {
       if (inTransaction) {
         fn();
@@ -978,37 +977,23 @@ function createStoreImpl<
     getSnapshot: (id: string): Snapshot<T> | null => {
       return snapshots.get(id) || null;
     },
-    loadSnapshot: (id: string, options?: SnapshotRestoreOptions): boolean => {
+    loadSnapshot: (id: string): boolean => {
       const snapshot = snapshots.get(id);
 
       if (!snapshot) {
         return false;
       }
 
-      const addToHistory = options?.addToHistory !== false; // Default true
-
-      if (addToHistory) {
-        // Use transaction to ensure history is updated properly
-        // We need to directly assign to state within the transaction to ensure
-        // Object.is(state, startState) detects the change
-        api.transaction(
-          () => {
-            const restoredState = restoreHistoryState(snapshot.state, state);
-            // Directly assign to state to ensure the transaction detects the change
-            state = restoredState;
-          },
-          { name: `Restored snapshot: ${snapshot.name}` },
-        );
-      } else {
-        // Directly restore without adding to history and WITHOUT updating existing history entries
-        // We need to bypass the skipHistory logic that updates all entries
-        const prevState = state;
-        const restoredState = restoreHistoryState(snapshot.state, state);
-        // Directly set state without going through setState's skipHistory path
-        // This prevents updating all history entries
-        state = restoredState;
-        notifyListeners(state, prevState);
-      }
+      // Always add to history to maintain the invariant that current state matches history[historyIndex]
+      // Use transaction to ensure history is updated properly
+      api.transaction(
+        () => {
+          const restoredState = restoreHistoryState(snapshot.state, state);
+          // Directly assign to state to ensure the transaction detects the change
+          state = restoredState;
+        },
+        { name: `Restored snapshot: ${snapshot.name}` },
+      );
 
       return true;
     },

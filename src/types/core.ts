@@ -78,6 +78,7 @@ export type StoreApi<T> = {
   redo: () => void;
   canUndo: () => boolean;
   canRedo: () => boolean;
+  getCurrentHistoryIndex: () => number;
   transaction: StoreTransaction<T>;
   getHistory: () => any[];
   saveHistory?: () => any[];
@@ -92,7 +93,7 @@ export type StoreApi<T> = {
   listSnapshots: () => SnapshotInfo[];
   getSnapshotInfo: (id: string) => SnapshotInfo | null;
   getSnapshot?: (id: string) => Snapshot<T> | null; // Internal use for persist
-  loadSnapshot: (id: string, options?: SnapshotRestoreOptions) => boolean;
+  loadSnapshot: (id: string) => boolean;
   deleteSnapshot: (id: string) => boolean;
   clearSnapshots: () => void;
   restoreSnapshots?: (snapshots: Snapshot<T>[]) => void;
@@ -165,8 +166,4 @@ export type SnapshotOptions = {
   description?: string;
   metadata?: Record<string, any>;
   id?: string;
-};
-
-export type SnapshotRestoreOptions = {
-  addToHistory?: boolean;
 };
