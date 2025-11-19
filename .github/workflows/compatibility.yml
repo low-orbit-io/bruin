@@ -63,20 +63,20 @@ jobs:
 
       - name: Patch for all TS versions
         run: |
-          sed -i '' 's/"isolatedDeclarations": true,//' tsconfig.json
+          sed -i 's/"isolatedDeclarations": true,//' tsconfig.json
 
       - name: Patch for v4/v3 TS
         if: ${{ startsWith(matrix.typescript, '4.') || startsWith(matrix.typescript, '3.') }}
         run: |
-          sed -i '' 's/"verbatimModuleSyntax": true,//' tsconfig.json
+          sed -i 's/"verbatimModuleSyntax": true,//' tsconfig.json
 
       - name: Patch for old TS
         run: |
-          sed -i '' 's/"moduleResolution": "bundler",/"moduleResolution": "node",/' tsconfig.json
-          sed -i '' 's/"allowImportingTsExtensions": true,//' tsconfig.json
-          sed -i '' 's/"bruin": \["\.\/src\/index\.ts"\],/"bruin": [".\/dist\/index.d.ts"],/' tsconfig.json
-          sed -i '' 's/"bruin\/\*": \["\.\/src\/\*\.ts"\]/"bruin\/*": [".\/dist\/*.d.ts"]/' tsconfig.json
-          sed -i '' 's/"include": .*/"include": ["src\/types.d.ts", "dist\/**\/*", "tests\/**\/*"],/' tsconfig.json
+          sed -i 's/"moduleResolution": "bundler",/"moduleResolution": "node",/' tsconfig.json
+          sed -i 's/"allowImportingTsExtensions": true,//' tsconfig.json
+          sed -i 's/"bruin": \["\.\/src\/index\.ts"\],/"bruin": [".\/dist\/index.d.ts"],/' tsconfig.json
+          sed -i 's/"bruin\/\*": \["\.\/src\/\*\.ts"\]/"bruin\/*": [".\/dist\/*.d.ts"]/' tsconfig.json
+          sed -i 's/"include": .*/"include": ["src\/types.d.ts", "dist\/**\/*", "tests\/**\/*"],/' tsconfig.json
           pnpm json -I -f package.json -e "this.resolutions={}; this.resolutions['@types/node']='18.13.0';"
           pnpm add -D @types/node@18.13.0
 
@@ -153,25 +153,25 @@ jobs:
       - name: Patch for DEV-ONLY
         if: ${{ matrix.env == 'development' }}
         run: |
-          find tests -name "*.tsx" -exec sed -i '' "s/it[.a-zA-Z]*('\[DEV-ONLY\]/it('/" {} +
-          find tests -name "*.tsx" -exec sed -i '' "s/it[.a-zA-Z]*('\[PRD-ONLY\]/it.skip('/" {} +
+          find tests -name "*.tsx" -exec sed -i "s/it[.a-zA-Z]*('\[DEV-ONLY\]/it('/" {} +
+          find tests -name "*.tsx" -exec sed -i "s/it[.a-zA-Z]*('\[PRD-ONLY\]/it.skip('/" {} +
 
       - name: Patch for PRD-ONLY
         if: ${{ matrix.env == 'production' }}
         run: |
-          find tests -name "*.tsx" -exec sed -i '' "s/it[.a-zA-Z]*('\[PRD-ONLY\]/it('/" {} +
-          find tests -name "*.tsx" -exec sed -i '' "s/it[.a-zA-Z]*('\[DEV-ONLY\]/it.skip('/" {} +
+          find tests -name "*.tsx" -exec sed -i "s/it[.a-zA-Z]*('\[PRD-ONLY\]/it('/" {} +
+          find tests -name "*.tsx" -exec sed -i "s/it[.a-zA-Z]*('\[DEV-ONLY\]/it.skip('/" {} +
 
       - name: Patch for CJS
         if: ${{ matrix.build == 'cjs' }}
         run: |
-          sed -i '' "s/resolve('\.\/src\(.*\)\.ts')/resolve('\.\/dist\1.js')/" vitest.config.mts
+          sed -i "s/resolve('\.\/src\(.*\)\.ts')/resolve('\.\/dist\1.js')/" vitest.config.mts
 
       - name: Patch for ESM
         if: ${{ matrix.build == 'esm' }}
         run: |
-          sed -i '' "s/resolve('\.\/src\(.*\)\.ts')/resolve('\.\/dist\/esm\1.mjs')/" vitest.config.mts
-          find tests -name "*.tsx" -exec sed -i '' "1s/^/import.meta.env=import.meta.env||{};import.meta.env.MODE='${NODE_ENV}';/" {} +
+          sed -i "s/resolve('\.\/src\(.*\)\.ts')/resolve('\.\/dist\/esm\1.mjs')/" vitest.config.mts
+          find tests -name "*.tsx" -exec sed -i "1s/^/import.meta.env=import.meta.env||{};import.meta.env.MODE='${NODE_ENV}';/" {} +
         env:
           NODE_ENV: ${{ matrix.env }}
 
