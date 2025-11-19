@@ -259,11 +259,31 @@ describe('Named Snapshots', () => {
 
       store.setState({ count: 10 });
       const historySizeBefore = store.getHistory().length;
+      const historyBefore = store.getHistory().map((entry: any) => ({
+        count: entry.state?.count,
+        name: entry.name,
+      }));
 
       store.loadSnapshot(id);
 
       const historySizeAfter = store.getHistory().length;
       expect(historySizeAfter).toBe(historySizeBefore + 1);
+
+      // Verify all previous history entries are preserved
+      const historyAfter = store.getHistory().map((entry: any) => ({
+        count: entry.state?.count,
+        name: entry.name,
+      }));
+
+      // All previous entries should still be there
+      for (let i = 0; i < historyBefore.length; i++) {
+        expect(historyAfter[i]).toEqual(historyBefore[i]);
+      }
+
+      // The last entry should be the restored snapshot
+      const lastEntry = historyAfter[historyAfter.length - 1];
+      expect(lastEntry.count).toBe(5); // The snapshot was saved when count was 5
+      expect(lastEntry.name).toBe('Restored snapshot: history-test');
     });
 
     it('should skip history when addToHistory is false', () => {
