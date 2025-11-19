@@ -33,7 +33,16 @@ const getAliases = () => {
   }
 
   return [
-    { find: /^bruin$/, replacement: resolve(`./${buildDir}/index${ext}`) },
+    {
+      find: 'bruin/vanilla',
+      replacement: resolve(`./${buildDir}/vanilla${ext}`),
+    },
+    {
+      find: 'bruin/middleware',
+      replacement: resolve(`./${buildDir}/middleware${ext}`),
+    },
+    { find: 'bruin/react', replacement: resolve(`./${buildDir}/react${ext}`) },
+    { find: 'bruin', replacement: resolve(`./${buildDir}/index${ext}`) },
     { find: /^bruin\/(.*)$/, replacement: resolve(`./${buildDir}/$1${ext}`) },
   ];
 };
