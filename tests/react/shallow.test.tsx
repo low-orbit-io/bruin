@@ -603,7 +603,6 @@ describe('React useShallow Hook', () => {
 
     // Check that the same object reference is maintained
     // In StrictMode, React may render multiple times, but the object reference should be stable
-    const allRefs = new Set(refs);
     const newRefs = new Set(refs.slice(initialRefsLength));
 
     // The object reference should remain the same when c (not selected) changes

@@ -298,8 +298,8 @@ function createStoreImpl<
       const isSpread =
         !isOriginalObject &&
         partial !== state &&
-        Object.keys(partial as object).length ===
-          Object.keys(state as object).length &&
+        Object.keys(partial as unknown as object).length ===
+          Object.keys(state as unknown as object).length &&
         Object.keys(partial as object).every(
           (key) => (partial as any)[key] === (state as any)[key],
         ) &&

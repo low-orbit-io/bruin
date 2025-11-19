@@ -229,7 +229,7 @@ const devtoolsImpl =
         return allStates;
       }
 
-      return (get as GetType)();
+      return (get as unknown as GetType)();
     };
 
     const setStateWithDevtoolsImpl = (
@@ -270,7 +270,7 @@ const devtoolsImpl =
         }
       }
 
-      (set as SetType)(partialState, replace, options);
+      (set as unknown as SetType)(partialState, replace, options);
 
       if (!isRecording || !connection) return;
 
@@ -361,7 +361,7 @@ const devtoolsImpl =
       if (message.type === 'DISPATCH' && message.payload) {
         switch (message.payload.type) {
           case 'RESET': {
-            (set as SetType)(
+            (set as unknown as SetType)(
               (api as unknown as ApiType).getInitialState() as S,
               true,
             );
@@ -395,7 +395,7 @@ const devtoolsImpl =
               const storeState = extractStoreState(state);
 
               if (storeState) {
-                (set as SetType)(storeState, true);
+                (set as unknown as SetType)(storeState, true);
                 connection?.init(getAllStoresState());
               }
             }
@@ -411,7 +411,7 @@ const devtoolsImpl =
               const storeState = extractStoreState(state);
 
               if (storeState) {
-                (set as SetType)(storeState, true);
+                (set as unknown as SetType)(storeState, true);
               }
             }
 
@@ -426,7 +426,7 @@ const devtoolsImpl =
               const storeState = extractStoreState(state);
 
               if (storeState) {
-                (set as SetType)(storeState, true);
+                (set as unknown as SetType)(storeState, true);
                 connection?.init(getAllStoresState());
               }
             }
@@ -459,7 +459,7 @@ const devtoolsImpl =
               const storeState = payload.state[storeId];
 
               if (storeState !== undefined) {
-                (set as SetType)(storeState, true);
+                (set as unknown as SetType)(storeState, true);
               }
             } else if (payload.state) {
               (set as unknown as SetType)(payload.state, true);
