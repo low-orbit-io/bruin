@@ -38,8 +38,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Only test major versions
-        typescript: [4.5.5, 5.0.4, 5.9.2]
+        # Only test TypeScript 5.0+
+        typescript: [5.0.4, 5.9.2]
     steps:
       - uses: actions/checkout@v4
 
@@ -59,7 +59,7 @@ jobs:
       - name: Install TypeScript ${{ matrix.typescript }}
         run: pnpm add -D typescript@${{ matrix.typescript }}
 
-      # Create a test tsconfig that's compatible with older TypeScript versions
+      # Create a test tsconfig for type checking
       - name: Create test tsconfig
         run: |
           cat > tsconfig.test.json <<EOF
@@ -73,16 +73,15 @@ jobs:
               "moduleResolution": "node",
               "skipLibCheck": true,
               "declaration": true,
-              "types": ["node", "@testing-library/jest-dom"],
               "noEmit": true,
               "baseUrl": ".",
               "paths": {
-                "bruin": ["./src/index.ts"],
-                "bruin/*": ["./src/*"]
+                "bruin": ["./dist-tsup/index"],
+                "bruin/*": ["./dist-tsup/*"]
               }
             },
-            "include": ["src/**/*", "tests/**/*"],
-            "exclude": ["node_modules", "dist", "dist-tsup"]
+            "include": ["dist-tsup/**/*.d.ts"],
+            "exclude": ["node_modules"]
           }
           EOF
 

@@ -9,7 +9,15 @@ import '@testing-library/jest-dom/vitest';
 
 // Ensure React.act is available globally
 if (typeof React !== 'undefined' && typeof (React as any).act !== 'function') {
-  (React as any).act = act;
+  try {
+    Object.defineProperty(React, 'act', {
+      value: act,
+      writable: true,
+      configurable: true,
+    });
+  } catch {
+    // Property may not be configurable, skip patching
+  }
 }
 
 // Make React available globally
