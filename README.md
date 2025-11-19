@@ -728,14 +728,6 @@ const useBearStore = create<BearState>()(
 
 A more detailed TypeScript guide is [here](docs/guides/beginner-typescript.md) and [there](docs/guides/advanced-typescript.md).
 
-## Best practices
-
-- Code organization: [Splitting stores into separate slices](./docs/guides/slices-pattern.md)
-- Recommended patterns: [Flux-inspired practices](./docs/guides/flux-inspired-practice.md)
-- [Calling actions outside React event handlers (pre-React 18)](./docs/guides/event-handler-in-pre-react-18.md)
-- [Testing strategies](./docs/guides/testing.md)
-- Explore more in [the documentation](./docs/)
-
 ## Third-Party Libraries
 
 The community has created various extensions and integrations for Bruin. See [third-party libraries documentation](./docs/integrations/third-party-libraries.md) for available options.
