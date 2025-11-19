@@ -86,7 +86,14 @@ export type StoreApi<T> = {
     index: number,
   ) => void;
   clearHistory?: () => void;
-  getHistoryMemoryUsage: () => HistoryMemoryInfo;
+  getHistoryMemoryUsage: () => MemoryInfo;
+  // Named Snapshots API
+  saveSnapshot: (name: string, options?: SnapshotOptions) => string;
+  listSnapshots: () => SnapshotInfo[];
+  getSnapshotInfo: (id: string) => SnapshotInfo | null;
+  loadSnapshot: (id: string, options?: SnapshotRestoreOptions) => boolean;
+  deleteSnapshot: (id: string) => boolean;
+  clearSnapshots: () => void;
 };
 
 export type SetStateWithTransaction<T> = StoreSetState<T> & {
@@ -111,9 +118,10 @@ export type HistoryEntry<T> = {
 
 export type CreateStoreOptions = {
   maxHistorySize?: number;
+  maxSnapshotsSize?: number; // Auto-delete oldest snapshot when exceeded
   computedFields?: string[];
   debounce?: number;
-  maxHistoryMemory?: number;
+  maxHistoryMemory?: number; // Applies to combined history + snapshots
   estimateSize?: <T>(state: T) => number;
   onMemoryLimitReached?: (info: MemoryLimitInfo) => void;
 };
@@ -125,10 +133,38 @@ export interface MemoryLimitInfo {
   entriesRemoved: number;
 }
 
-export interface HistoryMemoryInfo {
-  totalBytes: number;
-  averageBytes: number;
-  entryCount: number;
-  maxBytes?: number;
-  utilizationPercent?: number;
+export interface MemoryInfo {
+  totalBytes: number; // History + Snapshots combined
+  historyBytes: number; // Just history memory
+  snapshotBytes: number; // Just snapshot memory
+  entryCount: number; // History entries only
+  snapshotCount: number; // Snapshot count
+  averageBytes: number; // Average per history entry
+  maxBytes?: number; // Applies to totalBytes (combined)
+  utilizationPercent?: number; // totalBytes / maxBytes * 100
 }
+
+// Legacy alias for backward compatibility
+export type HistoryMemoryInfo = MemoryInfo;
+
+// Named Snapshots Types
+export type Snapshot<T> = {
+  id: string;
+  name: string;
+  state: T;
+  timestamp: number;
+  description?: string;
+  metadata?: Record<string, any>;
+};
+
+export type SnapshotInfo = Omit<Snapshot<any>, 'state'>;
+
+export type SnapshotOptions = {
+  description?: string;
+  metadata?: Record<string, any>;
+  id?: string;
+};
+
+export type SnapshotRestoreOptions = {
+  addToHistory?: boolean;
+};

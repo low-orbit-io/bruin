@@ -35,7 +35,11 @@ const Counter = () => {
 function App() {
   return (
     <div className="grid place-items-center gap-6">
-      <a href="https://github.com/low-orbit-io/bruin" target="_blank" rel="noreferrer">
+      <a
+        href="https://github.com/low-orbit-io/bruin"
+        target="_blank"
+        rel="noreferrer"
+      >
         <img
           src={mascot}
           alt="Bruin mascot"

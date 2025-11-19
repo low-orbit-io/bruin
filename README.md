@@ -16,16 +16,20 @@ Built on [Zustand](https://github.com/pmndrs/zustand) for compatibility. If you'
 npm install @low-orbit/bruin
 ```
 
-:warning: This readme is written for JavaScript users. If you are a TypeScript user, be sure to check out our [TypeScript Usage section](#typescript-usage).
-
 ## Creating a store
 
 Stores are created as hooks. Store any data type: primitives, objects, or functions. Updates must be immutable, and the `set` function [merges state](./docs/guides/immutable-state-and-merging.md) automatically. History tracking happens automatically for every change.
 
-```jsx
+```tsx
 import { create } from '@low-orbit/bruin'
 
-const useBearStore = create((set) => ({
+interface BearState {
+  bears: number
+  increasePopulation: () => void
+  removeAllBears: () => void
+}
+
+const useBearStore = create<BearState>((set) => ({
   bears: 0,
   increasePopulation: () => set((state) => ({ bears: state.bears + 1 })),
   removeAllBears: () => set({ bears: 0 }),
@@ -36,7 +40,7 @@ const useBearStore = create((set) => ({
 
 Use the store hook anywhere in your component tree—no providers required. Select the state you need and components re-render when those values change. Undo and redo are available directly on the store instance.
 
-```jsx
+```tsx
 function BearCounter() {
   const bears = useBearStore((state) => state.bears)
   return <h1>{bears} around here ...</h1>
@@ -85,8 +89,13 @@ function Controls() {
 
 Bruin adds automatic undo/redo history to every store:
 
-```jsx
-const useBearStore = create((set) => ({
+```tsx
+interface BearState {
+  bears: number
+  increasePopulation: () => void
+}
+
+const useBearStore = create<BearState>((set) => ({
   bears: 0,
   increasePopulation: () => set((state) => ({ bears: state.bears + 1 })),
 }))
@@ -104,9 +113,15 @@ useBearStore.canRedo() // Check if redo is possible
 
 Transactions group multiple changes into a single history entry:
 
-```jsx
+```tsx
+interface StoreState {
+  count: number
+  name: string
+  initialize: () => void
+}
+
 // Option 1: Using set.transaction (recommended)
-const useStore = create((set) => ({
+const useStore = create<StoreState>((set) => ({
   count: 0,
   name: '',
   initialize: () =>
@@ -133,7 +148,7 @@ useStore.transaction(
 
 You can access the entire state object, but this will cause the component to re-render whenever any part of the state changes.
 
-```jsx
+```tsx
 const state = useBearStore()
 ```
 
@@ -141,22 +156,27 @@ const state = useBearStore()
 
 By default, Bruin uses strict equality (`===`) to detect changes, which works efficiently for primitive value selections.
 
-```jsx
+```tsx
 const nuts = useBearStore((state) => state.nuts)
 const honey = useBearStore((state) => state.honey)
 ```
 
 When selecting multiple values into a single object (similar to Redux's `mapStateToProps`), use [useShallow](./docs/guides/prevent-rerenders-with-use-shallow.md) to prevent re-renders when the selected values haven't changed according to shallow equality.
 
-```jsx
+```tsx
 import { create } from '@low-orbit/bruin'
 import { useShallow } from '@low-orbit/bruin/react/shallow'
 
-const useBearStore = create((set) => ({
+interface BearStore {
+  nuts: number
+  honey: number
+  treats: Record<string, unknown>
+}
+
+const useBearStore = create<BearStore>((set) => ({
   nuts: 0,
   honey: 0,
   treats: {},
-  // ...
 }))
 
 // Object pick, re-renders the component when either state.nuts or state.honey change
@@ -175,7 +195,7 @@ const treats = useBearStore(useShallow((state) => Object.keys(state.treats)))
 
 For advanced re-render control, you can provide a custom equality function (this requires using [`createWithEqualityFn`](./docs/migrations/migrating-to-v5.md#using-custom-equality-functions-such-as-shallow)).
 
-```jsx
+```tsx
 const treats = useBearStore(
   (state) => state.treats,
   (oldTreats, newTreats) => compare(oldTreats, newTreats),
@@ -186,8 +206,15 @@ const treats = useBearStore(
 
 The `set` function accepts a second parameter (defaults to `false`). When set to `true`, it replaces the entire state instead of merging. Take care not to accidentally remove important parts like action functions.
 
-```jsx
-const useFishStore = create((set) => ({
+```tsx
+interface FishState {
+  salmon: number
+  tuna: number
+  deleteEverything: () => void
+  deleteTuna: () => void
+}
+
+const useFishStore = create<FishState>((set) => ({
   salmon: 1,
   tuna: 2,
   deleteEverything: () => set({}, true), // clears the entire store, actions included
@@ -199,10 +226,15 @@ const useFishStore = create((set) => ({
 
 Bruin works seamlessly with async functions. Simply call `set` whenever your async operation completes.
 
-```jsx
-const useFishStore = create((set) => ({
+```tsx
+interface FishState {
+  fishies: Record<string, unknown>
+  fetch: (pond: string) => Promise<void>
+}
+
+const useFishStore = create<FishState>((set) => ({
   fishies: {},
-  fetch: async (pond) => {
+  fetch: async (pond: string) => {
     const response = await fetch(pond)
     set({ fishies: await response.json() })
   },
@@ -213,8 +245,13 @@ const useFishStore = create((set) => ({
 
 While `set` supports function updates like `set(state => result)`, you can also access the current state using `get` without triggering an update.
 
-```jsx
-const useSoundStore = create((set, get) => ({
+```tsx
+interface SoundState {
+  sound: string
+  action: () => void
+}
+
+const useSoundStore = create<SoundState>((set, get) => ({
   sound: 'grunt',
   action: () => {
     const sound = get().sound
@@ -229,8 +266,14 @@ When you need to read or modify state outside of React components, the store hoo
 
 :warning: This technique is not recommended for adding state in [React Server Components](https://github.com/reactjs/rfcs/blob/main/text/0188-server-components.md) (typically in Next.js 13 and above). It can lead to unexpected bugs and privacy issues for your users. For more details, see [#2200](https://github.com/pmndrs/zustand/discussions/2200).
 
-```jsx
-const useDogStore = create(() => ({ paw: true, snout: true, fur: true }))
+```tsx
+interface DogState {
+  paw: boolean
+  snout: boolean
+  fur: boolean
+}
+
+const useDogStore = create<DogState>(() => ({ paw: true, snout: true, fur: true }))
 
 // Getting non-reactive fresh state
 const paw = useDogStore.getState().paw
@@ -261,9 +304,16 @@ This middleware extends `subscribe` with an additional signature:
 subscribe(selector, callback, options?: { equalityFn, fireImmediately }): Unsubscribe
 ```
 
-```js
+```tsx
 import { subscribeWithSelector } from '@low-orbit/bruin/middleware'
-const useDogStore = create(
+
+interface DogState {
+  paw: boolean
+  snout: boolean
+  fur: boolean
+}
+
+const useDogStore = create<DogState>(
   subscribeWithSelector(() => ({ paw: true, snout: true, fur: true })),
 )
 
@@ -290,10 +340,15 @@ const unsub5 = useDogStore.subscribe((state) => state.paw, console.log, {
 
 Bruin's core functionality works without React. When using the vanilla version, `createStore` returns store utilities instead of a React hook.
 
-```jsx
+```ts
 import { createStore } from '@low-orbit/bruin/vanilla'
 
-const store = createStore((set) => ({
+interface StoreState {
+  count: number
+  inc: () => void
+}
+
+const store = createStore<StoreState>((set) => ({
   count: 0,
   inc: () => set((s) => ({ count: s.count + 1 })),
 }))
@@ -305,11 +360,12 @@ export default store
 
 Vanilla stores can be used with the `useStore` hook (available since v4).
 
-```jsx
+```tsx
 import { useStore } from '@low-orbit/bruin'
 import { vanillaStore } from './vanillaStore'
 
-const useBoundStore = (selector) => useStore(vanillaStore, selector)
+const useBoundStore = <T,>(selector: (state: typeof vanillaStore extends { getState: () => infer S } ? S : never) => T) => 
+  useStore(vanillaStore, selector)
 ```
 
 :warning: Note that middlewares that modify `set` or `get` are not applied to `getState` and `setState`.
@@ -318,8 +374,14 @@ const useBoundStore = (selector) => useStore(vanillaStore, selector)
 
 For state that changes frequently, `subscribe` lets you listen without triggering re-renders. Combine with `useEffect` to automatically clean up subscriptions on unmount. This provides significant [performance benefits](https://codesandbox.io/s/peaceful-johnson-txtws) when you can update the DOM directly.
 
-```jsx
-const useScratchStore = create((set) => ({ scratches: 0, ... }))
+```tsx
+import { useRef, useEffect } from 'react'
+
+interface ScratchState {
+  scratches: number
+}
+
+const useScratchStore = create<ScratchState>((set) => ({ scratches: 0 }))
 
 const Component = () => {
   // Fetch initial state
@@ -336,10 +398,19 @@ const Component = () => {
 
 Updating deeply nested state structures can be tedious. [Immer](https://github.com/mweststrate/immer) makes it much easier.
 
-```jsx
+```tsx
 import { produce } from 'immer'
 
-const useLushStore = create((set) => ({
+interface LushState {
+  lush: {
+    forest: {
+      contains: { a: string } | null
+    }
+  }
+  clearForest: () => void
+}
+
+const useLushStore = create<LushState>((set) => ({
   lush: { forest: { contains: { a: 'bear' } } },
   clearForest: () =>
     set(
@@ -359,11 +430,16 @@ clearForest()
 
 Save your store's state to any storage backend using the persist middleware.
 
-```jsx
+```tsx
 import { create } from '@low-orbit/bruin'
 import { persist, createJSONStorage } from '@low-orbit/bruin/middleware'
 
-const useFishStore = create(
+interface FishState {
+  fishes: number
+  addAFish: () => void
+}
+
+const useFishStore = create<FishState>()(
   persist(
     (set, get) => ({
       fishes: 0,
@@ -384,14 +460,19 @@ const useFishStore = create(
 
 Bruin includes Immer as a middleware option for easier nested state updates.
 
-```jsx
+```tsx
 import { create } from '@low-orbit/bruin'
 import { immer } from '@low-orbit/bruin/middleware/immer'
 
-const useBeeStore = create(
+interface BeeState {
+  bees: number
+  addBees: (by: number) => void
+}
+
+const useBeeStore = create<BeeState>()(
   immer((set) => ({
     bees: 0,
-    addBees: (by) =>
+    addBees: (by: number) =>
       set((state) => {
         state.bees += by
       }),
@@ -403,19 +484,24 @@ const useBeeStore = create(
 
 You can implement reducer patterns manually:
 
-```jsx
-const types = { increase: 'INCREASE', decrease: 'DECREASE' }
+```tsx
+interface GrumpyState {
+  grumpiness: number
+  dispatch: (action: { type: 'INCREASE' | 'DECREASE'; by?: number }) => void
+}
 
-const reducer = (state, { type, by = 1 }) => {
-  switch (type) {
+const types = { increase: 'INCREASE' as const, decrease: 'DECREASE' as const }
+
+const reducer = (state: GrumpyState, action: { type: 'INCREASE' | 'DECREASE'; by?: number }) => {
+  switch (action.type) {
     case types.increase:
-      return { grumpiness: state.grumpiness + by }
+      return { grumpiness: state.grumpiness + (action.by ?? 1) }
     case types.decrease:
-      return { grumpiness: state.grumpiness - by }
+      return { grumpiness: state.grumpiness - (action.by ?? 1) }
   }
 }
 
-const useGrumpyStore = create((set) => ({
+const useGrumpyStore = create<GrumpyState>((set) => ({
   grumpiness: 0,
   dispatch: (args) => set((state) => reducer(state, args)),
 }))
@@ -426,7 +512,7 @@ dispatch({ type: types.increase, by: 2 })
 
 Alternatively, use the redux middleware which configures your reducer, sets initial state, and adds dispatch to both the state and vanilla API.
 
-```jsx
+```tsx
 import { redux } from '@low-orbit/bruin/middleware'
 
 const useGrumpyStore = create(redux(reducer, initialState))
@@ -436,11 +522,15 @@ const useGrumpyStore = create(redux(reducer, initialState))
 
 Use the [Redux DevTools Chrome extension](https://chromewebstore.google.com/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd) with Bruin's devtools middleware.
 
-```jsx
+```tsx
 import { devtools } from '@low-orbit/bruin/middleware'
 
+interface PlainState {
+  // your state here
+}
+
 // Usage with a plain action store, it will log actions as "setState"
-const usePlainStore = create(devtools((set) => ...))
+const usePlainStore = create<PlainState>()(devtools((set) => ({ /* ... */ })))
 // Usage with a redux store, it will log full action types
 const useReduxStore = create(devtools(redux(reducer, initialState)))
 ```
@@ -449,15 +539,15 @@ const useReduxStore = create(devtools(redux(reducer, initialState)))
 
 Connect multiple stores to DevTools:
 
-```jsx
+```tsx
 import { devtools } from '@low-orbit/bruin/middleware'
 
 // Plain stores log actions as "setState"
-const usePlainStore1 = create(devtools((set) => ..., { name, store: storeName1 }))
-const usePlainStore2 = create(devtools((set) => ..., { name, store: storeName2 }))
+const usePlainStore1 = create<PlainState>()(devtools((set) => ({ /* ... */ }), { name: 'Store1', store: 'storeName1' }))
+const usePlainStore2 = create<PlainState>()(devtools((set) => ({ /* ... */ }), { name: 'Store2', store: 'storeName2' }))
 // Redux stores log full action types
-const useReduxStore1 = create(devtools(redux(reducer, initialState)), { name, store: storeName3 })
-const useReduxStore2 = create(devtools(redux(reducer, initialState)), { name, store: storeName4 })
+const useReduxStore1 = create(devtools(redux(reducer, initialState), { name: 'ReduxStore1', store: 'storeName3' }))
+const useReduxStore2 = create(devtools(redux(reducer, initialState), { name: 'ReduxStore2', store: 'storeName4' }))
 ```
 
 Different connection names separate stores in DevTools and allow grouping related stores together.
@@ -474,38 +564,49 @@ Each store logs actions independently (unlike Redux's combined reducers). For co
 
 You can log a specific action type for each `set` function by passing a third parameter:
 
-```jsx
-const useBearStore = create(devtools((set) => ({
-  ...
+```tsx
+interface BearState {
+  fishes: number
+  eatFish: () => void
+}
+
+const useBearStore = create<BearState>()(devtools((set) => ({
+  fishes: 0,
   eatFish: () => set(
     (prev) => ({ fishes: prev.fishes > 1 ? prev.fishes - 1 : 0 }),
     undefined,
     'bear/eatFish'
   ),
-  ...
+})))
 ```
 
 You can also log the action's type along with its payload:
 
-```jsx
-  ...
-  addFishes: (count) => set(
+```tsx
+interface BearState {
+  fishes: number
+  addFishes: (count: number) => void
+}
+
+const useBearStore = create<BearState>()(devtools((set) => ({
+  fishes: 0,
+  addFishes: (count: number) => set(
     (prev) => ({ fishes: prev.fishes + count }),
     undefined,
-    { type: 'bear/addFishes', count, }
+    { type: 'bear/addFishes', count }
   ),
-  ...
+})))
 ```
 
 If an action type is not provided, it is defaulted to "anonymous". You can customize this default value by providing an `anonymousActionType` parameter:
 
-```jsx
+```tsx
 devtools(..., { anonymousActionType: 'unknown', ... })
 ```
 
 If you wish to disable devtools (on production for instance). You can customize this setting by providing the `enabled` parameter:
 
-```jsx
+```tsx
 devtools(..., { enabled: false, ... })
 ```
 
@@ -515,30 +616,35 @@ Stores created with `create` don't need context providers. However, you might wa
 
 The recommended approach (available since v4) is to use a vanilla store with Context.
 
-```jsx
+```tsx
 import { createContext, useContext } from 'react'
 import { createStore, useStore } from '@low-orbit/bruin'
 
-const store = createStore(...) // vanilla store without hooks
+interface StoreState {
+  // your state here
+}
 
-const StoreContext = createContext()
+const store = createStore<StoreState>((set) => ({ /* ... */ })) // vanilla store without hooks
+
+const StoreContext = createContext<typeof store | null>(null)
 
 const App = () => (
   <StoreContext.Provider value={store}>
-    ...
+    {/* ... */}
   </StoreContext.Provider>
 )
 
 const Component = () => {
   const store = useContext(StoreContext)
-  const slice = useStore(store, selector)
+  if (!store) throw new Error('Store not found')
+  const slice = useStore(store, (state) => state) // selector
   // ...
 }
 ```
 
 ## TypeScript Usage
 
-TypeScript support is straightforward. Use `create<State>()(...)` instead of `create(...)` to provide type information.
+Bruin is written in TypeScript and provides excellent type inference. All examples in this README use TypeScript.
 
 ```ts
 import { create } from '@low-orbit/bruin'

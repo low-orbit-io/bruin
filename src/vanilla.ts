@@ -4,9 +4,13 @@ import type {
   ExtractStateCreatorMutators,
   Get,
   HistoryEntry,
-  HistoryMemoryInfo,
+  MemoryInfo,
   Mutate,
   SetStateWithTransaction,
+  Snapshot,
+  SnapshotInfo,
+  SnapshotOptions,
+  SnapshotRestoreOptions,
   StateCreator,
   StateCreatorSet,
   StoreApi,
@@ -27,6 +31,12 @@ export type {
   StoreMutators,
   StoreSetState,
   SetStateWithTransaction,
+  // Named Snapshots Types
+  Snapshot,
+  SnapshotInfo,
+  SnapshotOptions,
+  SnapshotRestoreOptions,
+  MemoryInfo,
 } from './types/core';
 
 function estimateObjectSize(obj: any, seen = new WeakSet()): number {
@@ -122,7 +132,12 @@ function createStoreImpl<
   let transactionStartIndex = -1;
   let transactionPrevState: T | null = null;
 
+  // Named snapshots storage
+  const snapshots = new Map<string, Snapshot<T>>();
+  let snapshotCounter = 0;
+
   const maxHistorySize = options?.maxHistorySize ?? 50;
+  const maxSnapshotsSize = options?.maxSnapshotsSize;
   const maxHistoryMemory = options?.maxHistoryMemory;
   const customSizeEstimator = options?.estimateSize;
   const onMemoryLimitReached = options?.onMemoryLimitReached;
@@ -234,6 +249,14 @@ function createStoreImpl<
     }
 
     return clone;
+  };
+
+  // Helper to generate unique snapshot IDs
+  const generateSnapshotId = (name: string): string => {
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 6);
+    const counter = ++snapshotCounter;
+    return `${name}-${timestamp}-${counter}-${random}`;
   };
 
   const applyGetters = (newState: T): T => {
@@ -743,24 +766,163 @@ function createStoreImpl<
         timestamp: Date.now(),
       });
     },
-    getHistoryMemoryUsage: (): HistoryMemoryInfo => {
-      const entryCount = history.length;
-      const averageBytes = entryCount > 0 ? historyMemoryUsage / entryCount : 0;
+    getHistoryMemoryUsage: (): MemoryInfo => {
+      const estimator = customSizeEstimator || estimateObjectSize;
 
-      const info: HistoryMemoryInfo = {
-        totalBytes: historyMemoryUsage,
-        averageBytes: Math.round(averageBytes),
+      // Calculate history memory (already tracked)
+      const historyBytes = historyMemoryUsage;
+
+      // Calculate snapshot memory
+      let snapshotBytes = 0;
+      for (const snapshot of snapshots.values()) {
+        snapshotBytes += estimator(snapshot.state);
+      }
+
+      const totalBytes = historyBytes + snapshotBytes;
+      const entryCount = history.length;
+      const averageBytes = entryCount > 0 ? historyBytes / entryCount : 0;
+
+      const info: MemoryInfo = {
+        totalBytes,
+        historyBytes,
+        snapshotBytes,
         entryCount,
+        snapshotCount: snapshots.size,
+        averageBytes: Math.round(averageBytes),
       };
 
       if (maxHistoryMemory) {
         info.maxBytes = maxHistoryMemory;
         info.utilizationPercent = Math.round(
-          (historyMemoryUsage / maxHistoryMemory) * 100,
+          (totalBytes / maxHistoryMemory) * 100,
         );
       }
 
       return info;
+    },
+    // Named Snapshots API
+    saveSnapshot: (name: string, options?: SnapshotOptions): string => {
+      const id = options?.id || generateSnapshotId(name);
+
+      const snapshot: Snapshot<T> = {
+        id,
+        name,
+        state: cloneStateForHistory(state),
+        timestamp: Date.now(),
+      };
+
+      if (options?.description) {
+        snapshot.description = options.description;
+      }
+
+      if (options?.metadata) {
+        snapshot.metadata = options.metadata;
+      }
+
+      snapshots.set(id, snapshot);
+
+      // FIFO cleanup: auto-delete oldest snapshot if maxSnapshotsSize exceeded
+      if (maxSnapshotsSize && snapshots.size > maxSnapshotsSize) {
+        let oldestId: string | null = null;
+        let oldestTimestamp = Infinity;
+
+        // Find oldest snapshot by timestamp
+        for (const [snapshotId, snap] of snapshots.entries()) {
+          if (snap.timestamp < oldestTimestamp) {
+            oldestTimestamp = snap.timestamp;
+            oldestId = snapshotId;
+          }
+        }
+
+        // Delete oldest snapshot
+        if (oldestId) {
+          snapshots.delete(oldestId);
+        }
+      }
+
+      return id;
+    },
+    listSnapshots: (): SnapshotInfo[] => {
+      const list: SnapshotInfo[] = [];
+
+      for (const snapshot of snapshots.values()) {
+        const info: SnapshotInfo = {
+          id: snapshot.id,
+          name: snapshot.name,
+          timestamp: snapshot.timestamp,
+        };
+
+        if (snapshot.description !== undefined) {
+          info.description = snapshot.description;
+        }
+
+        if (snapshot.metadata !== undefined) {
+          info.metadata = snapshot.metadata;
+        }
+
+        list.push(info);
+      }
+
+      return list;
+    },
+    getSnapshotInfo: (id: string): SnapshotInfo | null => {
+      const snapshot = snapshots.get(id);
+
+      if (!snapshot) {
+        return null;
+      }
+
+      const info: SnapshotInfo = {
+        id: snapshot.id,
+        name: snapshot.name,
+        timestamp: snapshot.timestamp,
+      };
+
+      if (snapshot.description !== undefined) {
+        info.description = snapshot.description;
+      }
+
+      if (snapshot.metadata !== undefined) {
+        info.metadata = snapshot.metadata;
+      }
+
+      return info;
+    },
+    loadSnapshot: (id: string, options?: SnapshotRestoreOptions): boolean => {
+      const snapshot = snapshots.get(id);
+
+      if (!snapshot) {
+        return false;
+      }
+
+      const prevState = state;
+      const addToHistory = options?.addToHistory !== false; // Default true
+
+      if (addToHistory) {
+        // Use transaction to ensure history is updated
+        api.transaction(
+          () => {
+            state = restoreHistoryState(snapshot.state, state);
+          },
+          { name: `Restored snapshot: ${snapshot.name}` },
+        );
+      } else {
+        // Directly restore without adding to history
+        state = restoreHistoryState(snapshot.state, state);
+
+        // Notify listeners
+        if (!Object.is(state, prevState)) {
+          notifyListeners(state, prevState);
+        }
+      }
+
+      return true;
+    },
+    deleteSnapshot: (id: string): boolean => {
+      return snapshots.delete(id);
+    },
+    clearSnapshots: (): void => {
+      snapshots.clear();
     },
   };
 
