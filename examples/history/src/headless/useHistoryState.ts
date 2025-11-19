@@ -16,9 +16,7 @@ import type { HistoryEntry, HistoryState } from './types';
  * const { history, currentIndex, canUndo, undo } = useHistoryState(store);
  * ```
  */
-export function useHistoryState<T = any>(
-  store: StoreApi<T>,
-): HistoryState<T> {
+export function useHistoryState<T = any>(store: StoreApi<T>): HistoryState<T> {
   const [state, setState] = useState<HistoryState<T>>(() => ({
     history: store.getHistory(),
     currentIndex: store.getCurrentHistoryIndex(),

@@ -48,7 +48,11 @@ export function MantineTimeline<T = any>({
 
         <HeadlessTimelineList
           store={store}
-          renderEntry={(entry: HistoryEntry<T>, index: number, isCurrent: boolean) => (
+          renderEntry={(
+            entry: HistoryEntry<T>,
+            index: number,
+            isCurrent: boolean,
+          ) => (
             <Card
               key={index}
               withBorder
@@ -56,7 +60,9 @@ export function MantineTimeline<T = any>({
               mb="xs"
               bg={isCurrent ? 'blue.0' : undefined}
               style={{
-                borderColor: isCurrent ? 'var(--mantine-color-blue-5)' : undefined,
+                borderColor: isCurrent
+                  ? 'var(--mantine-color-blue-5)'
+                  : undefined,
                 borderWidth: isCurrent ? 2 : 1,
               }}
             >

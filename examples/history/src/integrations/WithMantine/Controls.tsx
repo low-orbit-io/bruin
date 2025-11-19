@@ -1,4 +1,13 @@
-import { Badge, Button, Card, Divider, Group, Stack, Text, Title } from '@mantine/core';
+import {
+  Badge,
+  Button,
+  Card,
+  Divider,
+  Group,
+  Stack,
+  Text,
+  Title,
+} from '@mantine/core';
 import { HeadlessTimelineCompact } from '../../headless';
 import type { StoreApi } from '../../../../../src/vanilla';
 import type { HistoryEntry } from '../../headless';
@@ -104,11 +113,9 @@ export function MantineControls<T = any>({
                         variant={isCurrent ? 'filled' : 'light'}
                         color={isCurrent ? 'blue' : 'gray'}
                       >
-                        {renderEntryContent ? (
-                          renderEntryContent(entry.state, entry.timestamp)
-                        ) : (
-                          `#${index + 1}`
-                        )}
+                        {renderEntryContent
+                          ? renderEntryContent(entry.state, entry.timestamp)
+                          : `#${index + 1}`}
                       </Badge>
                     );
                   })}

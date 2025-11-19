@@ -79,7 +79,10 @@ export interface HeadlessTimelineCompactProps<T = any>
   /**
    * Optional: Custom render for the expanded list
    */
-  renderList?: (entries: HistoryEntry<T>[], currentIndex: number) => React.ReactNode;
+  renderList?: (
+    entries: HistoryEntry<T>[],
+    currentIndex: number,
+  ) => React.ReactNode;
 }
 
 /**
