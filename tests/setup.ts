@@ -1,12 +1,13 @@
 import * as React from 'react';
 import { act } from 'react';
 
-try {
-  if (!React.act) {
+// Ensure React.act is available for React Testing Library
+if (typeof React.act !== 'function') {
+  try {
     (React as any).act = act;
+  } catch {
+    // React.act may be non-configurable in some React versions
   }
-} catch {
-  // React.act may be non-configurable in some React versions
 }
 (globalThis as any).React = React;
 
@@ -22,7 +23,7 @@ if (typeof require !== 'undefined') {
 
     if (id === 'react' && module) {
       try {
-        if (!module.act) {
+        if (typeof module.act !== 'function') {
           module.act = act;
         }
       } catch {
@@ -30,7 +31,7 @@ if (typeof require !== 'undefined') {
       }
 
       try {
-        if (module.default && !module.default.act) {
+        if (module.default && typeof module.default.act !== 'function') {
           module.default.act = act;
         }
       } catch {
@@ -44,7 +45,7 @@ if (typeof require !== 'undefined') {
   const reactModule = require('react');
 
   try {
-    if (!reactModule.act) {
+    if (typeof reactModule.act !== 'function') {
       reactModule.act = act;
     }
   } catch {
@@ -52,7 +53,7 @@ if (typeof require !== 'undefined') {
   }
 
   try {
-    if (reactModule.default && !reactModule.default.act) {
+    if (reactModule.default && typeof reactModule.default.act !== 'function') {
       reactModule.default.act = act;
     }
   } catch {
@@ -61,7 +62,9 @@ if (typeof require !== 'undefined') {
 
   try {
     const reactDomTestUtils = require('react-dom/test-utils');
-    reactDomTestUtils.act = act;
+    if (reactDomTestUtils && typeof reactDomTestUtils.act !== 'function') {
+      reactDomTestUtils.act = act;
+    }
   } catch {
     // react-dom/test-utils might not be available in all environments
   }
