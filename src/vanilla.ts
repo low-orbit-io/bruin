@@ -138,8 +138,7 @@ function createStoreImpl<
     }
 
     const stateSize = estimateObjectSize(entry.state);
-    const metadataSize =
-      8 + (entry.name ? entry.name.length * 2 : 0);
+    const metadataSize = 8 + (entry.name ? entry.name.length * 2 : 0);
 
     return stateSize + metadataSize;
   };

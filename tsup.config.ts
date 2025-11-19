@@ -29,7 +29,9 @@ export default defineConfig({
   outDir: 'dist-tsup', // Using separate output directory for testing
   esbuildOptions(options) {
     options.define = {
-      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
+      'process.env.NODE_ENV': JSON.stringify(
+        process.env.NODE_ENV || 'development',
+      ),
     };
   },
   // Add compilerOptions for dts generation

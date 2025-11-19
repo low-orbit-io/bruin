@@ -36,7 +36,8 @@ if (typeof require !== 'undefined') {
 
       // Patch react-dom/test-utils when required
       if (
-        (id === 'react-dom/test-utils' || id.includes('react-dom-test-utils')) &&
+        (id === 'react-dom/test-utils' ||
+          id.includes('react-dom-test-utils')) &&
         module
       ) {
         module.act = act;

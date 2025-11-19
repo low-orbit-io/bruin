@@ -67,13 +67,10 @@ describe('Memory Estimation', () => {
 
   it('respects maxHistoryMemory option', () => {
     const onMemoryLimitReached = vi.fn();
-    const store = createStore(
-      () => ({ data: 'x'.repeat(100) }),
-      {
-        maxHistoryMemory: 500, // 500 bytes limit
-        onMemoryLimitReached,
-      },
-    );
+    const store = createStore(() => ({ data: 'x'.repeat(100) }), {
+      maxHistoryMemory: 500, // 500 bytes limit
+      onMemoryLimitReached,
+    });
 
     // Add multiple states to exceed memory limit
     for (let i = 0; i < 10; i++) {
@@ -87,12 +84,9 @@ describe('Memory Estimation', () => {
 
   it('uses custom estimateSize function', () => {
     const customEstimate = vi.fn(() => 42);
-    const store = createStore(
-      () => ({ value: 'test' }),
-      {
-        estimateSize: customEstimate,
-      },
-    );
+    const store = createStore(() => ({ value: 'test' }), {
+      estimateSize: customEstimate,
+    });
 
     store.setState({ value: 'updated' });
 
@@ -114,12 +108,9 @@ describe('Memory Estimation', () => {
   });
 
   it('includes utilization percentage when max is set', () => {
-    const store = createStore(
-      () => ({ value: 'test' }),
-      {
-        maxHistoryMemory: 1000,
-      },
-    );
+    const store = createStore(() => ({ value: 'test' }), {
+      maxHistoryMemory: 1000,
+    });
 
     const info = store.getHistoryMemoryUsage();
     expect(info.maxBytes).toBe(1000);
