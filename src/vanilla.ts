@@ -888,6 +888,10 @@ function createStoreImpl<
 
       return info;
     },
+    // Get full snapshot data (internal use for persist middleware)
+    getSnapshot: (id: string): Snapshot<T> | null => {
+      return snapshots.get(id) || null;
+    },
     loadSnapshot: (id: string, options?: SnapshotRestoreOptions): boolean => {
       const snapshot = snapshots.get(id);
 
@@ -907,13 +911,10 @@ function createStoreImpl<
           { name: `Restored snapshot: ${snapshot.name}` },
         );
       } else {
-        // Directly restore without adding to history
-        state = restoreHistoryState(snapshot.state, state);
-
-        // Notify listeners
-        if (!Object.is(state, prevState)) {
-          notifyListeners(state, prevState);
-        }
+        // Directly restore without adding to history using setState to trigger React updates
+        api.setState(restoreHistoryState(snapshot.state, state), true, {
+          skipHistory: true,
+        });
       }
 
       return true;
@@ -923,6 +924,15 @@ function createStoreImpl<
     },
     clearSnapshots: (): void => {
       snapshots.clear();
+    },
+    // Bulk restore snapshots (used by persist middleware)
+    restoreSnapshots: (snapshotArray: Snapshot<T>[]): void => {
+      snapshots.clear();
+      for (const snapshot of snapshotArray) {
+        if (snapshot?.id && snapshot?.name && snapshot?.state) {
+          snapshots.set(snapshot.id, snapshot);
+        }
+      }
     },
   };
 

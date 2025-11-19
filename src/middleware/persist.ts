@@ -1,6 +1,7 @@
 import type {
   HistoryEntry,
   SetStateWithTransaction,
+  Snapshot,
   StateCreator,
   StoreApi,
   StoreMutatorIdentifier,
@@ -19,6 +20,16 @@ export type StorageValue<S> = {
   persistHistory?: boolean;
   history?: S[] | Array<{ state: S; timestamp: number; name?: string }>;
   historyIndex?: number;
+  // Named Snapshots persistence
+  persistSnapshots?: boolean;
+  snapshots?: Array<{
+    id: string;
+    name: string;
+    description?: string;
+    state: S;
+    timestamp: number;
+    metadata?: Record<string, any>;
+  }>;
 };
 
 export interface PersistStorage<S, R = unknown> {
@@ -48,6 +59,7 @@ export interface PersistOptions<
   merge?: (persistedState: unknown, currentState: S) => S;
   skipHydration?: boolean;
   persistHistory?: boolean;
+  persistSnapshots?: boolean; // Named Snapshots persistence (default false)
 }
 
 type JsonStorageOptions = {
@@ -242,6 +254,36 @@ const persistImpl: PersistImpl =
         storageValue.historyIndex = currentIndex;
       }
 
+      // Named Snapshots persistence
+      if (options.persistSnapshots && api.listSnapshots && api.getSnapshot) {
+        const snapshotList = api.listSnapshots();
+        const snapshotData: Array<Snapshot<S>> = [];
+
+        // Get full snapshot data for each snapshot
+        for (const info of snapshotList) {
+          const snapshot = api.getSnapshot(info.id);
+          if (snapshot) {
+            snapshotData.push({
+              id: snapshot.id,
+              name: snapshot.name,
+              state: options.partialize
+                ? options.partialize({ ...snapshot.state })
+                : snapshot.state,
+              timestamp: snapshot.timestamp,
+              ...(snapshot.description && {
+                description: snapshot.description,
+              }),
+              ...(snapshot.metadata && { metadata: snapshot.metadata }),
+            });
+          }
+        }
+
+        if (snapshotData.length > 0) {
+          storageValue.persistSnapshots = true;
+          storageValue.snapshots = snapshotData;
+        }
+      }
+
       return (storage as PersistStorage<S, unknown>).setItem(
         options.name,
         storageValue,
@@ -384,7 +426,74 @@ const persistImpl: PersistImpl =
 
                   api.restoreHistory!(mergedStates, storageValue.historyIndex!);
                 }
-              } else {
+              }
+
+              // Named Snapshots hydration
+              const shouldRestoreSnapshots =
+                options.persistSnapshots &&
+                storageValue.persistSnapshots &&
+                storageValue.snapshots &&
+                Array.isArray(storageValue.snapshots) &&
+                api.restoreSnapshots;
+
+              if (shouldRestoreSnapshots) {
+                // Validate and apply merge function to each snapshot's state
+                const hydratedSnapshots: Snapshot<S>[] = [];
+
+                for (const snapshot of storageValue.snapshots!) {
+                  // Validate required fields
+                  if (!snapshot?.id || !snapshot?.name || !snapshot?.state) {
+                    console.warn(
+                      '[Bruin] Skipping invalid snapshot during hydration:',
+                      snapshot,
+                    );
+                    continue;
+                  }
+
+                  // Apply migration if needed
+                  let snapshotState: any = snapshot.state;
+                  if (migrated && options.migrate) {
+                    const migrationResult = options.migrate(
+                      snapshotState,
+                      originalStorageValue?.version || 0,
+                    );
+                    if (migrationResult instanceof Promise) {
+                      // For simplicity, we'll skip async migrations for snapshots
+                      console.warn(
+                        '[Bruin] Async migration for snapshots not supported',
+                      );
+                      continue;
+                    }
+                    snapshotState = migrationResult;
+                  }
+
+                  // Apply merge function
+                  const mergedState = options.merge
+                    ? options.merge(snapshotState, configResult)
+                    : snapshotState;
+
+                  const hydratedSnapshot: Snapshot<S> = {
+                    id: snapshot.id,
+                    name: snapshot.name,
+                    state: mergedState,
+                    timestamp: snapshot.timestamp,
+                    ...(snapshot.description && {
+                      description: snapshot.description,
+                    }),
+                    ...(snapshot.metadata && { metadata: snapshot.metadata }),
+                  };
+
+                  hydratedSnapshots.push(hydratedSnapshot);
+                }
+
+                // Bulk restore all snapshots at once
+                if (hydratedSnapshots.length > 0) {
+                  api.restoreSnapshots!(hydratedSnapshots);
+                }
+              }
+
+              // Set the state if not using history restoration
+              if (!shouldRestoreHistory) {
                 set(stateFromStorage as S, true);
               }
 

@@ -91,9 +91,11 @@ export type StoreApi<T> = {
   saveSnapshot: (name: string, options?: SnapshotOptions) => string;
   listSnapshots: () => SnapshotInfo[];
   getSnapshotInfo: (id: string) => SnapshotInfo | null;
+  getSnapshot?: (id: string) => Snapshot<T> | null; // Internal use for persist
   loadSnapshot: (id: string, options?: SnapshotRestoreOptions) => boolean;
   deleteSnapshot: (id: string) => boolean;
   clearSnapshots: () => void;
+  restoreSnapshots?: (snapshots: Snapshot<T>[]) => void;
 };
 
 export type SetStateWithTransaction<T> = StoreSetState<T> & {

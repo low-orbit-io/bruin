@@ -81,6 +81,16 @@ function Controls() {
 - **Transactions** - Batch multiple updates together
 - **History persistence** - Save history across sessions with `persistHistory`
 
+## Use Cases
+
+Bruin's history and snapshot functionality is ideal for:
+
+- **Design tools** - Image editors, UI builders, animation tools
+- **Form builders** - Dynamic forms, CMS panels, configuration editors
+- **Data visualization** - Analytics dashboards, chart builders, BI tools
+- **Code editors** - Online IDEs, query builders, API testing tools
+- **Game development** - Level editors, character creators, asset placement tools
+
 ---
 
 # Recipes
