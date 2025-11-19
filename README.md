@@ -742,7 +742,7 @@ The community has created various extensions and integrations for Bruin. See [th
 
 ## Comparing with other libraries
 
-- [How Bruin compares to other React state management solutions](https://github.com/low-orbit-io/bruin#whats-different-from-zustand)
+- [How Bruin compares to other React state management solutions](./docs/getting-started/comparison.md)
 
 ## How Bruin Extends Zustand
 

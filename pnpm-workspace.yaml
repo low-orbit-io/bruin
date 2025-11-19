@@ -1,3 +1,4 @@
 packages:
   - .
+  - examples/*
 minimumReleaseAge: 1440

@@ -1,6 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { create } from '@low-orbit/bruin';
+import { create } from '../../../src/react';
 import mascot from './assets/bruin-mascot.svg';
 
 import './index.css';

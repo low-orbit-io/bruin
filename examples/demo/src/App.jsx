@@ -1,4 +1,4 @@
-import { create } from '@low-orbit/bruin'
+import { create } from '../../../src/react'
 import CodePreview from './components/CodePreview'
 import Details from './components/Details'
 import Scene from './components/Scene'
