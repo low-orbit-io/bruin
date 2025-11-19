@@ -2,18 +2,21 @@ import * as React from 'react';
 import { act } from 'react';
 
 // Ensure React.act is available for React Testing Library
-if (typeof React.act !== 'function') {
-  try {
+// Always try to patch React.act, even if it exists (it might not be a function in production builds)
+try {
+  if (typeof React.act !== 'function') {
     (React as any).act = act;
-  } catch {
-    // React.act may be non-configurable in some React versions
   }
+} catch {
+  // React.act may be non-configurable in some React versions (e.g., React 18.0.0+)
+  // In that case, we'll rely on patching react-dom/test-utils.act
 }
 (globalThis as any).React = React;
 
 if (typeof require !== 'undefined') {
   // Require React immediately to ensure it's loaded and patched before react-dom/test-utils loads
   const reactModule = require('react');
+
   try {
     if (typeof reactModule.act !== 'function') {
       reactModule.act = act;
@@ -21,6 +24,7 @@ if (typeof require !== 'undefined') {
   } catch {
     // reactModule.act may be non-configurable
   }
+
   try {
     if (reactModule.default && typeof reactModule.default.act !== 'function') {
       reactModule.default.act = act;
@@ -33,6 +37,7 @@ if (typeof require !== 'undefined') {
   if (require.cache) {
     for (const key in require.cache) {
       const cached = require.cache[key];
+
       if (
         cached &&
         cached.exports &&
@@ -56,6 +61,7 @@ if (typeof require !== 'undefined') {
       }
     }
   }
+
   const Module = require('module') as typeof import('module');
   const originalRequire = Module.prototype.require;
 
@@ -63,9 +69,13 @@ if (typeof require !== 'undefined') {
     this: typeof Module.prototype,
     id: string,
   ) {
-    // Ensure React is patched before react-dom/test-utils loads
-    if (id === 'react-dom/test-utils' || id.includes('react-dom-test-utils')) {
-      // Pre-patch React before react-dom/test-utils loads it
+    // Ensure React is patched before any module that might use it loads
+    if (
+      id === 'react-dom/test-utils' ||
+      id.includes('react-dom-test-utils') ||
+      id.includes('@testing-library/react')
+    ) {
+      // Pre-patch React before these modules load it
       try {
         const reactModule = originalRequire.apply(this, ['react'] as any);
         if (reactModule && typeof reactModule.act !== 'function') {
@@ -106,9 +116,11 @@ if (typeof require !== 'undefined') {
         const cacheKey = Object.keys(require.cache).find(
           (key) => require.cache[key]?.exports === module,
         );
+
         if (cacheKey && require.cache[cacheKey]?.exports) {
           try {
             const cachedExports = require.cache[cacheKey]?.exports;
+
             if (cachedExports && typeof cachedExports.act !== 'function') {
               cachedExports.act = act;
             }
@@ -121,8 +133,10 @@ if (typeof require !== 'undefined') {
 
     // Patch react-dom/test-utils after it loads
     if (id === 'react-dom/test-utils' || id.includes('react-dom-test-utils')) {
-      if (module && module.act) {
+      if (module) {
         try {
+          // Always patch react-dom/test-utils.act to use our act function
+          // This ensures it works even if React.act is not available
           module.act = act;
         } catch {
           // module.act may be non-configurable
@@ -137,6 +151,7 @@ if (typeof require !== 'undefined') {
   if (require.cache) {
     for (const key in require.cache) {
       const cached = require.cache[key];
+
       if (
         cached &&
         cached.exports &&
@@ -167,6 +182,7 @@ if (typeof require !== 'undefined') {
   // This ensures it works even if React.act is not available when react-dom/test-utils loads
   try {
     const reactDomTestUtils = require('react-dom/test-utils');
+
     if (reactDomTestUtils) {
       // Always patch react-dom/test-utils.act to use our act function
       // This bypasses the React.act check in the production build
@@ -180,6 +196,7 @@ if (typeof require !== 'undefined') {
   if (require.cache) {
     for (const key in require.cache) {
       const cached = require.cache[key];
+
       if (
         cached &&
         cached.exports &&
