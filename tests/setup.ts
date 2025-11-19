@@ -12,6 +12,23 @@ if (typeof React.act !== 'function') {
 (globalThis as any).React = React;
 
 if (typeof require !== 'undefined') {
+  // Require React immediately to ensure it's loaded and patched before react-dom/test-utils loads
+  const reactModule = require('react');
+  try {
+    if (typeof reactModule.act !== 'function') {
+      reactModule.act = act;
+    }
+  } catch {
+    // reactModule.act may be non-configurable
+  }
+  try {
+    if (reactModule.default && typeof reactModule.default.act !== 'function') {
+      reactModule.default.act = act;
+    }
+  } catch {
+    // reactModule.default.act may be non-configurable
+  }
+
   // Patch React immediately in require cache before any other modules load
   if (require.cache) {
     for (const key in require.cache) {
@@ -46,6 +63,25 @@ if (typeof require !== 'undefined') {
     this: typeof Module.prototype,
     id: string,
   ) {
+    // Ensure React is patched before react-dom/test-utils loads
+    if (id === 'react-dom/test-utils' || id.includes('react-dom-test-utils')) {
+      // Pre-patch React before react-dom/test-utils loads it
+      try {
+        const reactModule = originalRequire.apply(this, ['react'] as any);
+        if (reactModule && typeof reactModule.act !== 'function') {
+          reactModule.act = act;
+        }
+        if (
+          reactModule?.default &&
+          typeof reactModule.default.act !== 'function'
+        ) {
+          reactModule.default.act = act;
+        }
+      } catch {
+        // React might already be loaded
+      }
+    }
+
     const module = originalRequire.apply(this, [id] as any);
 
     if (id === 'react' && module) {
@@ -83,28 +119,21 @@ if (typeof require !== 'undefined') {
       }
     }
 
+    // Patch react-dom/test-utils after it loads
+    if (id === 'react-dom/test-utils' || id.includes('react-dom-test-utils')) {
+      if (module && module.act) {
+        try {
+          module.act = act;
+        } catch {
+          // module.act may be non-configurable
+        }
+      }
+    }
+
     return module;
   } as typeof Module.prototype.require;
 
-  const reactModule = require('react');
-
-  try {
-    if (typeof reactModule.act !== 'function') {
-      reactModule.act = act;
-    }
-  } catch {
-    // reactModule.act may be non-configurable
-  }
-
-  try {
-    if (reactModule.default && typeof reactModule.default.act !== 'function') {
-      reactModule.default.act = act;
-    }
-  } catch {
-    // reactModule.default.act may be non-configurable
-  }
-
-  // Patch require cache for React module
+  // Patch require cache for React module (already required above)
   if (require.cache) {
     for (const key in require.cache) {
       const cached = require.cache[key];
@@ -134,13 +163,38 @@ if (typeof require !== 'undefined') {
     }
   }
 
+  // Patch react-dom/test-utils to use our act function directly
+  // This ensures it works even if React.act is not available when react-dom/test-utils loads
   try {
     const reactDomTestUtils = require('react-dom/test-utils');
-    if (reactDomTestUtils && typeof reactDomTestUtils.act !== 'function') {
+    if (reactDomTestUtils) {
+      // Always patch react-dom/test-utils.act to use our act function
+      // This bypasses the React.act check in the production build
       reactDomTestUtils.act = act;
     }
   } catch {
     // react-dom/test-utils might not be available in all environments
+  }
+
+  // Also patch react-dom/test-utils in require cache if it's already loaded
+  if (require.cache) {
+    for (const key in require.cache) {
+      const cached = require.cache[key];
+      if (
+        cached &&
+        cached.exports &&
+        cached.id &&
+        cached.id.includes('react-dom-test-utils')
+      ) {
+        try {
+          if (cached.exports && cached.exports.act) {
+            cached.exports.act = act;
+          }
+        } catch {
+          // exports.act may be non-configurable
+        }
+      }
+    }
   }
 }
 
