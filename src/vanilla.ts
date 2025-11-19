@@ -766,8 +766,13 @@ function createStoreImpl<
             addToHistory(entry);
           }
 
+          // Notify listeners if transactionPrevState was set (from setState calls)
+          // or if state was directly modified (from direct assignment)
           if (transactionPrevState !== null) {
             notifyListeners(state, transactionPrevState as T);
+          } else {
+            // State was directly modified, notify with startState as prevState
+            notifyListeners(state, startState);
           }
         }
       } catch (error) {
@@ -984,10 +989,13 @@ function createStoreImpl<
 
       if (addToHistory) {
         // Use transaction to ensure history is updated properly
-        // Use setState instead of direct assignment to maintain proper state flow
+        // We need to directly assign to state within the transaction to ensure
+        // Object.is(state, startState) detects the change
         api.transaction(
           () => {
-            api.setState(restoreHistoryState(snapshot.state, state), true);
+            const restoredState = restoreHistoryState(snapshot.state, state);
+            // Directly assign to state to ensure the transaction detects the change
+            state = restoredState;
           },
           { name: `Restored snapshot: ${snapshot.name}` },
         );
