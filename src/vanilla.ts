@@ -233,22 +233,92 @@ function createStoreImpl<
       return s;
     }
 
-    const clone = {} as T;
-    const descriptors = Object.getOwnPropertyDescriptors(s);
+    // Use structuredClone for deep cloning if available (modern browsers/Node 17+)
+    // Falls back to JSON parse/stringify for deep cloning, then restores getters/prototype
+    if (typeof structuredClone !== 'undefined') {
+      try {
+        const deepClone = structuredClone(s);
+        // Restore getters and prototype after deep clone, but exclude computed fields
+        const descriptors = Object.getOwnPropertyDescriptors(s);
+        const clone = deepClone as T;
 
-    for (const key in descriptors) {
-      const descriptor = descriptors[key];
+        // Remove computed fields from clone if configured
+        if (options?.computedFields) {
+          for (const computedKey of options.computedFields) {
+            if (computedKey in clone) {
+              delete (clone as any)[computedKey];
+            }
+          }
+        }
 
-      if (
-        descriptor &&
-        !descriptor.get &&
-        (!options?.computedFields || !options.computedFields.includes(key))
-      ) {
-        clone[key as keyof T] = s[key as keyof T];
+        // Restore non-computed getters
+        for (const key in descriptors) {
+          const descriptor = descriptors[key];
+          if (
+            descriptor &&
+            descriptor.get &&
+            (!options?.computedFields || !options.computedFields.includes(key))
+          ) {
+            Object.defineProperty(clone, key, descriptor);
+          }
+        }
+
+        Object.setPrototypeOf(clone, Object.getPrototypeOf(s));
+        return clone;
+      } catch {
+        // structuredClone failed (e.g., contains functions), fall through to manual clone
       }
     }
 
-    return clone;
+    // Manual deep clone using JSON parse/stringify for serializable data
+    // This ensures complete independence of state objects
+    try {
+      const jsonClone = JSON.parse(JSON.stringify(s)) as T;
+      const descriptors = Object.getOwnPropertyDescriptors(s);
+      const clone = jsonClone;
+
+      // Remove computed fields from clone if configured
+      if (options?.computedFields) {
+        for (const computedKey of options.computedFields) {
+          if (computedKey in clone) {
+            delete (clone as any)[computedKey];
+          }
+        }
+      }
+
+      // Restore non-computed getters and prototype
+      for (const key in descriptors) {
+        const descriptor = descriptors[key];
+        if (
+          descriptor &&
+          descriptor.get &&
+          (!options?.computedFields || !options.computedFields.includes(key))
+        ) {
+          Object.defineProperty(clone, key, descriptor);
+        }
+      }
+
+      Object.setPrototypeOf(clone, Object.getPrototypeOf(s));
+      return clone;
+    } catch {
+      // JSON cloning failed (e.g., contains functions, circular refs), use shallow clone
+      const clone = {} as T;
+      const descriptors = Object.getOwnPropertyDescriptors(s);
+
+      for (const key in descriptors) {
+        const descriptor = descriptors[key];
+
+        if (
+          descriptor &&
+          !descriptor.get &&
+          (!options?.computedFields || !options.computedFields.includes(key))
+        ) {
+          clone[key as keyof T] = s[key as keyof T];
+        }
+      }
+
+      return clone;
+    }
   };
 
   // Helper to generate unique snapshot IDs
@@ -348,15 +418,40 @@ function createStoreImpl<
 
   const restoreHistoryState = (historyState: T, currentState: T): T => {
     if (isImmerable(historyState) && isImmerable(currentState)) {
+      // Deep clone the historyState to ensure we don't mutate the original
+      // This is critical for snapshots - we must never mutate the snapshot's state
+      let newState: T;
+      
+      if (typeof structuredClone !== 'undefined') {
+        try {
+          newState = structuredClone(historyState) as T;
+        } catch {
+          // structuredClone failed, use JSON clone
+          try {
+            newState = JSON.parse(JSON.stringify(historyState)) as T;
+          } catch {
+            // JSON clone failed, use shallow clone as last resort
+            newState = {} as T;
+            Object.assign(newState as any, historyState);
+          }
+        }
+      } else {
+        try {
+          newState = JSON.parse(JSON.stringify(historyState)) as T;
+        } catch {
+          // JSON clone failed, use shallow clone as last resort
+          newState = {} as T;
+          Object.assign(newState as any, historyState);
+        }
+      }
+
+      // Restore getters, setters, and function properties from currentState
+      // This ensures functions and computed properties are preserved
       const descriptors = Object.getOwnPropertyDescriptors(currentState);
-      const newState = {} as T;
-
-      Object.assign(newState as any, historyState);
-
       for (const key in descriptors) {
         const descriptor = descriptors[key];
-
-        if (descriptor && descriptor.get) {
+        // Restore getters, setters, and function properties
+        if (descriptor && (descriptor.get || descriptor.set || typeof (currentState as any)[key] === 'function')) {
           Object.defineProperty(newState, key, descriptor);
         }
       }
@@ -364,6 +459,14 @@ function createStoreImpl<
       Object.setPrototypeOf(newState, Object.getPrototypeOf(currentState));
 
       return newState;
+    }
+    // For non-objects, return a copy if possible, otherwise return as-is
+    if (typeof historyState === 'object' && historyState !== null) {
+      try {
+        return JSON.parse(JSON.stringify(historyState)) as T;
+      } catch {
+        return historyState;
+      }
     }
     return historyState;
   };
