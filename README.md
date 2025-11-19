@@ -91,6 +91,8 @@ Bruin's history and snapshot functionality is ideal for:
 - **Code editors** - Online IDEs, query builders, API testing tools
 - **Game development** - Level editors, character creators, asset placement tools
 
+**[→ See the History Example](./examples/history)** for headless components and UI integrations that demonstrate building history visualization UIs.
+
 ---
 
 # Recipes
