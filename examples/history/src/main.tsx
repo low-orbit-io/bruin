@@ -1,19 +1,11 @@
-import { StrictMode, useState } from 'react';
+import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { MantineProvider } from '@mantine/core';
-import { ChakraProvider } from '@chakra-ui/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
+import '@mantine/core/styles.css';
 import { create } from '../../../src/react';
+import { HeadlessTimelineList, HeadlessTimelineCompact } from './headless';
+import type { HistoryEntry } from './headless';
 import { MantineTimeline, MantineControls } from './integrations/WithMantine';
-import { RadixTimeline, RadixControls } from './integrations/WithRadixUI';
-import { TailwindTimeline, TailwindControls } from './integrations/WithTailwind';
-import { MUITimeline, MUIControls } from './integrations/WithMUI';
-import { ChakraTimeline, ChakraControls } from './integrations/WithChakraUI';
-import './index.css';
-
-// Create MUI theme
-const muiTheme = createTheme();
 
 // Create a simple counter store to demonstrate history
 type CounterStore = {
@@ -33,45 +25,97 @@ const useCounterStore = create<CounterStore>((set) => ({
   reset: () => set({ count: 0 }),
 }));
 
-// Main counter display (using Tailwind)
+// Main counter display
 function Counter() {
   const count = useCounterStore((s) => s.count);
   const { increment, decrement, addAmount, reset } = useCounterStore.getState();
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
-      <h2 className="text-2xl font-bold mb-4">Counter</h2>
-      <div className="text-6xl font-bold text-center my-8 text-blue-600">
+    <div style={{
+      background: 'white',
+      borderRadius: '8px',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+      padding: '24px',
+      marginBottom: '24px'
+    }}>
+      <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '16px' }}>Counter</h2>
+      <div style={{
+        fontSize: '64px',
+        fontWeight: 'bold',
+        textAlign: 'center',
+        margin: '32px 0',
+        color: '#3b82f6'
+      }}>
         {count}
       </div>
-      <div className="flex flex-wrap gap-2 justify-center">
+      <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
         <button
           onClick={decrement}
-          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
+          style={{
+            padding: '8px 16px',
+            background: '#ef4444',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '14px'
+          }}
         >
           -1
         </button>
         <button
           onClick={increment}
-          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition"
+          style={{
+            padding: '8px 16px',
+            background: '#10b981',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '14px'
+          }}
         >
           +1
         </button>
         <button
           onClick={() => addAmount(5)}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+          style={{
+            padding: '8px 16px',
+            background: '#3b82f6',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '14px'
+          }}
         >
           +5
         </button>
         <button
           onClick={() => addAmount(10)}
-          className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition"
+          style={{
+            padding: '8px 16px',
+            background: '#8b5cf6',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '14px'
+          }}
         >
           +10
         </button>
         <button
           onClick={reset}
-          className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition"
+          style={{
+            padding: '8px 16px',
+            background: '#6b7280',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '14px'
+          }}
         >
           Reset
         </button>
@@ -80,324 +124,248 @@ function Counter() {
   );
 }
 
-// Tab navigation
-type IntegrationTab = 'tailwind' | 'mantine' | 'radix' | 'mui' | 'chakra';
-
-function TabButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
+// Headless timeline demo with inline styles
+function HeadlessDemo() {
   return (
-    <button
-      onClick={onClick}
-      className={`
-        px-6 py-3 font-semibold rounded-t-lg transition-all
-        ${
-          active
-            ? 'bg-white text-blue-600 border-b-2 border-blue-600'
-            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-        }
-      `}
-    >
-      {children}
-    </button>
+    <div style={{
+      background: 'white',
+      borderRadius: '8px',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+      padding: '24px',
+      marginBottom: '24px'
+    }}>
+      <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '16px' }}>
+        Headless Components (Unstyled)
+      </h2>
+      <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '16px' }}>
+        These components provide all the logic with zero styling - you provide the UI.
+      </p>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginTop: '24px' }}>
+        <div>
+          <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>Compact Controls</h3>
+          <HeadlessTimelineCompact
+            store={useCounterStore}
+            renderControls={({ canUndo, canRedo, currentIndex, totalEntries, undo, redo, toggleList, showList }) => (
+              <div>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '12px' }}>
+                  <button
+                    onClick={undo}
+                    disabled={!canUndo}
+                    style={{
+                      padding: '8px 16px',
+                      background: canUndo ? '#3b82f6' : '#e5e7eb',
+                      color: canUndo ? 'white' : '#9ca3af',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: canUndo ? 'pointer' : 'not-allowed',
+                      fontSize: '14px'
+                    }}
+                  >
+                    ← Undo
+                  </button>
+                  <span style={{ fontFamily: 'monospace', fontSize: '16px', fontWeight: 'bold' }}>
+                    {currentIndex + 1} / {totalEntries}
+                  </span>
+                  <button
+                    onClick={redo}
+                    disabled={!canRedo}
+                    style={{
+                      padding: '8px 16px',
+                      background: canRedo ? '#3b82f6' : '#e5e7eb',
+                      color: canRedo ? 'white' : '#9ca3af',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: canRedo ? 'pointer' : 'not-allowed',
+                      fontSize: '14px'
+                    }}
+                  >
+                    Redo →
+                  </button>
+                  <button
+                    onClick={toggleList}
+                    style={{
+                      padding: '8px 16px',
+                      background: '#f3f4f6',
+                      color: '#374151',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      marginLeft: 'auto'
+                    }}
+                  >
+                    {showList ? 'Hide' : 'Show'} Timeline
+                  </button>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', fontSize: '12px' }}>
+                  <span style={{
+                    padding: '4px 8px',
+                    background: canUndo ? '#d1fae5' : '#f3f4f6',
+                    color: canUndo ? '#065f46' : '#6b7280',
+                    borderRadius: '4px'
+                  }}>
+                    Can Undo: {canUndo.toString()}
+                  </span>
+                  <span style={{
+                    padding: '4px 8px',
+                    background: canRedo ? '#d1fae5' : '#f3f4f6',
+                    color: canRedo ? '#065f46' : '#6b7280',
+                    borderRadius: '4px'
+                  }}>
+                    Can Redo: {canRedo.toString()}
+                  </span>
+                </div>
+              </div>
+            )}
+            renderList={(entries: HistoryEntry<CounterStore>[], currentIndex: number) => (
+              <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #e5e7eb' }}>
+                <p style={{ fontWeight: '600', fontSize: '14px', marginBottom: '8px' }}>History Timeline:</p>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {entries.map((entry, index) => {
+                    const isCurrent = index === currentIndex;
+                    return (
+                      <span
+                        key={index}
+                        style={{
+                          padding: '6px 12px',
+                          background: isCurrent ? '#3b82f6' : '#f3f4f6',
+                          color: isCurrent ? 'white' : '#374151',
+                          borderRadius: '4px',
+                          fontSize: '14px',
+                          fontWeight: isCurrent ? 'bold' : 'normal'
+                        }}
+                      >
+                        {entry.state.count}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          />
+        </div>
+
+        <div>
+          <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>Timeline List</h3>
+          <HeadlessTimelineList
+            store={useCounterStore}
+            renderEntry={(entry: HistoryEntry<CounterStore>, index: number, isCurrent: boolean) => (
+              <div
+                key={index}
+                style={{
+                  padding: '12px',
+                  marginBottom: '8px',
+                  background: isCurrent ? '#eff6ff' : 'white',
+                  border: `2px solid ${isCurrent ? '#3b82f6' : '#e5e7eb'}`,
+                  borderRadius: '6px'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontFamily: 'monospace', fontSize: '16px' }}>
+                    Count: <strong>{entry.state.count}</strong>
+                  </span>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    {isCurrent && (
+                      <span style={{
+                        padding: '2px 8px',
+                        background: '#3b82f6',
+                        color: 'white',
+                        borderRadius: '12px',
+                        fontSize: '11px',
+                        fontWeight: 'bold'
+                      }}>
+                        Current
+                      </span>
+                    )}
+                    <span style={{ fontSize: '12px', color: '#6b7280' }}>
+                      {new Date(entry.timestamp).toLocaleTimeString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+            emptyMessage={
+              <div style={{ textAlign: 'center', padding: '48px', color: '#6b7280' }}>
+                No history yet. Make some changes to see history entries!
+              </div>
+            }
+          />
+        </div>
+      </div>
+    </div>
   );
 }
 
-// Render entry content helper
-const renderEntryContent = (state: CounterStore) => (
-  <span className="font-semibold">Count: {state.count}</span>
-);
+// Mantine integration demo
+function MantineDemo() {
+  return (
+    <div style={{ marginBottom: '24px' }}>
+      <div style={{
+        background: 'white',
+        borderRadius: '8px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+        padding: '24px',
+        marginBottom: '24px'
+      }}>
+        <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '8px' }}>
+          Mantine Integration Example
+        </h2>
+        <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '16px' }}>
+          Same headless components, styled with Mantine UI for rapid development.
+        </p>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+        <MantineControls
+          store={useCounterStore}
+          title="Mantine Controls"
+          description="Pre-styled controls with Mantine components"
+          renderEntryContent={(state: CounterStore) => (
+            <span>{state.count}</span>
+          )}
+        />
+        <MantineTimeline
+          store={useCounterStore}
+          title="Mantine Timeline"
+          description="Pre-styled timeline with Mantine components"
+          renderEntryContent={(state: CounterStore) => (
+            <span style={{ fontWeight: '600' }}>Count: {state.count}</span>
+          )}
+        />
+      </div>
+    </div>
+  );
+}
 
 // Main app
 function App() {
-  const [activeTab, setActiveTab] = useState<IntegrationTab>('tailwind');
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
-      <div className="max-w-7xl mx-auto">
-        <header className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-gray-900 mb-4">
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(to bottom right, #eff6ff, #e0e7ff)',
+      padding: '32px'
+    }}>
+      <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+        <header style={{ textAlign: 'center', marginBottom: '48px' }}>
+          <h1 style={{ fontSize: '48px', fontWeight: 'bold', color: '#111827', marginBottom: '16px' }}>
             🐻 Bruin History Example
           </h1>
-          <p className="text-xl text-gray-600">
-            Demonstrating history visualization with three UI approaches
+          <p style={{ fontSize: '20px', color: '#6b7280' }}>
+            Demonstrating headless history visualization components
           </p>
         </header>
 
-        {/* Counter Section */}
-        <div className="mb-8">
-          <Counter />
-        </div>
+        <Counter />
+        <HeadlessDemo />
+        <MantineDemo />
 
-        {/* Integration Tabs */}
-        <div className="mb-8">
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-            <div className="flex border-b border-gray-200">
-              <TabButton
-                active={activeTab === 'tailwind'}
-                onClick={() => setActiveTab('tailwind')}
-              >
-                Tailwind CSS
-              </TabButton>
-              <TabButton
-                active={activeTab === 'mantine'}
-                onClick={() => setActiveTab('mantine')}
-              >
-                Mantine UI
-              </TabButton>
-              <TabButton
-                active={activeTab === 'radix'}
-                onClick={() => setActiveTab('radix')}
-              >
-                Radix UI
-              </TabButton>
-              <TabButton
-                active={activeTab === 'mui'}
-                onClick={() => setActiveTab('mui')}
-              >
-                Material-UI
-              </TabButton>
-              <TabButton
-                active={activeTab === 'chakra'}
-                onClick={() => setActiveTab('chakra')}
-              >
-                Chakra UI
-              </TabButton>
-            </div>
-
-            <div className="p-6 bg-gray-50">
-              {activeTab === 'tailwind' && (
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="text-2xl font-bold mb-2">Tailwind CSS Integration</h3>
-                    <p className="text-gray-600 mb-6">
-                      Utility-first CSS framework - compose styles from utility classes
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <TailwindControls
-                      store={useCounterStore}
-                      title="Tailwind Controls"
-                      description="Compact undo/redo with expandable timeline"
-                      renderEntryContent={renderEntryContent}
-                    />
-                    <TailwindTimeline
-                      store={useCounterStore}
-                      title="Tailwind Timeline"
-                      description="Full history list with all entries"
-                      renderEntryContent={renderEntryContent}
-                    />
-                  </div>
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <p className="text-sm text-blue-800">
-                      <strong>Key Features:</strong> Utility classes, rapid iteration, responsive design,
-                      customizable via tailwind.config.js
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {activeTab === 'mantine' && (
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="text-2xl font-bold mb-2">Mantine UI Integration</h3>
-                    <p className="text-gray-600 mb-6">
-                      Pre-styled component library - rapid development with beautiful defaults
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <MantineControls
-                      store={useCounterStore}
-                      title="Mantine Controls"
-                      description="Compact undo/redo with expandable timeline"
-                      renderEntryContent={renderEntryContent}
-                    />
-                    <MantineTimeline
-                      store={useCounterStore}
-                      title="Mantine Timeline"
-                      description="Full history list with all entries"
-                      renderEntryContent={renderEntryContent}
-                    />
-                  </div>
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <p className="text-sm text-blue-800">
-                      <strong>Key Features:</strong> Pre-styled components, theming system, rich component library,
-                      built-in accessibility
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {activeTab === 'radix' && (
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="text-2xl font-bold mb-2">Radix UI Integration</h3>
-                    <p className="text-gray-600 mb-6">
-                      Unstyled accessible primitives - full design control with excellent a11y
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <RadixControls
-                      store={useCounterStore}
-                      title="Radix Controls"
-                      description="Compact undo/redo with expandable timeline"
-                      renderEntryContent={renderEntryContent}
-                    />
-                    <RadixTimeline
-                      store={useCounterStore}
-                      title="Radix Timeline"
-                      description="Full history list with all entries"
-                      renderEntryContent={renderEntryContent}
-                    />
-                  </div>
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <p className="text-sm text-blue-800">
-                      <strong>Key Features:</strong> Unstyled primitives, accessibility-first, keyboard navigation,
-                      ARIA compliant, full CSS control
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {activeTab === 'mui' && (
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="text-2xl font-bold mb-2">Material-UI Integration</h3>
-                    <p className="text-gray-600 mb-6">
-                      Google's Material Design system - comprehensive component library
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <MUIControls
-                      store={useCounterStore}
-                      title="MUI Controls"
-                      description="Compact undo/redo with expandable timeline"
-                      renderEntryContent={renderEntryContent}
-                    />
-                    <MUITimeline
-                      store={useCounterStore}
-                      title="MUI Timeline"
-                      description="Full history list with all entries"
-                      renderEntryContent={renderEntryContent}
-                    />
-                  </div>
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <p className="text-sm text-blue-800">
-                      <strong>Key Features:</strong> Material Design, elevation system, comprehensive library,
-                      theming, enterprise-ready
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {activeTab === 'chakra' && (
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="text-2xl font-bold mb-2">Chakra UI Integration</h3>
-                    <p className="text-gray-600 mb-6">
-                      Modern component library - style props and excellent DX
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <ChakraControls
-                      store={useCounterStore}
-                      title="Chakra Controls"
-                      description="Compact undo/redo with expandable timeline"
-                      renderEntryContent={renderEntryContent}
-                    />
-                    <ChakraTimeline
-                      store={useCounterStore}
-                      title="Chakra Timeline"
-                      description="Full history list with all entries"
-                      renderEntryContent={renderEntryContent}
-                    />
-                  </div>
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <p className="text-sm text-blue-800">
-                      <strong>Key Features:</strong> Style props, composition, accessibility, dark mode,
-                      framer-motion animations
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Comparison Section */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-2xl font-bold mb-4">Comparison</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b-2 border-gray-200">
-                  <th className="text-left py-3 px-4">Feature</th>
-                  <th className="text-left py-3 px-4">Tailwind</th>
-                  <th className="text-left py-3 px-4">Mantine</th>
-                  <th className="text-left py-3 px-4">Radix</th>
-                  <th className="text-left py-3 px-4">MUI</th>
-                  <th className="text-left py-3 px-4">Chakra</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-b border-gray-200">
-                  <td className="py-3 px-4 font-medium">Styling</td>
-                  <td className="py-3 px-4">Utility classes</td>
-                  <td className="py-3 px-4">Pre-styled</td>
-                  <td className="py-3 px-4">Unstyled</td>
-                  <td className="py-3 px-4">Material Design</td>
-                  <td className="py-3 px-4">Style props</td>
-                </tr>
-                <tr className="border-b border-gray-200">
-                  <td className="py-3 px-4 font-medium">Customization</td>
-                  <td className="py-3 px-4">High</td>
-                  <td className="py-3 px-4">Medium</td>
-                  <td className="py-3 px-4">Maximum</td>
-                  <td className="py-3 px-4">Medium</td>
-                  <td className="py-3 px-4">High</td>
-                </tr>
-                <tr className="border-b border-gray-200">
-                  <td className="py-3 px-4 font-medium">Accessibility</td>
-                  <td className="py-3 px-4">Manual</td>
-                  <td className="py-3 px-4">Good</td>
-                  <td className="py-3 px-4">Excellent</td>
-                  <td className="py-3 px-4">Good</td>
-                  <td className="py-3 px-4">Excellent</td>
-                </tr>
-                <tr className="border-b border-gray-200">
-                  <td className="py-3 px-4 font-medium">Bundle Size</td>
-                  <td className="py-3 px-4">Small</td>
-                  <td className="py-3 px-4">Large</td>
-                  <td className="py-3 px-4">Small</td>
-                  <td className="py-3 px-4">Large</td>
-                  <td className="py-3 px-4">Medium</td>
-                </tr>
-                <tr>
-                  <td className="py-3 px-4 font-medium">Best For</td>
-                  <td className="py-3 px-4">Custom</td>
-                  <td className="py-3 px-4">Rapid dev</td>
-                  <td className="py-3 px-4">A11y apps</td>
-                  <td className="py-3 px-4">Material</td>
-                  <td className="py-3 px-4">Modern</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <footer className="mt-12 text-center text-sm text-gray-600">
+        <footer style={{ marginTop: '48px', textAlign: 'center', fontSize: '14px', color: '#6b7280' }}>
           <p>
-            All five integrations use the <strong>same headless components</strong> under the hood.
+            These examples show the <strong>headless pattern</strong> - logic without styling.
           </p>
-          <p className="mt-2">
-            See <code className="bg-gray-200 px-2 py-1 rounded">src/headless/</code> for the
-            unstyled base components.
+          <p style={{ marginTop: '8px' }}>
+            See <code style={{ background: '#e5e7eb', padding: '2px 8px', borderRadius: '4px' }}>src/headless/</code> for the unstyled components.
           </p>
         </footer>
       </div>
@@ -408,12 +376,7 @@ function App() {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <MantineProvider>
-      <ChakraProvider>
-        <ThemeProvider theme={muiTheme}>
-          <CssBaseline />
-          <App />
-        </ThemeProvider>
-      </ChakraProvider>
+      <App />
     </MantineProvider>
   </StrictMode>,
 );

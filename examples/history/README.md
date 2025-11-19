@@ -2,7 +2,9 @@
 
 Reference implementations showing how to build history visualization UIs with Bruin.
 
-**Philosophy:** These are **examples to learn from and copy**, not a component library to install.
+These are **examples to learn from and copy**, not a component library to install.
+
+![Bruin History Example](./src/resources/screenshot.png)
 
 ## 🎯 Start Here: Headless Components
 
@@ -41,11 +43,11 @@ Core functionality with zero styling:
 
 The demo shows:
 1. Counter with multiple actions that create history
-2. Compact timeline with undo/redo controls
-3. Full timeline list showing all entries
-4. Current position highlighting
+2. Headless components with inline styles (completely unstyled pattern)
+3. Mantine integration example (pre-styled with UI framework)
+4. Undo/redo controls and full timeline visualization
 
-**Styling:** Uses Tailwind CSS (via CDN) for simple demo styling
+**Styling:** Uses inline styles for headless examples, Mantine for framework integration demo
 
 ## Usage Examples
 
@@ -108,11 +110,12 @@ function MyComponent() {
 
 The headless components work with any styling solution:
 
-- **Tailwind CSS**: Use utility classes (like in the demo)
+- **Inline Styles**: Like the headless demo - simple and portable
+- **Tailwind CSS**: Use utility classes
 - **CSS Modules**: Import your styles
 - **Styled Components**: Wrap in styled components
 - **Plain CSS**: Use className prop
-- **UI Libraries**: Mantine, Radix, MUI, Chakra, etc.
+- **UI Libraries**: Mantine (example included), Radix, MUI, Chakra, etc.
 
 ### Adding Features
 
@@ -125,10 +128,10 @@ Consider adding:
 - Memory usage indicators
 - Keyboard shortcuts (Cmd+Z, Cmd+Shift+Z)
 
-## Coming Soon
+## What's Included
 
-- `/src/integrations` - Examples with popular UI libraries (Mantine, Radix, MUI, etc.)
-- `/src/demos` - Complete demo applications (TodoApp, TextEditor, etc.)
+- `/src/integrations/WithMantine` - Example integration with Mantine UI
+- Learn the headless pattern first, then see how to integrate with a UI framework
 
 ## File Structure
 
@@ -142,8 +145,8 @@ examples/history/
 │   │   ├── HeadlessTimelineCompact.tsx
 │   │   ├── index.ts
 │   │   └── README.md
-│   ├── integrations/          # UI library examples (coming soon)
-│   ├── demos/                 # Complete demos (coming soon)
+│   ├── integrations/
+│   │   └── WithMantine/       # Mantine integration example
 │   └── main.tsx               # Demo application
 ├── index.html
 ├── package.json
