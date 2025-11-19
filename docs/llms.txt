@@ -5,9 +5,9 @@ Bruin is a fast, scalable state management library for React and JavaScript that
 ## Key Features
 
 - **100% Zustand Compatible**: Drop-in replacement with zero breaking changes
-- **Built-in History**: Automatic state tracking with undo/redo support
+- **Built-in History**: Automatic state tracking with undo/redo and memory management
 - **Transactions**: Batch multiple state updates atomically
-- **Time-Travel Debugging**: Full state history inspection
+- **Time-Travel Debugging**: Full state history inspection with memory limits
 - **No Providers**: Use stores anywhere without React context
 - **TypeScript First**: Full type safety out of the box
 
@@ -27,14 +27,13 @@ Bruin is a fast, scalable state management library for React and JavaScript that
 ## Bruin Features
 
 - **History Tracking**: Every state change is automatically recorded
-  - `store.undo()` - Go back one state
-  - `store.redo()` - Go forward one state
+  - `store.undo()` / `store.redo()` - Navigate state history
   - `store.getHistory()` - View all state changes
-  - `store.getHistoryMemoryUsage()` - Monitor memory usage
-  - `store.clearHistory()` - Clear history
-  - Memory-based limits to prevent unbounded growth
+  - `store.getHistoryMemoryUsage()` - Monitor memory consumption
+  - `store.clearHistory()` - Reset history
+  - Memory-based limits (`maxHistoryMemory`) prevent unbounded growth
   - Custom size estimation for complex data structures
-  - Action naming for better debugging
+  - Count-based limits (`maxHistorySize`) for entry limits
 
 - **Transactions**: Batch multiple updates into one atomic change
   - `set.transaction(() => { ... })` - Batch updates
@@ -90,22 +89,25 @@ No migration needed! Bruin is 100% backward compatible with Zustand.
 
 Simply change your imports:
 ```diff
-- import { create } from 'bruin'
+- import { create } from 'zustand'
 + import { create } from 'bruin'
 ```
 
-All Zustand code works with Bruin. You can then gradually adopt Bruin features like history and transactions.
+All Zustand code works with Bruin. You can then gradually adopt Bruin features like history, transactions, and memory management.
 
 ## Quick Example
 
 ```typescript
 import { create } from 'bruin'
 
-const useStore = create((set) => ({
-  count: 0,
-  increment: () => set((state) => ({ count: state.count + 1 }), false, 'increment'),
-  decrement: () => set((state) => ({ count: state.count - 1 }), false, 'decrement'),
-}))
+const useStore = create(
+  (set) => ({
+    count: 0,
+    increment: () => set((state) => ({ count: state.count + 1 }), false, 'increment'),
+    decrement: () => set((state) => ({ count: state.count - 1 }), false, 'decrement'),
+  }),
+  { maxHistorySize: 50, maxHistoryMemory: 10 * 1024 * 1024 }
+)
 
 // Use in React
 function Counter() {

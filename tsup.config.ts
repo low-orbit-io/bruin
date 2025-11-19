@@ -15,6 +15,10 @@ export default defineConfig({
   format: ['cjs', 'esm'],
   dts: {
     resolve: true,
+    compilerOptions: {
+      composite: false,
+      incremental: false,
+    },
   },
   splitting: false,
   sourcemap: true,

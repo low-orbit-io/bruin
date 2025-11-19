@@ -64,12 +64,25 @@ jobs:
         run: |
           cat > tsconfig.test.json <<EOF
           {
-            "extends": "./tsconfig.json",
             "compilerOptions": {
-              "isolatedDeclarations": false,
-              "verbatimModuleSyntax": false,
-              "allowImportingTsExtensions": false
-            }
+              "target": "esnext",
+              "strict": true,
+              "jsx": "react-jsx",
+              "esModuleInterop": true,
+              "module": "esnext",
+              "moduleResolution": "node",
+              "skipLibCheck": true,
+              "declaration": true,
+              "types": ["node", "@testing-library/jest-dom"],
+              "noEmit": true,
+              "baseUrl": ".",
+              "paths": {
+                "bruin": ["./src/index.ts"],
+                "bruin/*": ["./src/*"]
+              }
+            },
+            "include": ["src/**/*", "tests/**/*"],
+            "exclude": ["node_modules", "dist", "dist-tsup"]
           }
           EOF
 

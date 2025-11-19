@@ -3,7 +3,6 @@ import { defineConfig } from 'vitest/config';
 
 // Environment variables for testing different builds
 const testBuild = process.env.TEST_BUILD; // 'cjs', 'esm', 'tsup-cjs', 'tsup-esm', or undefined (source)
-const isProd = process.env.NODE_ENV === 'production';
 
 // Define aliases based on TEST_BUILD environment variable
 const getAliases = () => {

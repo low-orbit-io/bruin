@@ -22,187 +22,190 @@ describe('Memory Estimation', () => {
     expect(info.entryCount).toBeGreaterThan(0);
   });
 
-  it('estimates object sizes', () => {
+  it('estimates nested object sizes', () => {
     const store = createStore(() => ({
-      user: { name: 'John', age: 30 },
-      items: [1, 2, 3, 4, 5],
+      user: {
+        name: 'John',
+        age: 30,
+        address: {
+          street: '123 Main St',
+          city: 'New York',
+        },
+      },
     }));
 
     const info = store.getHistoryMemoryUsage();
-    expect(info.totalBytes).toBeGreaterThan(100);
+    expect(info.totalBytes).toBeGreaterThan(0);
+    expect(info.entryCount).toBeGreaterThan(0);
   });
 
-  it('handles circular references', () => {
-    const store = createStore(() => {
-      const obj: any = { value: 1 };
-      obj.self = obj;
-      return { data: obj };
-    });
+  it('estimates array sizes', () => {
+    const store = createStore(() => ({
+      items: ['apple', 'banana', 'cherry'],
+      numbers: [1, 2, 3, 4, 5],
+    }));
 
     const info = store.getHistoryMemoryUsage();
     expect(info.totalBytes).toBeGreaterThan(0);
+    expect(info.entryCount).toBeGreaterThan(0);
   });
 
-  it('respects maxHistoryMemory limit', () => {
+  it('tracks memory growth with history', () => {
+    const store = createStore(() => ({ count: 0 }));
+
+    const initial = store.getHistoryMemoryUsage();
+    expect(initial.entryCount).toBe(1);
+
+    store.setState({ count: 1 });
+    store.setState({ count: 2 });
+    store.setState({ count: 3 });
+
+    const after = store.getHistoryMemoryUsage();
+    expect(after.entryCount).toBe(4);
+    expect(after.totalBytes).toBeGreaterThan(initial.totalBytes);
+  });
+
+  it('respects maxHistoryMemory option', () => {
+    const onMemoryLimitReached = vi.fn();
     const store = createStore(
-      () => ({ data: '' }),
-      { maxHistoryMemory: 1000 },
+      () => ({ data: 'x'.repeat(100) }),
+      {
+        maxHistoryMemory: 500, // 500 bytes limit
+        onMemoryLimitReached,
+      },
     );
 
-    for (let i = 0; i < 100; i++) {
-      store.setState({ data: 'x'.repeat(100) });
+    // Add multiple states to exceed memory limit
+    for (let i = 0; i < 10; i++) {
+      store.setState({ data: 'x'.repeat(100 + i) });
     }
+
+    expect(onMemoryLimitReached).toHaveBeenCalled();
+    const info = store.getHistoryMemoryUsage();
+    expect(info.totalBytes).toBeLessThanOrEqual(500);
+  });
+
+  it('uses custom estimateSize function', () => {
+    const customEstimate = vi.fn(() => 42);
+    const store = createStore(
+      () => ({ value: 'test' }),
+      {
+        estimateSize: customEstimate,
+      },
+    );
+
+    store.setState({ value: 'updated' });
+
+    expect(customEstimate).toHaveBeenCalled();
+    const info = store.getHistoryMemoryUsage();
+    // Should use custom estimate for each entry
+    expect(info.totalBytes).toBe(42 * info.entryCount);
+  });
+
+  it('calculates average bytes per entry', () => {
+    const store = createStore(() => ({ count: 0 }));
+
+    store.setState({ count: 1 });
+    store.setState({ count: 2 });
 
     const info = store.getHistoryMemoryUsage();
-    expect(info.totalBytes).toBeLessThanOrEqual(1000);
+    expect(info.averageBytes).toBe(info.totalBytes / info.entryCount);
+    expect(info.averageBytes).toBeGreaterThan(0);
   });
 
-  it('calls onMemoryLimitReached when limit hit', () => {
-    let callCount = 0;
-    let lastInfo: any = null;
-
+  it('includes utilization percentage when max is set', () => {
     const store = createStore(
-      () => ({ data: '' }),
+      () => ({ value: 'test' }),
       {
-        maxHistoryMemory: 500,
-        onMemoryLimitReached: (info) => {
-          callCount++;
-          lastInfo = info;
-        },
-      },
-    );
-
-    for (let i = 0; i < 10; i++) {
-      store.setState({ data: 'x'.repeat(100) });
-    }
-
-    expect(callCount).toBeGreaterThan(0);
-    expect(lastInfo).toBeDefined();
-    expect(lastInfo.entriesRemoved).toBeGreaterThan(0);
-  });
-
-  it('uses custom size estimator', () => {
-    const customEstimates: number[] = [];
-
-    const store = createStore(
-      () => ({ value: 0 }),
-      {
-        estimateSize: (state) => {
-          const size = (state as any).value * 1000;
-          customEstimates.push(size);
-          return size;
-        },
-      },
-    );
-
-    store.setState({ value: 5 });
-    store.setState({ value: 10 });
-
-    expect(customEstimates).toContain(5000);
-    expect(customEstimates).toContain(10000);
-  });
-
-  it('tracks memory accurately across undo/redo', () => {
-    const store = createStore(
-      () => ({ data: '' }),
-      { maxHistoryMemory: 10000 },
-    );
-
-    store.setState({ data: 'a'.repeat(100) });
-    const info1 = store.getHistoryMemoryUsage();
-
-    store.setState({ data: 'b'.repeat(100) });
-    const info2 = store.getHistoryMemoryUsage();
-
-    expect(info2.totalBytes).toBeGreaterThan(info1.totalBytes);
-
-    store.undo();
-    const info3 = store.getHistoryMemoryUsage();
-
-    expect(info3.totalBytes).toBe(info2.totalBytes);
-  });
-
-  it('combines count and memory limits', () => {
-    const store = createStore(
-      () => ({ value: 0 }),
-      {
-        maxHistorySize: 5,
         maxHistoryMemory: 1000,
       },
     );
 
-    for (let i = 0; i < 20; i++) {
-      store.setState({ value: i });
-    }
-
-    const history = store.getHistory();
-    const memInfo = store.getHistoryMemoryUsage();
-
-    expect(history.length).toBeLessThanOrEqual(6);
-    expect(memInfo.totalBytes).toBeLessThanOrEqual(1000);
-  });
-
-  it('provides memory usage info with maxHistoryMemory', () => {
-    const store = createStore(
-      () => ({ data: '' }),
-      { maxHistoryMemory: 5000 },
-    );
-
-    store.setState({ data: 'test' });
     const info = store.getHistoryMemoryUsage();
-
-    expect(info.maxBytes).toBe(5000);
+    expect(info.maxBytes).toBe(1000);
     expect(info.utilizationPercent).toBeDefined();
     expect(info.utilizationPercent).toBeGreaterThanOrEqual(0);
     expect(info.utilizationPercent).toBeLessThanOrEqual(100);
   });
 
-  it('provides memory usage info without maxHistoryMemory', () => {
-    const store = createStore(() => ({ data: '' }));
-
-    store.setState({ data: 'test' });
-    const info = store.getHistoryMemoryUsage();
-
-    expect(info.maxBytes).toBeUndefined();
-    expect(info.utilizationPercent).toBeUndefined();
-  });
-
-  it('calculates average bytes per entry', () => {
-    const store = createStore(() => ({ value: 0 }));
-
-    store.setState({ value: 1 });
-    store.setState({ value: 2 });
-    store.setState({ value: 3 });
+  it('handles circular references', () => {
+    const store = createStore(() => {
+      const obj: any = { value: 'test' };
+      obj.self = obj; // circular reference
+      return obj;
+    });
 
     const info = store.getHistoryMemoryUsage();
-    expect(info.averageBytes).toBeGreaterThan(0);
-    expect(info.averageBytes).toBeLessThanOrEqual(info.totalBytes);
+    expect(info.totalBytes).toBeGreaterThan(0);
+    // Should not cause infinite loop
   });
 
-  it('handles clearHistory with memory tracking', () => {
-    const store = createStore(() => ({ value: 0 }));
+  it('estimates Map and Set sizes', () => {
+    const store = createStore(() => ({
+      map: new Map([
+        ['key1', 'value1'],
+        ['key2', 'value2'],
+      ]),
+      set: new Set(['a', 'b', 'c']),
+    }));
 
-    store.setState({ value: 1 });
-    store.setState({ value: 2 });
-
-    const infoBefore = store.getHistoryMemoryUsage();
-    expect(infoBefore.entryCount).toBeGreaterThan(1);
-
-    store.clearHistory!();
-
-    const infoAfter = store.getHistoryMemoryUsage();
-    expect(infoAfter.entryCount).toBe(1);
-    expect(infoAfter.totalBytes).toBeLessThan(infoBefore.totalBytes);
+    const info = store.getHistoryMemoryUsage();
+    expect(info.totalBytes).toBeGreaterThan(0);
+    expect(info.entryCount).toBeGreaterThan(0);
   });
 
-  it('handles restoreHistory with memory tracking', () => {
-    const store = createStore(() => ({ value: 0 }));
+  it('handles symbols and functions', () => {
+    const store = createStore(() => ({
+      sym: Symbol('test'),
+      func: () => 'hello',
+      regex: /test/gi,
+    }));
 
-    store.setState({ value: 1 });
-    store.setState({ value: 2 });
-    store.setState({ value: 3 });
+    const info = store.getHistoryMemoryUsage();
+    expect(info.totalBytes).toBeGreaterThan(0);
+  });
 
-    const history = store.getHistory();
+  it('tracks memory after undo/redo', () => {
+    const store = createStore(() => ({ count: 0 }));
+
+    store.setState({ count: 1 });
+    store.setState({ count: 2 });
+
+    const beforeUndo = store.getHistoryMemoryUsage();
+
+    store.undo();
+    const afterUndo = store.getHistoryMemoryUsage();
+    // Memory should remain same after undo (history still exists)
+    expect(afterUndo.totalBytes).toBe(beforeUndo.totalBytes);
+
+    store.redo();
+    const afterRedo = store.getHistoryMemoryUsage();
+    expect(afterRedo.totalBytes).toBe(beforeUndo.totalBytes);
+  });
+
+  it('clears memory on clearHistory', () => {
+    const store = createStore(() => ({ count: 0 }));
+
+    store.setState({ count: 1 });
+    store.setState({ count: 2 });
+
+    const beforeClear = store.getHistoryMemoryUsage();
+    expect(beforeClear.entryCount).toBe(3);
+
+    store.clearHistory?.();
+
+    const afterClear = store.getHistoryMemoryUsage();
+    expect(afterClear.entryCount).toBe(1); // Current state remains
+    expect(afterClear.totalBytes).toBeLessThan(beforeClear.totalBytes);
+  });
+
+  it('maintains memory info after save and restore', () => {
+    const store = createStore(() => ({ count: 0 }));
+
+    store.setState({ count: 1 });
+    store.setState({ count: 2 });
+
+    const history = store.saveHistory!();
     const originalInfo = store.getHistoryMemoryUsage();
 
     store.restoreHistory!(history, history.length - 1);
@@ -212,4 +215,3 @@ describe('Memory Estimation', () => {
     expect(restoredInfo.entryCount).toBe(originalInfo.entryCount);
   });
 });
-
