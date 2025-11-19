@@ -28,7 +28,7 @@ jobs:
 
       # Simple: just install different React version
       - name: Install React ${{ matrix.react }}
-        run: pnpm add -D react@${{ matrix.react }} react-dom@${{ matrix.react }}
+        run: pnpm add -D -w react@${{ matrix.react }} react-dom@${{ matrix.react }}
 
       - name: Run tests
         run: pnpm run test:spec
@@ -57,7 +57,7 @@ jobs:
         run: pnpm run build:tsup
 
       - name: Install TypeScript ${{ matrix.typescript }}
-        run: pnpm add -D typescript@${{ matrix.typescript }}
+        run: pnpm add -D -w typescript@${{ matrix.typescript }}
 
       # Create a test tsconfig for type checking
       - name: Create test tsconfig
