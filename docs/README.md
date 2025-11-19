@@ -18,6 +18,7 @@ Welcome to the Bruin documentation! Bruin is a modern state management library t
 ### Bruin Features
 
 - [History & Time Travel](./guides/history-and-time-travel.md) - Built-in undo/redo
+- [Named Snapshots](./guides/history-and-time-travel.md#named-snapshots) - Save and restore state checkpoints
 - [Transactions](./guides/transactions.md) - Batch state updates atomically
 
 ### Hooks

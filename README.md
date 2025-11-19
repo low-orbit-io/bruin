@@ -119,6 +119,51 @@ useBearStore.canRedo() // Check if redo is possible
 
 **Important:** Undo/redo restores the **entire state** to the previous snapshot (not just changed fields). Each store maintains its **own independent history** - calling `undo()` on one store doesn't affect others.
 
+## Named Snapshots
+
+Save and restore specific state checkpoints by name:
+
+```tsx
+interface CounterState {
+  count: number
+  increment: () => void
+}
+
+const useCounterStore = create<CounterState>((set) => ({
+  count: 0,
+  increment: () => set((state) => ({ count: state.count + 1 })),
+}))
+
+// Save a snapshot
+const snapshotId = useCounterStore.getState().saveSnapshot('checkpoint-1')
+
+// Make changes
+useCounterStore.getState().increment()
+useCounterStore.getState().increment()
+
+// Restore the snapshot (adds to history)
+useCounterStore.getState().loadSnapshot(snapshotId)
+
+// List all snapshots
+const snapshots = useCounterStore.getState().listSnapshots()
+// [{ id: '...', name: 'checkpoint-1', timestamp: 1234567890 }]
+
+// Get snapshot details
+const snapshot = useCounterStore.getState().getSnapshot(snapshotId)
+
+// Delete a snapshot
+useCounterStore.getState().deleteSnapshot(snapshotId)
+
+// Clear all snapshots
+useCounterStore.getState().clearSnapshots()
+```
+
+**Key points:**
+- Snapshots are independent from history - they persist even if history is cleared
+- Loading a snapshot always adds a new history entry
+- Snapshots are deep-cloned to prevent reference sharing
+- Useful for saving "before experiment" states, templates, or checkpoints
+
 ## Transactions
 
 Transactions group multiple changes into a single history entry:
