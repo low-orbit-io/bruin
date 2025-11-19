@@ -1,0 +1,77 @@
+name: Compatibility
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  react-versions:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Only test key versions, not every minor
+        react: [18.2.0, 19.0.0]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Simple: just install different React version
+      - name: Install React ${{ matrix.react }}
+        run: pnpm add -D react@${{ matrix.react }} react-dom@${{ matrix.react }}
+
+      - name: Run tests
+        run: pnpm run test:spec
+
+  typescript-versions:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Only test major versions
+        typescript: [4.5.5, 5.0.4, 5.9.2]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build with tsup
+        run: pnpm run build:tsup
+
+      - name: Install TypeScript ${{ matrix.typescript }}
+        run: pnpm add -D typescript@${{ matrix.typescript }}
+
+      # Create a test tsconfig that's compatible with older TypeScript versions
+      - name: Create test tsconfig
+        run: |
+          cat > tsconfig.test.json <<EOF
+          {
+            "extends": "./tsconfig.json",
+            "compilerOptions": {
+              "isolatedDeclarations": false,
+              "verbatimModuleSyntax": false,
+              "allowImportingTsExtensions": false
+            }
+          }
+          EOF
+
+      - name: Type check
+        run: npx tsc --project tsconfig.test.json --noEmit

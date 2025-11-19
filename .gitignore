@@ -1,5 +1,6 @@
 node_modules/
 dist/
+dist-tsup/
 Thumbs.db
 ehthumbs.db
 Desktop.ini

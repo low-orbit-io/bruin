@@ -1,0 +1,92 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build with tsup
+        run: pnpm run build:tsup
+
+      # Upload build for other workflows
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist-tsup/
+          retention-days: 1
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Run all tests in parallel
+      - name: Run format check
+        run: pnpm run test:format
+
+      - name: Run linter
+        run: pnpm run test:lint
+
+      - name: Run type check
+        run: pnpm run test:types
+
+      - name: Run tests
+        run: pnpm run test:spec
+
+  # Test the built artifacts
+  test-build:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist-tsup/
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Test CommonJS build
+        run: |
+          node -e "const bruin = require('./dist-tsup/index.js'); console.log('CJS import successful:', typeof bruin.create === 'function');"
+
+      - name: Test ESM build
+        run: |
+          node --input-type=module -e "import { create } from './dist-tsup/index.mjs'; console.log('ESM import successful:', typeof create === 'function');"

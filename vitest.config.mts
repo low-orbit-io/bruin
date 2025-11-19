@@ -1,12 +1,47 @@
 import { resolve } from 'path';
 import { defineConfig } from 'vitest/config';
 
-export default defineConfig({
-  resolve: {
-    alias: [
+// Environment variables for testing different builds
+const testBuild = process.env.TEST_BUILD; // 'cjs', 'esm', 'tsup-cjs', 'tsup-esm', or undefined (source)
+const isProd = process.env.NODE_ENV === 'production';
+
+// Define aliases based on TEST_BUILD environment variable
+const getAliases = () => {
+  // Default: test from source
+  if (!testBuild) {
+    return [
       { find: /^bruin$/, replacement: resolve('./src/index.ts') },
       { find: /^bruin(.*)$/, replacement: resolve('./src/$1.ts') },
-    ],
+    ];
+  }
+
+  // Testing built artifacts
+  let buildDir = 'dist';
+  let ext = '.js';
+
+  if (testBuild === 'tsup-cjs') {
+    buildDir = 'dist-tsup';
+    ext = '.js';
+  } else if (testBuild === 'tsup-esm') {
+    buildDir = 'dist-tsup';
+    ext = '.mjs';
+  } else if (testBuild === 'esm') {
+    buildDir = 'dist/esm';
+    ext = '.mjs';
+  } else if (testBuild === 'cjs') {
+    buildDir = 'dist';
+    ext = '.js';
+  }
+
+  return [
+    { find: /^bruin$/, replacement: resolve(`./${buildDir}/index${ext}`) },
+    { find: /^bruin\/(.*)$/, replacement: resolve(`./${buildDir}/$1${ext}`) },
+  ];
+};
+
+export default defineConfig({
+  resolve: {
+    alias: getAliases(),
   },
   test: {
     name: 'bruin',
@@ -31,10 +66,7 @@ export default defineConfig({
     projects: [
       {
         resolve: {
-          alias: [
-            { find: /^bruin$/, replacement: resolve('./src/index.ts') },
-            { find: /^bruin(.*)$/, replacement: resolve('./src/$1.ts') },
-          ],
+          alias: getAliases(),
         },
         test: {
           name: 'vanilla',
@@ -44,10 +76,7 @@ export default defineConfig({
       },
       {
         resolve: {
-          alias: [
-            { find: /^bruin$/, replacement: resolve('./src/index.ts') },
-            { find: /^bruin(.*)$/, replacement: resolve('./src/$1.ts') },
-          ],
+          alias: getAliases(),
         },
         test: {
           name: 'react',
