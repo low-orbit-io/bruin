@@ -7,7 +7,16 @@ import * as React from 'react';
 
 // Ensure act is available on React for all module formats
 if (typeof (React as any).act !== 'function') {
-  (React as any).act = act;
+  try {
+    Object.defineProperty(React, 'act', {
+      value: act,
+      writable: true,
+      configurable: true,
+    });
+  } catch {
+    // If defineProperty fails, fallback to direct assignment
+    (React as any).act = act;
+  }
 }
 
 // Make act available globally for testing libraries
@@ -16,7 +25,6 @@ if (typeof globalThis !== 'undefined') {
   if (!(globalThis as any).React) {
     (globalThis as any).React = React;
   }
-  // Ensure global act is available
   if (!(globalThis as any).act) {
     (globalThis as any).act = act;
   }
