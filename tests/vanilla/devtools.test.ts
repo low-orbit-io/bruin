@@ -558,7 +558,9 @@ describe('Vanilla devtools Middleware', () => {
           return state;
         };
 
-        const store = createStore(devtools(redux(reducer, { count: 0 }))) as any;
+        const store = createStore(
+          devtools(redux(reducer, { count: 0 })),
+        ) as any;
 
         store.dispatch({ type: '__setState', state: { count: 1 } });
 
