@@ -205,4 +205,23 @@ describe('Memory Estimation', () => {
     expect(restoredInfo.totalBytes).toBe(originalInfo.totalBytes);
     expect(restoredInfo.entryCount).toBe(originalInfo.entryCount);
   });
+
+  it('combines count and memory limits', () => {
+    const store = createStore(() => ({ value: 0 }), {
+      maxHistorySize: 5,
+      maxHistoryMemory: 1000,
+    });
+
+    // Add many entries
+    for (let i = 0; i < 20; i++) {
+      store.setState({ value: i });
+    }
+
+    const history = store.getHistory();
+    const memInfo = store.getHistoryMemoryUsage();
+
+    // Should respect BOTH limits
+    expect(history.length).toBeLessThanOrEqual(6); // +1 for initial
+    expect(memInfo.totalBytes).toBeLessThanOrEqual(1000);
+  });
 });
