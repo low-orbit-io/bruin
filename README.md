@@ -56,12 +56,19 @@ const useStore = create((set) => ({
 }));
 
 // Undo/redo methods available on the store
-useStore.undo(); // Go back one step
-useStore.redo(); // Go forward one step
+useStore.undo(); // Go back one step (restores entire state)
+useStore.redo(); // Go forward one step (restores entire state)
 useStore.canUndo(); // Check if undo is possible
 useStore.canRedo(); // Check if redo is possible
+```
 
-// Transactions group multiple changes
+**Important:** Undo/redo restores the **entire state** to the previous snapshot (not just changed fields). Each store maintains its **own independent history** - calling `undo()` on one store doesn't affect others.
+
+### Transactions
+
+Transactions group multiple changes:
+
+```jsx
 // Option 1: Using set.transaction (recommended)
 const useStore = create((set) => ({
   count: 0,

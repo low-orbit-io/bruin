@@ -43,6 +43,72 @@ console.log(history);
 // ]
 ```
 
+## How Undo/Redo Works
+
+### Complete State Restoration
+
+Bruin uses a **snapshot-based approach** for history tracking. When you call `undo()` or `redo()`, the **entire state** is restored to the previous snapshot, not just the changed fields.
+
+```ts
+const useStore = create((set) => ({
+  count: 0,
+  name: 'Alice',
+  setName: (name: string) => set({ name }),
+  increment: () => set((state) => ({ count: state.count + 1 })),
+}));
+
+// Modify state
+useStore.getState().setName('Bob');      // State: { count: 0, name: 'Bob' }
+useStore.getState().increment();         // State: { count: 1, name: 'Bob' }
+
+// Undo restores the ENTIRE previous state
+useStore.undo();                          // State: { count: 0, name: 'Bob' } ✅
+                                          // Both count AND name are restored
+
+useStore.undo();                          // State: { count: 0, name: 'Alice' } ✅
+                                          // Complete initial state restored
+```
+
+Each history entry stores a **complete snapshot** of the entire state object at that point in time. This ensures:
+- **Reliability**: Exact state restoration without partial updates
+- **Simplicity**: No complex diff/patch logic needed
+- **Consistency**: All fields are guaranteed to be in sync
+
+### Per-Store History Isolation
+
+Each Bruin store maintains its **own independent history**. Undo/redo operations only affect the store they're called on:
+
+```ts
+// Create two independent stores
+const userStore = create((set) => ({
+  name: 'Alice',
+  setName: (name: string) => set({ name }),
+}));
+
+const counterStore = create((set) => ({
+  count: 0,
+  increment: () => set((state) => ({ count: state.count + 1 })),
+}));
+
+// Modify both stores
+userStore.getState().setName('Bob');
+counterStore.getState().increment();
+counterStore.getState().increment();
+
+// Undo only affects the store you call it on
+userStore.undo();        // userStore.name → 'Alice' ✅
+                         // counterStore.count → still 2 ✅ (unchanged)
+
+counterStore.undo();     // counterStore.count → 1 ✅
+                         // userStore.name → still 'Alice' ✅ (unchanged)
+```
+
+**Key points:**
+- Each store has its own history array and index
+- Stores don't interfere with each other's history
+- You must call `undo()`/`redo()` on the specific store you want to revert
+- Perfect for applications with multiple independent state domains
+
 ## Naming Actions
 
 Provide action names for better debugging:
@@ -248,6 +314,8 @@ const useStore = create(
 3. **Set history limits** - Prevent memory issues in long-running apps
 4. **Clear history strategically** - After major workflows or user actions
 5. **Use with DevTools** - Visualize your state changes
+6. **Understand state restoration** - Remember that undo restores the entire state, not just changed fields
+7. **Isolate concerns** - Use separate stores for independent domains to benefit from per-store history isolation
 
 ## TypeScript
 

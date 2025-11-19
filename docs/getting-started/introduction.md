@@ -83,10 +83,12 @@ const useStore = create((set) => ({
 
 // Access history
 const store = useStore.getState();
-console.log(store.getHistory()); // Array of state snapshots
-store.undo(); // Go back one step
-store.redo(); // Go forward one step
+console.log(store.getHistory()); // Array of complete state snapshots
+store.undo(); // Restore entire previous state
+store.redo(); // Restore entire next state
 ```
+
+**Note:** Undo/redo restores the **entire state** to the previous snapshot (not just changed fields). Each store maintains its **own independent history** - multiple stores don't interfere with each other.
 
 ## Transactions
 
