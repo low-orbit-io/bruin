@@ -38,7 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced devtools integration
 - Additional history configuration options
 
-## [0.1.0] - TBD
+## [1.2.0] - TBD
 
 ### Added
 - Initial release of Bruin
@@ -62,5 +62,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **React Integration**: Hooks-based API for React 18+
 - **Vanilla JS**: Can be used without React for vanilla JavaScript projects
 
-[Unreleased]: https://github.com/low-orbit-io/bruin/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/low-orbit-io/bruin/releases/tag/v0.1.0
+[Unreleased]: https://github.com/low-orbit-io/bruin/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/low-orbit-io/bruin/releases/tag/v1.2.0

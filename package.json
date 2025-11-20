@@ -3,7 +3,7 @@
   "description": "🐻 History-enabled state management for React, built on Zustand",
   "private": false,
   "type": "commonjs",
-  "version": "0.1.0",
+  "version": "1.2.0",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
