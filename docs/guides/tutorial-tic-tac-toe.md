@@ -30,8 +30,8 @@ In this tutorial, you'll build an interactive tic-tac-toe game with React and Br
 You can see what it will look like when you're finished here:
 
 ```jsx
-import { create } from '@low-orbit/bruin';
-import { combine } from '@low-orbit/bruin/middleware';
+import { create } from '@inboxhealth/bruin';
+import { combine } from '@inboxhealth/bruin/middleware';
 
 const useGameStore = create(
   combine(
@@ -311,8 +311,8 @@ Let's take this opportunity to try it out. Edit the `Board` component so that it
 variable named squares that defaults to an array of 9 nulls corresponding to the 9 squares:
 
 ```jsx
-import { create } from '@low-orbit/bruin';
-import { combine } from '@low-orbit/bruin/middleware';
+import { create } from '@inboxhealth/bruin';
+import { combine } from '@inboxhealth/bruin/middleware';
 
 const useGameStore = create(
   combine({ squares: Array(9).fill(null) }, (set) => {
@@ -616,8 +616,8 @@ Congratulations! You now have a working tic-tac-toe game. And you've just learne
 React and Bruin too. So you are the real winner here. Here is what the code should look like:
 
 ```jsx
-import { create } from '@low-orbit/bruin';
-import { combine } from '@low-orbit/bruin/middleware';
+import { create } from '@inboxhealth/bruin';
+import { combine } from '@inboxhealth/bruin/middleware';
 
 const useGameStore = create(
   combine({ squares: Array(9).fill(null), xIsNext: true }, (set) => {
@@ -1010,8 +1010,8 @@ At this point, you've moved the state to live in the `Game` component, and the U
 working, just as it was before the refactor. Here is what the code should look like at this point:
 
 ```jsx
-import { create } from '@low-orbit/bruin';
-import { combine } from '@low-orbit/bruin/middleware';
+import { create } from '@inboxhealth/bruin';
+import { combine } from '@inboxhealth/bruin/middleware';
 
 const useGameStore = create(
   combine({ history: [Array(9).fill(null)], xIsNext: true }, (set) => {

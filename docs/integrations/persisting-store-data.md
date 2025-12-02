@@ -18,8 +18,8 @@ for more details.
 ## Simple example
 
 ```ts
-import { create } from '@low-orbit/bruin';
-import { persist, createJSONStorage } from '@low-orbit/bruin/middleware';
+import { create } from '@inboxhealth/bruin';
+import { persist, createJSONStorage } from '@inboxhealth/bruin/middleware';
 
 export const useBearStore = create()(
   persist(
@@ -38,8 +38,8 @@ export const useBearStore = create()(
 ## Typescript simple example
 
 ```ts
-import { create } from '@low-orbit/bruin';
-import { persist, createJSONStorage } from '@low-orbit/bruin/middleware';
+import { create } from '@inboxhealth/bruin';
+import { persist, createJSONStorage } from '@inboxhealth/bruin/middleware';
 
 type BearStore = {
   bears: number;
@@ -76,7 +76,7 @@ so it must be unique.
 The `StateStorage` can be imported with:
 
 ```ts
-import { StateStorage } from '@low-orbit/bruin/middleware';
+import { StateStorage } from '@inboxhealth/bruin/middleware';
 ```
 
 > Default: `createJSONStorage(() => localStorage)`
@@ -86,7 +86,7 @@ Enables you to use your own storage. Simply pass a function that returns the sto
 Example:
 
 ```ts
-import { persist, createJSONStorage } from '@low-orbit/bruin/middleware';
+import { persist, createJSONStorage } from '@inboxhealth/bruin/middleware';
 
 export const useBoundStore = create(
   persist(
@@ -452,7 +452,7 @@ This helper function enables you to create a [`storage`](#storage) object which 
 `options` is an optional object that can be used to customize the serialization and deserialization of the data. `options.reviver` is a function that is passed to `JSON.parse` to deserialize the data. `options.replacer` is a function that is passed to `JSON.stringify` to serialize the data.
 
 ```ts
-import { createJSONStorage } from '@low-orbit/bruin/middleware';
+import { createJSONStorage } from '@inboxhealth/bruin/middleware';
 
 const storage = createJSONStorage(() => sessionStorage, {
   reviver: (key, value) => {
@@ -549,8 +549,8 @@ Now in your pages, you will use the hook a little bit differently:
 ```ts
 // useBearStore.ts
 
-import { create } from '@low-orbit/bruin';
-import { persist } from '@low-orbit/bruin/middleware';
+import { create } from '@inboxhealth/bruin';
+import { persist } from '@inboxhealth/bruin/middleware';
 
 // the store itself does not need any change
 export const useBearStore = create(
@@ -652,8 +652,8 @@ const useHydration = () => {
 If the storage you want to use does not match the expected API, you can create your own storage:
 
 ```ts
-import { create } from '@low-orbit/bruin';
-import { persist, createJSONStorage, StateStorage } from '@low-orbit/bruin/middleware';
+import { create } from '@inboxhealth/bruin';
+import { persist, createJSONStorage, StateStorage } from '@inboxhealth/bruin/middleware';
 import { get, set, del } from 'idb-keyval'; // can use anything: IndexedDB, Ionic Storage, etc.
 
 // Custom storage object
@@ -692,7 +692,7 @@ For example, [Superjson](https://github.com/blitz-js/superjson) can serialize da
 
 ```ts
 import superjson from 'superjson'; //  can use anything: serialize-javascript, devalue, etc.
-import { PersistStorage } from '@low-orbit/bruin/middleware';
+import { PersistStorage } from '@inboxhealth/bruin/middleware';
 
 interface BearState {
   bear: Map<string, string>;
@@ -766,8 +766,8 @@ Basic typescript usage doesn't require anything special
 except for writing `create<State>()(...)` instead of `create(...)`.
 
 ```tsx
-import { create } from '@low-orbit/bruin';
-import { persist, createJSONStorage } from '@low-orbit/bruin/middleware';
+import { create } from '@inboxhealth/bruin';
+import { persist, createJSONStorage } from '@inboxhealth/bruin/middleware';
 
 interface MyState {
   bears: number;

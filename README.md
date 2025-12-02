@@ -2,8 +2,8 @@
   <img src="docs/bear.jpg" />
 </p>
 
-[![npm version](https://img.shields.io/npm/v/@low-orbit/bruin.svg?style=flat&colorA=000000&colorB=000000)](https://www.npmjs.com/package/@low-orbit/bruin)
-[![npm downloads](https://img.shields.io/npm/dt/@low-orbit/bruin.svg?style=flat&colorA=000000&colorB=000000)](https://www.npmjs.com/package/@low-orbit/bruin)
+[![npm version](https://img.shields.io/npm/v/@inboxhealth/bruin.svg?style=flat&colorA=000000&colorB=000000)](https://www.npmjs.com/package/@inboxhealth/bruin)
+[![npm downloads](https://img.shields.io/npm/dt/@inboxhealth/bruin.svg?style=flat&colorA=000000&colorB=000000)](https://www.npmjs.com/package/@inboxhealth/bruin)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A lightweight, performant state management library built on simplified flux patterns. Features a hook-based API that's straightforward and flexible, without unnecessary complexity. Every store automatically tracks history for undo/redo functionality.
@@ -13,7 +13,7 @@ While the bear mascot is friendly, the library is robust. Significant effort wen
 Built on [Zustand](https://github.com/pmndrs/zustand) for compatibility. If you're familiar with Zustand, you'll feel right at home with Bruin. The difference is automatic history tracking.
 
 ```bash
-npm install @low-orbit/bruin
+npm install @inboxhealth/bruin
 ```
 
 ## Creating a store
@@ -21,7 +21,7 @@ npm install @low-orbit/bruin
 Stores are created as hooks. Store any data type: primitives, objects, or functions. Updates must be immutable, and the `set` function [merges state](./docs/guides/immutable-state-and-merging.md) automatically. History tracking happens automatically for every change.
 
 ```tsx
-import { create } from '@low-orbit/bruin'
+import { create } from '@inboxhealth/bruin'
 
 interface BearState {
   bears: number
@@ -221,8 +221,8 @@ const honey = useBearStore((state) => state.honey)
 When selecting multiple values into a single object (similar to Redux's `mapStateToProps`), use [useShallow](./docs/guides/prevent-rerenders-with-use-shallow.md) to prevent re-renders when the selected values haven't changed according to shallow equality.
 
 ```tsx
-import { create } from '@low-orbit/bruin'
-import { useShallow } from '@low-orbit/bruin/react/shallow'
+import { create } from '@inboxhealth/bruin'
+import { useShallow } from '@inboxhealth/bruin/react/shallow'
 
 interface BearStore {
   nuts: number
@@ -362,7 +362,7 @@ subscribe(selector, callback, options?: { equalityFn, fireImmediately }): Unsubs
 ```
 
 ```tsx
-import { subscribeWithSelector } from '@low-orbit/bruin/middleware'
+import { subscribeWithSelector } from '@inboxhealth/bruin/middleware'
 
 interface DogState {
   paw: boolean
@@ -398,7 +398,7 @@ const unsub5 = useDogStore.subscribe((state) => state.paw, console.log, {
 Bruin's core functionality works without React. When using the vanilla version, `createStore` returns store utilities instead of a React hook.
 
 ```ts
-import { createStore } from '@low-orbit/bruin/vanilla'
+import { createStore } from '@inboxhealth/bruin/vanilla'
 
 interface StoreState {
   count: number
@@ -418,7 +418,7 @@ export default store
 Vanilla stores can be used with the `useStore` hook (available since v4).
 
 ```tsx
-import { useStore } from '@low-orbit/bruin'
+import { useStore } from '@inboxhealth/bruin'
 import { vanillaStore } from './vanillaStore'
 
 const useBoundStore = <T,>(selector: (state: typeof vanillaStore extends { getState: () => infer S } ? S : never) => T) => 
@@ -488,8 +488,8 @@ clearForest()
 Save your store's state to any storage backend using the persist middleware.
 
 ```tsx
-import { create } from '@low-orbit/bruin'
-import { persist, createJSONStorage } from '@low-orbit/bruin/middleware'
+import { create } from '@inboxhealth/bruin'
+import { persist, createJSONStorage } from '@inboxhealth/bruin/middleware'
 
 interface FishState {
   fishes: number
@@ -518,8 +518,8 @@ const useFishStore = create<FishState>()(
 Bruin includes Immer as a middleware option for easier nested state updates.
 
 ```tsx
-import { create } from '@low-orbit/bruin'
-import { immer } from '@low-orbit/bruin/middleware/immer'
+import { create } from '@inboxhealth/bruin'
+import { immer } from '@inboxhealth/bruin/middleware/immer'
 
 interface BeeState {
   bees: number
@@ -570,7 +570,7 @@ dispatch({ type: types.increase, by: 2 })
 Alternatively, use the redux middleware which configures your reducer, sets initial state, and adds dispatch to both the state and vanilla API.
 
 ```tsx
-import { redux } from '@low-orbit/bruin/middleware'
+import { redux } from '@inboxhealth/bruin/middleware'
 
 const useGrumpyStore = create(redux(reducer, initialState))
 ```
@@ -580,7 +580,7 @@ const useGrumpyStore = create(redux(reducer, initialState))
 Use the [Redux DevTools Chrome extension](https://chromewebstore.google.com/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd) with Bruin's devtools middleware.
 
 ```tsx
-import { devtools } from '@low-orbit/bruin/middleware'
+import { devtools } from '@inboxhealth/bruin/middleware'
 
 interface PlainState {
   // your state here
@@ -597,7 +597,7 @@ const useReduxStore = create(devtools(redux(reducer, initialState)))
 Connect multiple stores to DevTools:
 
 ```tsx
-import { devtools } from '@low-orbit/bruin/middleware'
+import { devtools } from '@inboxhealth/bruin/middleware'
 
 // Plain stores log actions as "setState"
 const usePlainStore1 = create<PlainState>()(devtools((set) => ({ /* ... */ }), { name: 'Store1', store: 'storeName1' }))
@@ -675,7 +675,7 @@ The recommended approach (available since v4) is to use a vanilla store with Con
 
 ```tsx
 import { createContext, useContext } from 'react'
-import { createStore, useStore } from '@low-orbit/bruin'
+import { createStore, useStore } from '@inboxhealth/bruin'
 
 interface StoreState {
   // your state here
@@ -704,8 +704,8 @@ const Component = () => {
 Bruin is written in TypeScript and provides excellent type inference. All examples in this README use TypeScript.
 
 ```ts
-import { create } from '@low-orbit/bruin'
-import { devtools, persist } from '@low-orbit/bruin/middleware'
+import { create } from '@inboxhealth/bruin'
+import { devtools, persist } from '@inboxhealth/bruin/middleware'
 import type {} from '@redux-devtools/extension' // required for devtools typing
 
 interface BearState {

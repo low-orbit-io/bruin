@@ -6,13 +6,13 @@
 
 ### Reporting Issues
 
-If you have found what you think is a bug, please [file an issue](https://github.com/low-orbit-io/bruin/issues/new).
+If you have found what you think is a bug, please [file an issue](https://github.com/InboxHealth/bruin/issues/new).
 
-For any usage questions, please [start a discussion](https://github.com/low-orbit-io/bruin/discussions/new?category=q-a).
+For any usage questions, please [start a discussion](https://github.com/InboxHealth/bruin/discussions/new?category=q-a).
 
 ### Suggesting New Features
 
-If you are here to suggest a feature, first [start a discussion](https://github.com/low-orbit-io/bruin/discussions/new?category=ideas) if it does not already exist. From there, we will discuss use-cases for the feature and then finally discuss how it could be implemented.
+If you are here to suggest a feature, first [start a discussion](https://github.com/InboxHealth/bruin/discussions/new?category=ideas) if it does not already exist. From there, we will discuss use-cases for the feature and then finally discuss how it could be implemented.
 
 **Note:** If suggesting features that would benefit the core Zustand project (non-history related improvements), please consider contributing directly to [Zustand](https://github.com/pmndrs/zustand) instead.
 

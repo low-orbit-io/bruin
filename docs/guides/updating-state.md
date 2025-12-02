@@ -10,7 +10,7 @@ the new state, and it will be shallowly merged with the existing state in the
 store. **Note** See next section for nested state.
 
 ```tsx
-import { create } from '@low-orbit/bruin';
+import { create } from '@inboxhealth/bruin';
 
 type State = {
   firstName: string;

@@ -8,7 +8,7 @@ In order to fix this, the action needs to be wrapped in `unstable_batchedUpdates
 
 ```tsx
 import { unstable_batchedUpdates } from 'react-dom'; // or 'react-native'
-import { create } from '@low-orbit/bruin';
+import { create } from '@inboxhealth/bruin';
 
 interface FishState {
   fishes: number;

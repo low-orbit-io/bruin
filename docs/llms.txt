@@ -90,7 +90,7 @@ No migration needed! Bruin is 100% backward compatible with Zustand.
 Simply change your imports:
 ```diff
 - import { create } from 'zustand'
-+ import { create } from '@low-orbit/bruin'
++ import { create } from '@inboxhealth/bruin'
 ```
 
 All Zustand code works with Bruin. You can then gradually adopt Bruin features like history, transactions, and memory management.
@@ -98,7 +98,7 @@ All Zustand code works with Bruin. You can then gradually adopt Bruin features l
 ## Quick Example
 
 ```typescript
-import { create } from '@low-orbit/bruin'
+import { create } from '@inboxhealth/bruin'
 
 const useStore = create(
   (set) => ({
@@ -131,5 +131,5 @@ function Counter() {
 
 ## Repository
 
-- GitHub: https://github.com/low-orbit-io/bruin
+- GitHub: https://github.com/InboxHealth/bruin
 - NPM: https://www.npmjs.com/package/bruin

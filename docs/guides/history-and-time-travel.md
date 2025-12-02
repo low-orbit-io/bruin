@@ -15,7 +15,7 @@ and detailed state inspection.
 Every Bruin store automatically tracks its history:
 
 ```ts
-import { create } from '@low-orbit/bruin';
+import { create } from '@inboxhealth/bruin';
 
 const useStore = create((set) => ({
   count: 0,
@@ -207,7 +207,7 @@ const useStore = create((set) => ({
 Use history in your components:
 
 ```tsx
-import { create } from '@low-orbit/bruin';
+import { create } from '@inboxhealth/bruin';
 
 const useStore = create((set) => ({
   count: 0,
@@ -256,8 +256,8 @@ function HistoryTimeline() {
 Use the persist middleware to save/restore history:
 
 ```ts
-import { create } from '@low-orbit/bruin';
-import { persist } from '@low-orbit/bruin/middleware';
+import { create } from '@inboxhealth/bruin';
+import { persist } from '@inboxhealth/bruin/middleware';
 
 const useStore = create(
   persist(
@@ -280,8 +280,8 @@ Now your history will be saved to localStorage and restored on page reload!
 History automatically integrates with Redux DevTools:
 
 ```ts
-import { create } from '@low-orbit/bruin';
-import { devtools } from '@low-orbit/bruin/middleware';
+import { create } from '@inboxhealth/bruin';
+import { devtools } from '@inboxhealth/bruin/middleware';
 
 const useStore = create(
   devtools(
@@ -306,7 +306,7 @@ DevTools will show:
 Configure history behavior per store:
 
 ```ts
-import { create } from '@low-orbit/bruin';
+import { create } from '@inboxhealth/bruin';
 
 const useStore = create(
   (set) => ({
@@ -415,7 +415,7 @@ const useStore = create(
 History methods are fully typed:
 
 ```ts
-import { create } from '@low-orbit/bruin';
+import { create } from '@inboxhealth/bruin';
 
 type Store = {
   count: number;
@@ -488,7 +488,7 @@ entries, snapshots persist independently and can be restored at any time, even a
 ### Basic Usage
 
 ```ts
-import { create } from '@low-orbit/bruin';
+import { create } from '@inboxhealth/bruin';
 
 interface EditorState {
   content: string;

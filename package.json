@@ -1,5 +1,5 @@
 {
-  "name": "@low-orbit/bruin",
+  "name": "@inboxhealth/bruin",
   "description": "🐻 History-enabled state management for React, built on Zustand",
   "private": false,
   "type": "commonjs",
@@ -115,7 +115,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/low-orbit-io/bruin.git"
+    "url": "git+https://github.com/InboxHealth/bruin.git"
   },
   "keywords": [
     "react",
@@ -134,9 +134,9 @@
   "contributors": [],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/low-orbit-io/bruin/issues"
+    "url": "https://github.com/InboxHealth/bruin/issues"
   },
-  "homepage": "https://github.com/low-orbit-io/bruin",
+  "homepage": "https://github.com/InboxHealth/bruin",
   "packageManager": "pnpm@10.22.0",
   "devDependencies": {
     "@eslint/js": "^9.39.1",

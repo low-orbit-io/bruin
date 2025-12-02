@@ -36,7 +36,7 @@ function App() {
   return (
     <div className="grid place-items-center gap-6">
       <a
-        href="https://github.com/low-orbit-io/bruin"
+        href="https://github.com/InboxHealth/bruin"
         target="_blank"
         rel="noreferrer"
       >

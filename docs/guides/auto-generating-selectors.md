@@ -14,7 +14,7 @@ However, writing these could be tedious. If that is the case for you, you can au
 ## Create the following function: `createSelectors`
 
 ```typescript
-import { StoreApi, UseBoundStore } from '@low-orbit/bruin';
+import { StoreApi, UseBoundStore } from '@inboxhealth/bruin';
 
 type WithSelectors<S> = S extends { getState: () => infer T }
   ? S & { use: { [K in keyof T]: () => T[K] } }
@@ -70,7 +70,7 @@ const increment = useBearStore.use.increment();
 If you are using a vanilla store, use the following `createSelectors` function:
 
 ```typescript
-import { StoreApi, useStore } from '@low-orbit/bruin';
+import { StoreApi, useStore } from '@inboxhealth/bruin';
 
 type WithSelectors<S> = S extends { getState: () => infer T }
   ? S & { use: { [K in keyof T]: () => T[K] } }
@@ -91,7 +91,7 @@ const createSelectors = <S extends StoreApi<object>>(_store: S) => {
 The usage is the same as a React store. If you have a store like this:
 
 ```typescript
-import { createStore } from '@low-orbit/bruin';
+import { createStore } from '@inboxhealth/bruin';
 
 interface BearState {
   bears: number;

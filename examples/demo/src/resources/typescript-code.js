@@ -1,4 +1,4 @@
-export default `import { create } from '@low-orbit/bruin'
+export default `import { create } from '@inboxhealth/bruin'
 
 type Store = {
   count: number

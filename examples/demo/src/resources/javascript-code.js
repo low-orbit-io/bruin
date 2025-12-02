@@ -1,4 +1,4 @@
-export default `import { create } from '@low-orbit/bruin'
+export default `import { create } from '@inboxhealth/bruin'
 
 const useStore = create((set) => ({
   count: 1,

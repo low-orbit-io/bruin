@@ -84,8 +84,8 @@ coordinates) and an action to update it. We'll also use the `persist` middleware
 position in `localStorage`.
 
 ```ts
-import { createStore } from '@low-orbit/bruin/vanilla';
-import { persist } from '@low-orbit/bruin/middleware';
+import { createStore } from '@inboxhealth/bruin/vanilla';
+import { persist } from '@inboxhealth/bruin/middleware';
 
 type PositionStoreState = { position: { x: number; y: number } };
 
@@ -138,8 +138,8 @@ positionStore.subscribe(render);
 Here’s the complete code.
 
 ```ts
-import { createStore } from '@low-orbit/bruin/vanilla';
-import { persist } from '@low-orbit/bruin/middleware';
+import { createStore } from '@inboxhealth/bruin/vanilla';
+import { persist } from '@inboxhealth/bruin/middleware';
 
 type PositionStoreState = { position: { x: number; y: number } };
 
@@ -206,8 +206,8 @@ use the `persist` middleware to persist only the relevant part of the state (in 
 context containing the position).
 
 ```ts
-import { createStore } from '@low-orbit/bruin/vanilla';
-import { persist } from '@low-orbit/bruin/middleware';
+import { createStore } from '@inboxhealth/bruin/vanilla';
+import { persist } from '@inboxhealth/bruin/middleware';
 
 type PositionStoreState = {
   context: {
@@ -276,8 +276,8 @@ Here’s the full code to create a dot that follows your mouse movement inside a
 persists the `context` in `localStorage`.
 
 ```ts
-import { createStore } from '@low-orbit/bruin/vanilla';
-import { persist } from '@low-orbit/bruin/middleware';
+import { createStore } from '@inboxhealth/bruin/vanilla';
+import { persist } from '@inboxhealth/bruin/middleware';
 
 type PositionStoreState = {
   context: {
@@ -407,8 +407,8 @@ our custom storage. Instead of the default `localStorage` or `sessionStorage`, w
 position data in the URL search parameters.
 
 ```ts
-import { createStore } from '@low-orbit/bruin/vanilla';
-import { persist, createJSONStorage } from '@low-orbit/bruin/middleware';
+import { createStore } from '@inboxhealth/bruin/vanilla';
+import { persist, createJSONStorage } from '@inboxhealth/bruin/middleware';
 
 type PositionStoreState = { position: { x: number; y: number } };
 
@@ -465,8 +465,8 @@ Here’s the full code to create a dot that follows your mouse movement inside a
 persists the position in URL's search parameters.
 
 ```ts
-import { createStore } from '@low-orbit/bruin/vanilla';
-import { persist, createJSONStorage } from '@low-orbit/bruin/middleware';
+import { createStore } from '@inboxhealth/bruin/vanilla';
+import { persist, createJSONStorage } from '@inboxhealth/bruin/middleware';
 
 type PositionStoreState = { position: { x: number; y: number } };
 
@@ -632,8 +632,8 @@ positionStore.subscribe(render);
 Here’s the complete code.
 
 ```ts
-import { createStore } from '@low-orbit/bruin/vanilla';
-import { persist } from '@low-orbit/bruin/middleware';
+import { createStore } from '@inboxhealth/bruin/vanilla';
+import { persist } from '@inboxhealth/bruin/middleware';
 
 // For tutorial purposes only
 if (!localStorage.getItem('position-storage')) {
@@ -735,8 +735,8 @@ if (!localStorage.getItem('position-storage')) {
 Now, we will create the store and configure it to use persistence and deep merging.
 
 ```ts
-import { createStore } from '@low-orbit/bruin/vanilla';
-import { persist } from '@low-orbit/bruin/middleware';
+import { createStore } from '@inboxhealth/bruin/vanilla';
+import { persist } from '@inboxhealth/bruin/middleware';
 import createDeepMerge from '@fastify/deepmerge';
 
 const deepMerge = createDeepMerge({ all: true });
@@ -795,8 +795,8 @@ positionStore.subscribe(render);
 Here’s the complete code.
 
 ```ts
-import { createStore } from '@low-orbit/bruin/vanilla';
-import { persist } from '@low-orbit/bruin/middleware';
+import { createStore } from '@inboxhealth/bruin/vanilla';
+import { persist } from '@inboxhealth/bruin/middleware';
 import createDeepMerge from '@fastify/deepmerge';
 
 const deepMerge = createDeepMerge({ all: true });
@@ -880,8 +880,8 @@ coordinates) and an action to update it. Furthermore, we'll also use the `persis
 store the position in `localStorage` but skipping hydration.
 
 ```ts
-import { createStore } from '@low-orbit/bruin/vanilla';
-import { persist } from '@low-orbit/bruin/middleware';
+import { createStore } from '@inboxhealth/bruin/vanilla';
+import { persist } from '@inboxhealth/bruin/middleware';
 
 type PositionStoreState = { position: { x: number; y: number } };
 
@@ -946,8 +946,8 @@ positionStore.subscribe(render);
 Here’s the complete code.
 
 ```ts
-import { createStore } from '@low-orbit/bruin/vanilla';
-import { persist } from '@low-orbit/bruin/middleware';
+import { createStore } from '@inboxhealth/bruin/vanilla';
+import { persist } from '@inboxhealth/bruin/middleware';
 
 type PositionStoreState = { position: { x: number; y: number } };
 
@@ -1014,8 +1014,8 @@ Here's the `html` code
 Bruin's `persist` middleware supports persisting undo/redo history. When `persistHistory: true` is set, the entire history state is saved to storage and restored on page reload.
 
 ```tsx
-import { create } from '@low-orbit/bruin';
-import { persist, createJSONStorage } from '@low-orbit/bruin/middleware';
+import { create } from '@inboxhealth/bruin';
+import { persist, createJSONStorage } from '@inboxhealth/bruin/middleware';
 
 interface CounterState {
   count: number;

@@ -20,7 +20,7 @@ Bruin extends Zustand with these built-in features:
 **1. History Tracking**
 
 ```tsx
-import { create } from '@low-orbit/bruin';
+import { create } from '@inboxhealth/bruin';
 
 interface StoreState {
   count: number;
@@ -77,7 +77,7 @@ No migration needed! Just update your imports:
 
 ```diff
 - import { create } from 'zustand'
-+ import { create } from '@low-orbit/bruin'
++ import { create } from '@inboxhealth/bruin'
 ```
 
 Everything else works exactly the same.
@@ -92,7 +92,7 @@ However, Bruin doesn't require context providers.
 **Bruin**
 
 ```ts
-import { create } from '@low-orbit/bruin';
+import { create } from '@inboxhealth/bruin';
 
 type State = {
   count: number;
@@ -113,7 +113,7 @@ const useCountStore = create<State & Actions>((set) => ({
 You can also use a reducer pattern:
 
 ```ts
-import { create } from '@low-orbit/bruin';
+import { create } from '@inboxhealth/bruin';
 
 type State = {
   count: number;
@@ -205,7 +205,7 @@ Bruin uses **immutable** state, while Valtio uses **mutable** state.
 **Bruin**
 
 ```ts
-import { create } from '@low-orbit/bruin';
+import { create } from '@inboxhealth/bruin';
 
 type State = {
   obj: { count: number };
@@ -234,7 +234,7 @@ Bruin requires manual selector optimization.
 **Bruin**
 
 ```ts
-import { create } from '@low-orbit/bruin';
+import { create } from '@inboxhealth/bruin';
 
 const useCountStore = create(() => ({ count: 0 }));
 
@@ -266,7 +266,7 @@ Bruin is a single store, while Jotai uses primitive atoms.
 **Bruin**
 
 ```ts
-import { create } from '@low-orbit/bruin';
+import { create } from '@inboxhealth/bruin';
 
 type State = {
   count: number;
@@ -329,7 +329,7 @@ Recoil requires atom string keys and context providers.
 **Bruin**
 
 ```ts
-import { create } from '@low-orbit/bruin';
+import { create } from '@inboxhealth/bruin';
 
 type State = {
   count: number;

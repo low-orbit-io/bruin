@@ -64,8 +64,8 @@ about that [here](https://react.dev/learn/queueing-a-series-of-state-updates).
 This example shows how you can support **updater functions** within **actions**.
 
 ```tsx
-import { createWithEqualityFn } from '@low-orbit/bruin/traditional';
-import { shallow } from '@low-orbit/bruin/vanilla/shallow';
+import { createWithEqualityFn } from '@inboxhealth/bruin/traditional';
+import { shallow } from '@inboxhealth/bruin/vanilla/shallow';
 
 type AgeStoreState = { age: number };
 
@@ -135,8 +135,8 @@ correctly, and avoid unexpected behaviors.
 > the state with a new one, use the `replace` parameter set to `true`
 
 ```tsx
-import { createWithEqualityFn } from '@low-orbit/bruin/traditional';
-import { shallow } from '@low-orbit/bruin/vanilla/shallow';
+import { createWithEqualityFn } from '@inboxhealth/bruin/traditional';
+import { shallow } from '@inboxhealth/bruin/vanilla/shallow';
 
 type XStore = number;
 
@@ -189,8 +189,8 @@ replace the state with a new one, use the `replace` parameter set to `true` with
 discards any existing nested data within the state.
 
 ```tsx
-import { createWithEqualityFn } from '@low-orbit/bruin/traditional';
-import { shallow } from '@low-orbit/bruin/vanilla/shallow';
+import { createWithEqualityFn } from '@inboxhealth/bruin/traditional';
+import { shallow } from '@inboxhealth/bruin/vanilla/shallow';
 
 type PositionStoreState = { position: { x: number; y: number } };
 
@@ -260,8 +260,8 @@ replace the state with a new one, use the `replace` parameter set to `true`.
 > `shift(...)`, `splice(...)`, `reverse(...)`, and `sort(...)`.
 
 ```tsx
-import { createWithEqualityFn } from '@low-orbit/bruin/traditional';
-import { shallow } from '@low-orbit/bruin/vanilla/shallow';
+import { createWithEqualityFn } from '@inboxhealth/bruin/traditional';
+import { shallow } from '@inboxhealth/bruin/vanilla/shallow';
 
 type PositionStore = [number, number];
 
@@ -315,8 +315,8 @@ require a hook to call an action, and it facilitates code splitting.
 > located together with your state).
 
 ```tsx
-import { createWithEqualityFn } from '@low-orbit/bruin/traditional';
-import { shallow } from '@low-orbit/bruin/vanilla/shallow';
+import { createWithEqualityFn } from '@inboxhealth/bruin/traditional';
+import { shallow } from '@inboxhealth/bruin/vanilla/shallow';
 
 const usePositionStore = createWithEqualityFn<{
   x: number;
@@ -372,8 +372,8 @@ updates. We can use `subscribe` for external state management.
 
 ```tsx
 import { useEffect } from 'react';
-import { createWithEqualityFn } from '@low-orbit/bruin/traditional';
-import { shallow } from '@low-orbit/bruin/vanilla/shallow';
+import { createWithEqualityFn } from '@inboxhealth/bruin/traditional';
+import { shallow } from '@inboxhealth/bruin/vanilla/shallow';
 
 type PositionStoreState = { position: { x: number; y: number } };
 
@@ -454,8 +454,8 @@ values for all other fields.
 These input fields don’t work because the `onChange` handlers mutate the state:
 
 ```tsx
-import { createWithEqualityFn } from '@low-orbit/bruin/traditional';
-import { shallow } from '@low-orbit/bruin/vanilla/shallow';
+import { createWithEqualityFn } from '@inboxhealth/bruin/traditional';
+import { shallow } from '@inboxhealth/bruin/vanilla/shallow';
 
 type PersonStoreState = {
   person: { firstName: string; lastName: string; email: string };
@@ -542,8 +542,8 @@ keeping all data grouped in an object is very convenient—as long as you update
 
 ```tsx {32,36,40}
 import { type ChangeEvent } from 'react';
-import { createWithEqualityFn } from '@low-orbit/bruin/traditional';
-import { shallow } from '@low-orbit/bruin/vanilla/shallow';
+import { createWithEqualityFn } from '@inboxhealth/bruin/traditional';
+import { shallow } from '@inboxhealth/bruin/vanilla/shallow';
 
 type PersonStoreState = {
   person: { firstName: string; lastName: string; email: string };
