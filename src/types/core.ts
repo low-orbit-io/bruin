@@ -23,6 +23,7 @@ export type StoreSetState<T> = {
 
 export type Get<T, K, F> = K extends keyof T ? T[K] : F;
 
+// @ts-ignore TS6205 - S and A are used by augmenting declarations in middleware
 export interface StoreMutators<S, A> {}
 
 export type StoreMutatorIdentifier = keyof StoreMutators<unknown, unknown>;
