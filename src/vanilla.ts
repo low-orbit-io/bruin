@@ -1020,10 +1020,10 @@ function createStoreImpl<
       historyIndex = history.length - 1;
 
       // Apply maxHistorySize limit if needed (but don't truncate based on historyIndex)
-      let _removedByCount = 0;
+      
       if (history.length > maxHistorySize + 1) {
         const removeCount = history.length - (maxHistorySize + 1);
-        _removedByCount = removeCount;
+        
 
         for (let i = 0; i < removeCount; i++) {
           const removedSize = historySizes.shift() || 0;
