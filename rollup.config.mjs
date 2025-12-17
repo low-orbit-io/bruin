@@ -47,7 +47,7 @@ function createDeclarationConfig(input, output) {
 function createESMConfig(input, output) {
   return {
     input,
-    output: { file: output, format: 'esm' },
+    output: { file: output, format: 'esm', sourcemap: true },
     external,
     plugins: [
       alias({ entries: entries.filter((entry) => !entry.find.test(input)) }),
@@ -75,7 +75,7 @@ function createESMConfig(input, output) {
 function createCommonJSConfig(input, output) {
   return {
     input,
-    output: { file: output, format: 'cjs' },
+    output: { file: output, format: 'cjs', sourcemap: true },
     external,
     plugins: [
       alias({ entries: entries.filter((entry) => !entry.find.test(input)) }),
