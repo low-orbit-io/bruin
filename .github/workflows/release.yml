@@ -1,0 +1,83 @@
+name: Create GitHub Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=$GITHUB_REF_NAME" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests
+        run: pnpm run test:spec
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Update version in dist/package.json
+        run: |
+          cd dist
+          npm pkg set version="${{ steps.version.outputs.version }}"
+
+      - name: Create tarball
+        run: |
+          cd dist
+          npm pack
+          mv *.tgz ../low-orbit-bruin-${{ steps.version.outputs.version }}.tgz
+
+      - name: Generate release notes
+        id: notes
+        run: |
+          # Extract notes from CHANGELOG.md for this version if available
+          if [ -f CHANGELOG.md ]; then
+            # Try to extract section for this version
+            NOTES=$(awk '/^## \[?${{ steps.version.outputs.version }}\]?/,/^## \[?[0-9]/' CHANGELOG.md | head -n -1 | tail -n +2)
+            if [ -n "$NOTES" ]; then
+              echo "notes<<EOF" >> $GITHUB_OUTPUT
+              echo "$NOTES" >> $GITHUB_OUTPUT
+              echo "EOF" >> $GITHUB_OUTPUT
+            else
+              echo "notes=Release ${{ steps.version.outputs.tag }}" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "notes=Release ${{ steps.version.outputs.tag }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.tag }}
+          body: ${{ steps.notes.outputs.notes }}
+          files: |
+            low-orbit-bruin-${{ steps.version.outputs.version }}.tgz
+          draft: false
+          prerelease: ${{ contains(steps.version.outputs.version, '-') }}
