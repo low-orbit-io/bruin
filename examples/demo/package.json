@@ -23,14 +23,14 @@
     "prism-react-renderer": "^2.0.6",
     "prismjs": "^1.29.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "react-dom": "^19.2.3",
     "three": "^0.154.0",
     "@low-orbit/bruin": "workspace:*"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
     "@types/react": "^18.2.14",
-    "@types/react-dom": "^18.2.6",
+    "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react-swc": "^3.3.2",
     "eslint": "^9.17.0",
     "eslint-plugin-react": "^7.37.2",

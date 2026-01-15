@@ -168,7 +168,7 @@
     "json": "^11.0.0",
     "prettier": "^3.6.2",
     "react": "19.2.0",
-    "react-dom": "19.2.0",
+    "react-dom": "19.2.3",
     "redux": "^5.0.1",
     "rollup": "^4.53.2",
     "rollup-plugin-esbuild": "^6.2.1",
