@@ -25,7 +25,7 @@ jobs:
         run: pnpm run build:tsup
 
       # Upload build for other workflows
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: dist
           path: dist-tsup/
