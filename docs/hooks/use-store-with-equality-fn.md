@@ -56,7 +56,7 @@ First, let's set up a store that will hold the position of the dot on the screen
 store to manage `x` and `y` coordinates and provide an action to update these coordinates.
 
 ```tsx
-import { createStore, useStore } from '@inboxhealth/bruin';
+import { createStore, useStore } from '@low-orbit/bruin';
 
 type PositionStoreState = { position: { x: number; y: number } };
 
@@ -130,9 +130,9 @@ export default function App() {
 Here is what the code should look like:
 
 ```tsx
-import { createStore } from '@inboxhealth/bruin';
-import { useStoreWithEqualityFn } from '@inboxhealth/bruin/traditional';
-import { shallow } from '@inboxhealth/bruin/shallow';
+import { createStore } from '@low-orbit/bruin';
+import { useStoreWithEqualityFn } from '@low-orbit/bruin/traditional';
+import { shallow } from '@low-orbit/bruin/shallow';
 
 type PositionStoreState = { position: { x: number; y: number } };
 
@@ -200,7 +200,7 @@ First, we'll create a factory function that generates a store for managing the c
 Each tab will have its own instance of this store.
 
 ```ts
-import { createStore } from '@inboxhealth/bruin';
+import { createStore } from '@low-orbit/bruin';
 
 type CounterState = {
   count: number;
@@ -323,9 +323,9 @@ Here is what the code should look like:
 
 ```tsx
 import { useState } from 'react';
-import { createStore } from '@inboxhealth/bruin';
-import { useStoreWithEqualityFn } from '@inboxhealth/bruin/traditional';
-import { shallow } from '@inboxhealth/bruin/shallow';
+import { createStore } from '@low-orbit/bruin';
+import { useStoreWithEqualityFn } from '@low-orbit/bruin/traditional';
+import { shallow } from '@low-orbit/bruin/shallow';
 
 type CounterState = {
   count: number;
@@ -549,9 +549,9 @@ Here is what the code should look like:
 
 ```tsx
 import { type ReactNode, useState, createContext, useContext } from 'react';
-import { createStore } from '@inboxhealth/bruin';
-import { useStoreWithEqualityFn } from '@inboxhealth/bruin/traditional';
-import { shallow } from '@inboxhealth/bruin/shallow';
+import { createStore } from '@low-orbit/bruin';
+import { useStoreWithEqualityFn } from '@low-orbit/bruin/traditional';
+import { shallow } from '@low-orbit/bruin/shallow';
 
 type PositionStoreState = { position: { x: number; y: number } };
 
@@ -819,7 +819,7 @@ import {
   useContext,
   createContext,
 } from 'react';
-import { createStore, useStore } from '@inboxhealth/bruin';
+import { createStore, useStore } from '@low-orbit/bruin';
 
 type CounterState = {
   count: number;

@@ -134,7 +134,7 @@ importers:
 
   examples/demo:
     dependencies:
-      '@inboxhealth/bruin':
+      '@low-orbit/bruin':
         specifier: workspace:*
         version: link:../..
       '@react-three/drei':
@@ -204,7 +204,7 @@ importers:
 
   examples/history:
     dependencies:
-      '@inboxhealth/bruin':
+      '@low-orbit/bruin':
         specifier: workspace:*
         version: link:../..
       '@mantine/core':
@@ -238,7 +238,7 @@ importers:
 
   examples/starter:
     dependencies:
-      '@inboxhealth/bruin':
+      '@low-orbit/bruin':
         specifier: workspace:*
         version: link:../..
       react:

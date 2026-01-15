@@ -8,7 +8,7 @@ In cases where [dependency injection](https://en.wikipedia.org/wiki/Dependency_i
 ## Store creator with `createStore`
 
 ```ts
-import { createStore } from '@inboxhealth/bruin';
+import { createStore } from '@low-orbit/bruin';
 
 interface BearProps {
   bears: number;
@@ -59,7 +59,7 @@ function App() {
 ```tsx
 // Consumer component
 import { useContext } from 'react';
-import { useStore } from '@inboxhealth/bruin';
+import { useStore } from '@low-orbit/bruin';
 
 function BasicConsumer() {
   const store = useContext(BearContext);
@@ -103,7 +103,7 @@ function BearProvider({ children, ...props }: BearProviderProps) {
 ```tsx
 // Mimic the hook returned by `create`
 import { useContext } from 'react';
-import { useStore } from '@inboxhealth/bruin';
+import { useStore } from '@low-orbit/bruin';
 
 function useBearContext<T>(selector: (state: BearState) => T): T {
   const store = useContext(BearContext);
@@ -131,7 +131,7 @@ function CommonConsumer() {
 ```tsx
 // Allow custom equality function by using useStoreWithEqualityFn instead of useStore
 import { useContext } from 'react';
-import { useStoreWithEqualityFn } from '@inboxhealth/bruin/traditional';
+import { useStoreWithEqualityFn } from '@low-orbit/bruin/traditional';
 
 function useBearContext<T>(
   selector: (state: BearState) => T,

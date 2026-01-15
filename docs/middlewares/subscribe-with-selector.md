@@ -56,8 +56,8 @@ By subscribing to partial state updates, you register a callback that fires when
 partial state updates. We can use `subscribe` for external state management.
 
 ```ts
-import { createStore } from '@inboxhealth/bruin/vanilla';
-import { subscribeWithSelector } from '@inboxhealth/bruin/middleware';
+import { createStore } from '@low-orbit/bruin/vanilla';
+import { subscribeWithSelector } from '@low-orbit/bruin/middleware';
 
 type PositionStoreState = { position: { x: number; y: number } };
 

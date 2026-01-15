@@ -64,7 +64,7 @@ creator for both implementations, with and without `Context` API — `createStor
 
 ```ts
 // shared/counter-store-creator.ts
-import { type StateCreator } from '@inboxhealth/bruin';
+import { type StateCreator } from '@low-orbit/bruin';
 
 export type CounterStore = {
   count: number;
@@ -82,13 +82,13 @@ export const counterStoreCreator: StateCreator<CounterStore> = (set) => ({
 In the next steps we are going to setup our Jest environment in order to mock Bruin.
 
 ```ts
-// __mocks__/@inboxhealth-bruin.ts
+// __mocks__/@low-orbit-bruin.ts
 import { act } from '@testing-library/react';
-import type * as BruinExportedTypes from '@inboxhealth/bruin';
-export * from '@inboxhealth/bruin';
+import type * as BruinExportedTypes from '@low-orbit/bruin';
+export * from '@low-orbit/bruin';
 
 const { create: actualCreate, createStore: actualCreateStore } =
-  jest.requireActual<typeof BruinExportedTypes>('@inboxhealth/bruin');
+  jest.requireActual<typeof BruinExportedTypes>('@low-orbit/bruin');
 
 // a variable to hold reset functions for all stores declared in the app
 export const storeResetFns = new Set<() => void>();
@@ -180,13 +180,13 @@ In the next steps we are going to setup our Vitest environment in order to mock 
 > Creating `__mocks__` directory in the wrong place can lead to issues when using Vitest.
 
 ```ts
-// __mocks__/@inboxhealth-bruin.ts
+// __mocks__/@low-orbit-bruin.ts
 import { act } from '@testing-library/react';
-import type * as BruinExportedTypes from '@inboxhealth/bruin';
-export * from '@inboxhealth/bruin';
+import type * as BruinExportedTypes from '@low-orbit/bruin';
+export * from '@low-orbit/bruin';
 
 const { create: actualCreate, createStore: actualCreateStore } =
-  await vi.importActual<typeof BruinExportedTypes>('@inboxhealth/bruin');
+  await vi.importActual<typeof BruinExportedTypes>('@low-orbit/bruin');
 
 // a variable to hold reset functions for all stores declared in the app
 export const storeResetFns = new Set<() => void>();
@@ -296,7 +296,7 @@ In the next examples we are going to use `useCounterStore`
 
 ```ts
 // shared/counter-store-creator.ts
-import { type StateCreator } from '@inboxhealth/bruin';
+import { type StateCreator } from '@low-orbit/bruin';
 
 export type CounterStore = {
   count: number;
@@ -311,7 +311,7 @@ export const counterStoreCreator: StateCreator<CounterStore> = (set) => ({
 
 ```ts
 // stores/use-counter-store.ts
-import { create } from '@inboxhealth/bruin';
+import { create } from '@low-orbit/bruin';
 
 import {
   type CounterStore,
@@ -324,9 +324,9 @@ export const useCounterStore = create<CounterStore>()(counterStoreCreator);
 ```tsx
 // contexts/use-counter-store-context.tsx
 import { type ReactNode, createContext, useContext, useRef } from 'react';
-import { createStore } from '@inboxhealth/bruin';
-import { useStoreWithEqualityFn } from '@inboxhealth/bruin/traditional';
-import { shallow } from '@inboxhealth/bruin/shallow';
+import { createStore } from '@low-orbit/bruin';
+import { useStoreWithEqualityFn } from '@low-orbit/bruin/traditional';
+import { shallow } from '@low-orbit/bruin/shallow';
 
 import {
   type CounterStore,
@@ -515,7 +515,7 @@ In the next examples we are going to use `useCounterStore`
 
 ```ts
 // shared/counter-store-creator.ts
-import { type StateCreator } from '@inboxhealth/bruin';
+import { type StateCreator } from '@low-orbit/bruin';
 
 export type CounterStore = {
   count: number;
@@ -530,7 +530,7 @@ export const counterStoreCreator: StateCreator<CounterStore> = (set) => ({
 
 ```ts
 // stores/use-counter-store.ts
-import { create } from '@inboxhealth/bruin';
+import { create } from '@low-orbit/bruin';
 
 import {
   type CounterStore,
@@ -543,9 +543,9 @@ export const useCounterStore = create<CounterStore>()(counterStoreCreator);
 ```tsx
 // contexts/use-counter-store-context.tsx
 import { type ReactNode, createContext, useContext, useRef } from 'react';
-import { createStore } from '@inboxhealth/bruin';
-import { useStoreWithEqualityFn } from '@inboxhealth/bruin/traditional';
-import { shallow } from '@inboxhealth/bruin/shallow';
+import { createStore } from '@low-orbit/bruin';
+import { useStoreWithEqualityFn } from '@low-orbit/bruin/traditional';
+import { shallow } from '@low-orbit/bruin/shallow';
 
 import {
   type CounterStore,
@@ -745,4 +745,4 @@ const renderCounterWithContext = (store) => {
 
 ## Examples
 
-For complete testing examples, see the [testing examples in the repository](https://github.com/InboxHealth/bruin/tree/main/tests).
+For complete testing examples, see the [testing examples in the repository](https://github.com/low-orbit-io/bruin/tree/main/tests).

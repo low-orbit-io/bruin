@@ -56,8 +56,8 @@ redux<T, A>(reducerFn: (state: T, action: A) => T, initialState: T): StateCreato
 ### Updating state through actions and reducers
 
 ```ts
-import { createStore } from '@inboxhealth/bruin/vanilla';
-import { redux } from '@inboxhealth/bruin/middleware';
+import { createStore } from '@low-orbit/bruin/vanilla';
+import { redux } from '@low-orbit/bruin/middleware';
 
 type PersonStoreState = {
   firstName: string;

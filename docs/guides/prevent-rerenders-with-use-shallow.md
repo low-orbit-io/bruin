@@ -16,7 +16,7 @@ equal the previous one.
 We have a store that associates to each bear a meal and we want to render their names.
 
 ```tsx
-import { create } from '@inboxhealth/bruin';
+import { create } from '@low-orbit/bruin';
 
 interface MealsState {
   papaBear: string;
@@ -50,8 +50,8 @@ This change causes `BearNames` rerenders even though the actual output of `names
 We can fix that using `useShallow`!
 
 ```tsx
-import { create } from '@inboxhealth/bruin';
-import { useShallow } from '@inboxhealth/bruin/react/shallow';
+import { create } from '@low-orbit/bruin';
+import { useShallow } from '@low-orbit/bruin/react/shallow';
 
 interface MealsState {
   papaBear: string;

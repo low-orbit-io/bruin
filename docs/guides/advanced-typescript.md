@@ -8,7 +8,7 @@ nav: 7
 The difference when using TypeScript is that instead of writing `create(...)`, you have to write `create<T>()(...)` (notice the extra parentheses `()` too along with the type parameter) where `T` is the type of the state to annotate it. For example:
 
 ```ts
-import { create } from '@inboxhealth/bruin';
+import { create } from '@low-orbit/bruin';
 
 interface BearState {
   bears: number;
@@ -71,7 +71,7 @@ So what we're saying is, the inference failure in case of `createFoo` is not rea
 Bruin lies that it implemented `create`'s type, it implemented only the most part of it. Here's a simple proof by showing unsoundness. Consider the following code:
 
 ```ts
-import { create } from '@inboxhealth/bruin';
+import { create } from '@low-orbit/bruin';
 
 const useBoundStore = create<{ foo: number }>()((_, get) => ({
   foo: get().foo,
@@ -136,8 +136,8 @@ This way, `T` gets inferred and you get to annotate `E`. Bruin has the same use 
 Alternatively, you can also use `combine`, which infers the state so that you do not need to type it.
 
 ```ts
-import { create } from '@inboxhealth/bruin';
-import { combine } from '@inboxhealth/bruin/middleware';
+import { create } from '@low-orbit/bruin';
+import { combine } from '@low-orbit/bruin/middleware';
 
 const useBearStore = create(
   combine({ bears: 0 }, (set) => ({
@@ -164,8 +164,8 @@ Note that we don't use the curried version when using `combine` because `combine
 If you want to infer state type also outside of state declaration, you can use the `ExtractState` type helper:
 
 ```ts
-import { create, ExtractState } from '@inboxhealth/bruin';
-import { combine } from '@inboxhealth/bruin/middleware';
+import { create, ExtractState } from '@low-orbit/bruin';
+import { combine } from '@low-orbit/bruin/middleware';
 
 type BearState = ExtractState<typeof useBearStore>;
 
@@ -181,8 +181,8 @@ const useBearStore = create(
 You do not have to do anything special to use middlewares in TypeScript.
 
 ```ts
-import { create } from '@inboxhealth/bruin';
-import { devtools, persist } from '@inboxhealth/bruin/middleware';
+import { create } from '@low-orbit/bruin';
+import { devtools, persist } from '@low-orbit/bruin/middleware';
 
 interface BearState {
   bears: number;
@@ -205,8 +205,8 @@ const useBearStore = create<BearState>()(
 Just make sure you are using them immediately inside `create` so as to make the contextual inference work. Doing something even remotely fancy like the following `myMiddlewares` would require more advanced types.
 
 ```ts
-import { create } from '@inboxhealth/bruin';
-import { devtools, persist } from '@inboxhealth/bruin/middleware';
+import { create } from '@low-orbit/bruin';
+import { devtools, persist } from '@low-orbit/bruin/middleware';
 
 const myMiddlewares = (f) => devtools(persist(f, { name: 'bearStore' }));
 
@@ -230,7 +230,7 @@ Also, we recommend using `devtools` middleware as last as possible. For example,
 Imagine you had to write this hypothetical middleware.
 
 ```ts
-import { create } from '@inboxhealth/bruin';
+import { create } from '@low-orbit/bruin';
 
 const foo = (f, bar) => (set, get, store) => {
   store.foo = bar;
@@ -262,7 +262,7 @@ store.setState(...args);
 #### Example with `as Parameters` Workaround
 
 ```ts
-import { create } from '@inboxhealth/bruin';
+import { create } from '@low-orbit/bruin';
 
 interface BearState {
   bears: number;
@@ -288,7 +288,7 @@ By following this approach, you can ensure that your code handles dynamic `repla
 ### Middleware that doesn't change the store type
 
 ```ts
-import { create, StateCreator, StoreMutatorIdentifier } from '@inboxhealth/bruin';
+import { create, StateCreator, StoreMutatorIdentifier } from '@low-orbit/bruin';
 
 type Logger = <
   T,
@@ -342,7 +342,7 @@ import {
   StoreMutatorIdentifier,
   Mutate,
   StoreApi,
-} from '@inboxhealth/bruin';
+} from '@low-orbit/bruin';
 
 type Foo = <
   T,
@@ -391,7 +391,7 @@ console.log(useBearStore.foo.toUpperCase());
 The recommended way to use `create` is using the curried workaround like so: `create<T>()(...)`. This is because it enables you to infer the store type. But if for some reason you do not want to use the workaround, you can pass the type parameters like the following. Note that in some cases, this acts as an assertion instead of annotation, so we don't recommend it.
 
 ```ts
-import { create } from "@inboxhealth/bruin"
+import { create } from "@low-orbit/bruin"
 
 interface BearState {
   bears: number
@@ -413,7 +413,7 @@ const useBearStore = create<
 ### Slices pattern
 
 ```ts
-import { create, StateCreator } from '@inboxhealth/bruin';
+import { create, StateCreator } from '@low-orbit/bruin';
 
 interface BearSlice {
   bears: number;
@@ -482,8 +482,8 @@ If you have some middlewares then replace `StateCreator<MyState, [], [], MySlice
 ### Bounded `useStore` hook for vanilla stores
 
 ```ts
-import { useStore } from '@inboxhealth/bruin';
-import { createStore } from '@inboxhealth/bruin/vanilla';
+import { useStore } from '@low-orbit/bruin';
+import { createStore } from '@low-orbit/bruin/vanilla';
 
 interface BearState {
   bears: number;
@@ -505,8 +505,8 @@ function useBearStore<T>(selector?: (state: BearState) => T) {
 You can also make an abstract `createBoundedUseStore` function if you need to create bounded `useStore` hooks often and want to DRY things up...
 
 ```ts
-import { useStore, StoreApi } from '@inboxhealth/bruin';
-import { createStore } from '@inboxhealth/bruin/vanilla';
+import { useStore, StoreApi } from '@low-orbit/bruin';
+import { createStore } from '@low-orbit/bruin/vanilla';
 
 interface BearState {
   bears: number;

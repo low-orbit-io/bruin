@@ -8,8 +8,8 @@ nav: 11
 If you want to connect state of a store to URL hash, you can create your own hash storage.
 
 ```ts
-import { create } from '@inboxhealth/bruin';
-import { persist, StateStorage, createJSONStorage } from '@inboxhealth/bruin/middleware';
+import { create } from '@low-orbit/bruin';
+import { persist, StateStorage, createJSONStorage } from '@low-orbit/bruin/middleware';
 
 const hashStorage: StateStorage = {
   getItem: (key): string => {
@@ -54,8 +54,8 @@ If you want the URL params to always populate, the conditional check on `getUrlS
 The implementation below will update the URL in place, without refresh, as the relevant states change.
 
 ```ts
-import { create } from '@inboxhealth/bruin';
-import { persist, StateStorage, createJSONStorage } from '@inboxhealth/bruin/middleware';
+import { create } from '@low-orbit/bruin';
+import { persist, StateStorage, createJSONStorage } from '@low-orbit/bruin/middleware';
 
 const getUrlSearch = () => {
   return window.location.search.slice(1);

@@ -73,7 +73,7 @@ request.
 
 ```ts
 // src/stores/counter-store.ts
-import { createStore } from '@inboxhealth/bruin/vanilla';
+import { createStore } from '@low-orbit/bruin/vanilla';
 
 export type CounterState = {
   count: number;
@@ -110,7 +110,7 @@ Let's use the `createCounterStore` in our component and share it using a context
 'use client';
 
 import { type ReactNode, createContext, useRef, useContext } from 'react';
-import { useStore } from '@inboxhealth/bruin';
+import { useStore } from '@low-orbit/bruin';
 
 import { type CounterStore, createCounterStore } from '@/stores/counter-store';
 
@@ -162,7 +162,7 @@ export const useCounterStore = <T,>(
 
 ```ts
 // src/stores/counter-store.ts
-import { createStore } from '@inboxhealth/bruin/vanilla';
+import { createStore } from '@low-orbit/bruin/vanilla';
 
 export type CounterState = {
   count: number;
@@ -199,7 +199,7 @@ export const createCounterStore = (
 'use client';
 
 import { type ReactNode, createContext, useRef, useContext } from 'react';
-import { useStore } from '@inboxhealth/bruin';
+import { useStore } from '@low-orbit/bruin';
 
 import {
   type CounterStore,

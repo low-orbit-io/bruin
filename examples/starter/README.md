@@ -6,7 +6,7 @@ A simple starter template demonstrating Bruin state management.
 
 ```bash
 # Clone the Bruin repository
-git clone https://github.com/InboxHealth/bruin
+git clone https://github.com/low-orbit-io/bruin
 
 # Install project dependencies & build the library
 cd bruin && pnpm install

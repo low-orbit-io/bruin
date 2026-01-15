@@ -17,8 +17,8 @@ const useSomeStore = create<State & Actions>()((set, get, store) => ({
 Resetting multiple stores at once
 
 ```ts
-import type { StateCreator } from '@inboxhealth/bruin'
-import { create: actualCreate } from '@inboxhealth/bruin'
+import type { StateCreator } from '@low-orbit/bruin'
+import { create: actualCreate } from '@low-orbit/bruin'
 
 const storeResetFns = new Set<() => void>()
 

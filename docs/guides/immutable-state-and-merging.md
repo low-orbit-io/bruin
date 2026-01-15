@@ -8,7 +8,7 @@ Like with React's `useState`, we need to update state immutably.
 Here's a typical example:
 
 ```tsx
-import { create } from '@inboxhealth/bruin';
+import { create } from '@low-orbit/bruin';
 
 interface CountState {
   count: number;
@@ -41,7 +41,7 @@ The `set` function merges state at only one level.
 If you have a nested object, you need to merge them explicitly. You will use the spread operator pattern like so:
 
 ```tsx
-import { create } from '@inboxhealth/bruin';
+import { create } from '@low-orbit/bruin';
 
 interface NestedState {
   nested: { count: number };

@@ -12,7 +12,7 @@ You can divide your main store into smaller individual stores to achieve modular
 The first individual store:
 
 ```tsx
-import { StateCreator } from '@inboxhealth/bruin';
+import { StateCreator } from '@low-orbit/bruin';
 
 interface FishSlice {
   fishes: number;
@@ -44,7 +44,7 @@ export const createBearSlice: StateCreator<BearSlice> = (set) => ({
 You can now combine both the stores into **one bounded store**:
 
 ```tsx
-import { create } from '@inboxhealth/bruin';
+import { create } from '@low-orbit/bruin';
 import { createBearSlice } from './bearSlice';
 import { createFishSlice } from './fishSlice';
 
@@ -97,7 +97,7 @@ export const createBearFishSlice: StateCreator<BearFishSlice> = (set, get) => ({
 Combining all the stores together is the same as before.
 
 ```tsx
-import { create } from '@inboxhealth/bruin';
+import { create } from '@low-orbit/bruin';
 import { createBearSlice } from './bearSlice';
 import { createFishSlice } from './fishSlice';
 import { createBearFishSlice } from './createBearFishSlice';
@@ -118,10 +118,10 @@ Adding middlewares to a combined store is the same as with other normal stores.
 Adding `persist` middleware to our `useBoundStore`:
 
 ```tsx
-import { create } from '@inboxhealth/bruin';
+import { create } from '@low-orbit/bruin';
 import { createBearSlice } from './bearSlice';
 import { createFishSlice } from './fishSlice';
-import { persist } from '@inboxhealth/bruin/middleware';
+import { persist } from '@low-orbit/bruin/middleware';
 
 type BoundStore = BearSlice & FishSlice;
 

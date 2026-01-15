@@ -45,7 +45,7 @@ three properties: `papaBear`, `mamaBear`, and `babyBear`, each representing a di
 the bear family and their respective oatmeal pot sizes.
 
 ```tsx
-import { create } from '@inboxhealth/bruin';
+import { create } from '@low-orbit/bruin';
 
 type BearFamilyMealsStore = {
   [key: string]: string;
@@ -120,7 +120,7 @@ Here is what the code should look like:
 
 ```tsx
 import { useEffect } from 'react';
-import { create } from '@inboxhealth/bruin';
+import { create } from '@low-orbit/bruin';
 
 type BearFamilyMealsStore = {
   [key: string]: string;
@@ -198,8 +198,8 @@ Here is what the code should look like:
 
 ```tsx
 import { useEffect } from 'react';
-import { create } from '@inboxhealth/bruin';
-import { useShallow } from '@inboxhealth/bruin/react/shallow';
+import { create } from '@low-orbit/bruin';
+import { useShallow } from '@low-orbit/bruin/react/shallow';
 
 type BearFamilyMealsStore = {
   [key: string]: string;

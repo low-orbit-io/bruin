@@ -52,7 +52,7 @@ Bruin is a drop-in replacement for Zustand. All Zustand code works with Bruin - 
 
 ```diff
 - import { create } from 'zustand'
-+ import { create } from '@inboxhealth/bruin'
++ import { create } from '@low-orbit/bruin'
 ```
 
 No migration needed, no breaking changes!
@@ -108,7 +108,7 @@ All Zustand middleware works, plus:
 
 ## Contributing
 
-Found an issue or want to contribute? Check out our [GitHub repository](https://github.com/InboxHealth/bruin).
+Found an issue or want to contribute? Check out our [GitHub repository](https://github.com/low-orbit-io/bruin).
 
 ## License
 

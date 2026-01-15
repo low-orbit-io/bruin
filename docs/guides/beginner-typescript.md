@@ -26,7 +26,7 @@ The `create` function uses the curried form, which results in a store of type `U
 
 ```ts
 // store.ts
-import { create } from '@inboxhealth/bruin';
+import { create } from '@low-orbit/bruin';
 
 // Define types for state & actions
 interface BearState {
@@ -64,7 +64,7 @@ Resetting is useful after logout or “clear session”. We use `typeof initialS
 TypeScript updates automatically if `initialState` changes. This is safer and cleaner compared to JS.
 
 ```tsx
-import { create } from '@inboxhealth/bruin';
+import { create } from '@low-orbit/bruin';
 
 const initialState = { bears: 0, food: 'honey' };
 
@@ -100,7 +100,7 @@ It returns the full type of your store’s state and actions without having to m
 
 ```ts
 // store.ts
-import { create, type ExtractState } from '@inboxhealth/bruin';
+import { create, type ExtractState } from '@low-orbit/bruin';
 
 export const useBearStore = create((set) => ({
   bears: 3,
@@ -148,8 +148,8 @@ This is more efficient than subscribing to the whole store. TypeScript ensures y
 See the [API documentation](../../hooks/use-shallow.md) for more details on `useShallow`.
 
 ```tsx
-import { create } from '@inboxhealth/bruin';
-import { useShallow } from '@inboxhealth/bruin/react/shallow';
+import { create } from '@low-orbit/bruin';
+import { useShallow } from '@low-orbit/bruin/react/shallow';
 
 // Bear store with explicit types
 interface BearState {
@@ -182,7 +182,7 @@ Not all values need to be stored directly - some can be computed from existing s
 This avoids duplication and keeps the store minimal. TypeScript ensures `bears` is a number, so math is safe.
 
 ```tsx
-import { create } from '@inboxhealth/bruin';
+import { create } from '@low-orbit/bruin';
 
 interface BearState {
   bears: number;
@@ -212,8 +212,8 @@ This is different from JS, where type safety is missing. It’s a very popular s
 See the [API documentation](../../middlewares/combine.md) for more details.
 
 ```ts
-import { create } from '@inboxhealth/bruin';
-import { combine } from '@inboxhealth/bruin/middleware';
+import { create } from '@low-orbit/bruin';
+import { combine } from '@low-orbit/bruin/middleware';
 
 interface BearState {
   bears: number;
@@ -235,8 +235,8 @@ It’s extremely useful in development. TS ensures your actions and state remain
 See the [API documentation](../../middlewares/devtools.md) for more details.
 
 ```ts
-import { create } from '@inboxhealth/bruin';
-import { devtools } from '@inboxhealth/bruin/middleware';
+import { create } from '@low-orbit/bruin';
+import { devtools } from '@low-orbit/bruin/middleware';
 
 interface BearState {
   bears: number;
@@ -258,8 +258,8 @@ Great for apps where persistence matters. In TS, the state type stays consistent
 See the [API documentation](../../middlewares/persist.md) for more details.
 
 ```ts
-import { create } from '@inboxhealth/bruin';
-import { persist } from '@inboxhealth/bruin/middleware';
+import { create } from '@low-orbit/bruin';
+import { persist } from '@low-orbit/bruin/middleware';
 
 interface BearState {
   bears: number;
@@ -283,7 +283,7 @@ Actions can be async to fetch remote data. Here we fetch bears count and update 
 TS enforces correct API response type (`BearData`). In JS you might misspell `count` - TS prevents that.
 
 ```ts
-import { create } from '@inboxhealth/bruin';
+import { create } from '@low-orbit/bruin';
 
 interface BearData {
   count: number;
@@ -312,8 +312,8 @@ Not common, but shows Bruin’s flexibility. TS still keeps full type inference.
 See the [API documentation](../../apis/create-with-equality-fn.md) for more details.
 
 ```ts
-import { createWithEqualityFn } from '@inboxhealth/bruin/traditional';
-import { shallow } from '@inboxhealth/bruin/shallow';
+import { createWithEqualityFn } from '@low-orbit/bruin/traditional';
+import { shallow } from '@low-orbit/bruin/shallow';
 
 const useBearStore = createWithEqualityFn(() => ({
   bears: 0,
@@ -330,7 +330,7 @@ You can create more than one store for different domains. For example, `BearStor
 This keeps state isolated and easier to maintain in larger apps. With TypeScript, each store has its own strict type - you can’t accidentally mix bears and fish.
 
 ```tsx
-import { create } from '@inboxhealth/bruin';
+import { create } from '@low-orbit/bruin';
 
 // Bear store with explicit types
 interface BearState {

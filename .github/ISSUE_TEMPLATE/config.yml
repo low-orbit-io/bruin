@@ -1,11 +1,11 @@
 blank_issues_enabled: false
 contact_links:
   - name: Bug Reports
-    url: https://github.com/InboxHealth/bruin/discussions/new?category=bug-report
+    url: https://github.com/low-orbit-io/bruin/discussions/new?category=bug-report
     about: Please post bug reports here.
   - name: Questions
-    url: https://github.com/InboxHealth/bruin/discussions/new?category=q-a
+    url: https://github.com/low-orbit-io/bruin/discussions/new?category=q-a
     about: Please post questions here.
   - name: Other Discussions
-    url: https://github.com/InboxHealth/bruin/discussions/new/choose
+    url: https://github.com/low-orbit-io/bruin/discussions/new/choose
     about: Please post ideas and general discussions here.

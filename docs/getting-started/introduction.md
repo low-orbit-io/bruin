@@ -26,13 +26,13 @@ Bruin is available as a package on NPM:
 
 ```bash
 # NPM
-npm install @inboxhealth/bruin
+npm install @low-orbit/bruin
 
 # Yarn
-yarn add @inboxhealth/bruin
+yarn add @low-orbit/bruin
 
 # PNPM
-pnpm add @inboxhealth/bruin
+pnpm add @low-orbit/bruin
 ```
 
 ## First create a store
@@ -41,7 +41,7 @@ Your store is a hook! You can put anything in it: primitives, objects, functions
 The `set` function _merges_ state by default.
 
 ```tsx
-import { create } from '@inboxhealth/bruin';
+import { create } from '@low-orbit/bruin';
 
 interface BearState {
   bears: number;
@@ -88,7 +88,7 @@ function Controls() {
 Bruin automatically tracks state changes, enabling time-travel debugging:
 
 ```tsx
-import { create } from '@inboxhealth/bruin';
+import { create } from '@low-orbit/bruin';
 
 interface StoreState {
   count: number;
@@ -117,7 +117,7 @@ store.canRedo(); // Check if redo is possible
 Batch multiple state updates into a single atomic change:
 
 ```tsx
-import { create } from '@inboxhealth/bruin';
+import { create } from '@low-orbit/bruin';
 
 interface StoreState {
   count: number;
@@ -142,7 +142,7 @@ const useStore = create<StoreState>((set) => ({
 
 ## 100% Zustand Compatible
 
-Bruin is a drop-in replacement for Zustand. Simply replace `zustand` with `@inboxhealth/bruin` in your imports,
+Bruin is a drop-in replacement for Zustand. Simply replace `zustand` with `@low-orbit/bruin` in your imports,
 and you're ready to go - no breaking changes, no migration needed!
 
 ## What's Next?
