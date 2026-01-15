@@ -185,8 +185,8 @@ importers:
         specifier: ^18.2.6
         version: 18.3.7(@types/react@18.3.27)
       '@vitejs/plugin-react-swc':
-        specifier: ^3.3.2
-        version: 3.11.0(vite@4.5.14(@types/node@24.10.8))
+        specifier: ^4.2.2
+        version: 4.2.2(vite@4.5.14(@types/node@24.10.8))
       eslint:
         specifier: ^9.17.0
         version: 9.39.1
@@ -231,8 +231,8 @@ importers:
         specifier: ^18.2.0
         version: 18.3.7(@types/react@18.3.27)
       '@vitejs/plugin-react-swc':
-        specifier: ^3.5.0
-        version: 3.11.0(vite@5.4.21(@types/node@24.10.8))
+        specifier: ^4.2.2
+        version: 4.2.2(vite@5.4.21(@types/node@24.10.8))
       typescript:
         specifier: ^5.0.0
         version: 5.9.3
@@ -259,8 +259,8 @@ importers:
         specifier: ^18.2.0
         version: 18.3.7(@types/react@18.3.27)
       '@vitejs/plugin-react-swc':
-        specifier: ^3.5.0
-        version: 3.11.0(vite@5.4.21(@types/node@24.10.8))
+        specifier: ^4.2.2
+        version: 4.2.2(vite@5.4.21(@types/node@24.10.8))
       typescript:
         specifier: ^5.0.0
         version: 5.9.3
@@ -1061,8 +1061,8 @@ packages:
     peerDependencies:
       redux: ^3.1.0 || ^4.0.0 || ^5.0.0
 
-  '@rolldown/pluginutils@1.0.0-beta.27':
-    resolution: {integrity: sha512-+d0F4MKMCbeVUJwG96uQ4SgAznZNSq93I3V+9NHA4OpvqG8mRCpGdKmK8l/dl02h2CCDHwW2FqilnTyDcAnqjA==}
+  '@rolldown/pluginutils@1.0.0-beta.47':
+    resolution: {integrity: sha512-8QagwMH3kNCuzD8EWL8R2YPW5e4OrHNSAHRFDdmFqEwEaD/KcNKjVoumo+gP2vW5eKB2UPbM6vTYiGZX0ixLnw==}
 
   '@rollup/plugin-alias@6.0.0':
     resolution: {integrity: sha512-tPCzJOtS7uuVZd+xPhoy5W4vThe6KWXNmsFCNktaAh5RTqcLiSfT4huPQIXkgJ6YCOjJHvecOAzQxLFhPxKr+g==}
@@ -1613,8 +1613,9 @@ packages:
     peerDependencies:
       react: 19.2.0
 
-  '@vitejs/plugin-react-swc@3.11.0':
-    resolution: {integrity: sha512-YTJCGFdNMHCMfjODYtxRNVAYmTWQ1Lb8PulP/2/f/oEEtglw8oKxKIZmmRkyXrVrHfsKOaVkAc3NT9/dMutO5w==}
+  '@vitejs/plugin-react-swc@4.2.2':
+    resolution: {integrity: sha512-x+rE6tsxq/gxrEJN3Nv3dIV60lFflPj94c90b+NNo6n1QV1QQUTLoL0MpaOVasUZ0zqVBn7ead1B5ecx1JAGfA==}
+    engines: {node: ^20.19.0 || >=22.12.0}
     peerDependencies:
       vite: ^4 || ^5 || ^6 || ^7
 
@@ -4541,7 +4542,7 @@ snapshots:
       immutable: 4.3.7
       redux: 5.0.1
 
-  '@rolldown/pluginutils@1.0.0-beta.27': {}
+  '@rolldown/pluginutils@1.0.0-beta.47': {}
 
   '@rollup/plugin-alias@6.0.0(rollup@4.55.1)':
     optionalDependencies:
@@ -4983,17 +4984,17 @@ snapshots:
       '@use-gesture/core': 10.3.1
       react: 19.2.0
 
-  '@vitejs/plugin-react-swc@3.11.0(vite@4.5.14(@types/node@24.10.8))':
+  '@vitejs/plugin-react-swc@4.2.2(vite@4.5.14(@types/node@24.10.8))':
     dependencies:
-      '@rolldown/pluginutils': 1.0.0-beta.27
+      '@rolldown/pluginutils': 1.0.0-beta.47
       '@swc/core': 1.15.8
       vite: 4.5.14(@types/node@24.10.8)
     transitivePeerDependencies:
       - '@swc/helpers'
 
-  '@vitejs/plugin-react-swc@3.11.0(vite@5.4.21(@types/node@24.10.8))':
+  '@vitejs/plugin-react-swc@4.2.2(vite@5.4.21(@types/node@24.10.8))':
     dependencies:
-      '@rolldown/pluginutils': 1.0.0-beta.27
+      '@rolldown/pluginutils': 1.0.0-beta.47
       '@swc/core': 1.15.8
       vite: 5.4.21(@types/node@24.10.8)
     transitivePeerDependencies:
