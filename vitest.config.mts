@@ -62,8 +62,10 @@ export default defineConfig({
       ? ['default', 'github-actions']
       : ['default'],
     setupFiles: ['tests/setup.ts'],
-    deps: {
-      inline: ['react', 'react-dom'],
+    server: {
+      deps: {
+        inline: ['react', 'react-dom'],
+      },
     },
     coverage: {
       include: ['src/**/'],
